@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | BCA Events</title>
+    <!-- Link to static CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@700;800&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+
+    <div class="login-container">
+
+        <!-- Login Form -->
+        <div class="login-card" id="login-card">
+            <h2 class="form-title">Welcome Back</h2>
+            <form method="POST" action="">
+                <input type="hidden" name="action" value="login">
+
+                <!-- User ID -->
+                <div class="input-group">
+                    <label for="username">User ID</label>
+                    <input type="text" id="username" name="username" class="input-field" required
+                        value="{{ username or '' }}">
+                </div>
+
+                <!-- Password -->
+                <div class="input-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" class="input-field" required>
+                </div>
+
+                <!-- CAPTCHA Section -->
+                <label class="captcha-label">CAPTCHA</label>
+                <div class="captcha-section">
+                    <!-- Numbers Display -->
+                    <div class="captcha-display">
+                        {{ challenge_display }}
+                    </div>
+
+                    <!-- Refresh Button -->
+                    <button type="button" class="refresh-btn" onclick="window.location.reload();" title="Refresh">
+                        &#x27F3;
+                    </button>
+
+                    <!-- Input -->
+                    <div class="captcha-input-container">
+                        <input type="text" name="captcha" class="input-field" placeholder="Enter CAPTCHA" required
+                            autocomplete="off">
+                    </div>
+                </div>
+
+                {% if error %}
+                <p class="error-msg">{{ error }}</p>
+                {% endif %}
+
+                <div style="text-align: right; margin-bottom: 1.5rem;">
+                    <a href="{{ url_for('forgot_password') }}" style="color: var(--primary); font-size: 0.9rem; text-decoration: none; font-weight: 500;">Forgot Password?</a>
+                </div>
+
+
+
+                <button type="submit" class="btn-primary">LOGIN</button>
+
+                <button type="button" class="btn-secondary" onclick="toggleForms()">Create an Account</button>
+            </form>
+        </div>
+
+        <!-- Register Form (Hidden by default) -->
+        <div class="login-card" id="register-card" style="display: none;">
+            <h2 class="form-title">Create Account</h2>
+            <form method="POST" action="">
+                <input type="hidden" name="action" value="register">
+
+                <div class="input-group">
+                    <label>Username</label>
+                    <input type="text" name="reg_username" class="input-field" required>
+                </div>
+
+                <div class="input-group">
+                    <label>Password</label>
+                    <input type="password" name="reg_password" class="input-field" required>
+                </div>
+
+                <div class="input-group">
+                    <label>Confirm Password</label>
+                    <input type="password" name="reg_confirm_password" class="input-field" required>
+                </div>
+
+                <button type="submit" class="btn-primary">SIGN UP</button>
+
+                <button type="button" class="btn-secondary" onclick="toggleForms()">Back to Login</button>
+            </form>
+        </div>
+
+    </div>
+
+    <!-- Link to static JS -->
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+    <script>
+        function toggleForms() {
+            var loginCard = document.getElementById('login-card');
+            var regCard = document.getElementById('register-card');
+
+            if (loginCard.style.display === 'none') {
+                loginCard.style.display = 'block';
+                regCard.style.display = 'none';
+            } else {
+                loginCard.style.display = 'none';
+                regCard.style.display = 'block';
+            }
+        }
+    </script>
+</body>
+
+</html>

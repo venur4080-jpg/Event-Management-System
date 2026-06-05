@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register | {{ event.title }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        .reg-container {
+            min-height: calc(100vh - 100px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        .reg-card {
+            background: rgba(30, 41, 59, 0.6);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 3rem;
+            width: 100%;
+            max-width: 550px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4);
+        }
+
+        .reg-header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .reg-title {
+            font-family: var(--font-heading);
+            font-size: 2rem;
+            color: white;
+            margin-bottom: 0.5rem;
+        }
+
+        .reg-subtitle {
+            color: var(--primary);
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .success-box {
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .success-icon {
+            font-size: 4rem;
+            color: #4ade80;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .back-btn {
+            display: inline-block;
+            margin-top: 2rem;
+            padding: 0.8rem 2rem;
+            background: var(--primary);
+            color: #000;
+            font-weight: 700;
+            border-radius: 8px;
+            text-decoration: none;
+            transition: 0.3s;
+        }
+
+        .back-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 242, 254, 0.4);
+        }
+
+        .input-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        @media (max-width: 600px) {
+            .input-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar">
+        <div class="nav-container" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+            <div style="display: flex; align-items: center;">
+                <div class="hamburger" id="hamburger">☰</div>
+                <div class="logo">BCA<span>Events</span></div>
+            </div>
+            <div class="nav-links">
+                <button onclick="window.location.href='{{ url_for('dashboard') }}'">Cancel</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-logo">BCA<span>Events</span></div>
+            <div class="close-btn" id="closeSidebar">&times;</div>
+        </div>
+        <ul class="sidebar-links">
+            <li><a href="{{ url_for('dashboard') }}">🏠 Dashboard</a></li>
+            <li><a href="{{ url_for('profile') }}">👤 My Profile</a></li>
+            <li><a href="{{ url_for('history') }}">📋 My Bookings</a></li>
+            <li><hr style="border: 0; border-top: 1px solid var(--glass-border); margin: 1rem 0;"></li>
+            <li><a href="tel:9686837274" style="font-size: 0.85rem; gap: 0.8rem; color: var(--text-muted); word-break: break-all;"><span style="font-size: 1.1rem;">📞</span> 9686837274</a></li>
+            <li><a href="mailto:venu.rachakondaa@gmail.com" style="font-size: 0.85rem; gap: 0.8rem; color: var(--text-muted); word-break: break-all;"><span style="font-size: 1.1rem;">📧</span> venu.rachakondaa@gmail.com</a></li>
+            <li><hr style="border: 0; border-top: 1px solid var(--glass-border); margin: 1rem 0;"></li>
+            <li><a href="{{ url_for('logout') }}" style="color: var(--secondary);">🚪 Logout</a></li>
+        </ul>
+    </div>
+
+
+    <div class="reg-container">
+        <div class="reg-card">
+            {% if success %}
+            <div class="success-box">
+                <span class="success-icon">✓</span>
+                <h2 class="reg-title">Registration Successful!</h2>
+                <p style="color: var(--text-muted);">
+                    You are now registered for <strong>{{ event.title }}</strong>.<br>
+                    Confirmation details have been sent to your email.
+                </p>
+                <div style="display: flex; gap: 1rem; justify-content: center;">
+                    <a href="{{ url_for('dashboard') }}" class="back-btn">Go to Dashboard</a>
+                    <a href="{{ url_for('download_ticket', event_id=event.id) }}" class="back-btn" style="background: var(--secondary); color: white;" target="_blank">Download Ticket (PDF)</a>
+                </div>
+            </div>
+            {% else %}
+            <div class="reg-header">
+                <h2 class="reg-title">Event Registration</h2>
+                <p class="reg-subtitle">{{ event.title }}</p>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 5px;">{{ event.date }}</p>
+            </div>
+
+            <form method="POST">
+                <div class="input-group">
+                    <label>Full Name</label>
+                    <input type="text" name="full_name" class="input-field" placeholder="John Doe" required>
+                </div>
+
+                <div class="input-row">
+                    <div class="input-group">
+                        <label>Email Address</label>
+                        <input type="email" name="email" class="input-field" placeholder="john@example.com" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Phone Number</label>
+                        <input type="tel" name="phone" class="input-field" placeholder="+91 00000 00000" required>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label>College/Student ID</label>
+                    <input type="text" name="college_id" class="input-field" placeholder="BCA-2026-X1" required>
+                </div>
+
+                {% if event.price != 'Free' %}
+                <div class="payment-section" style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.1);">
+                    <h3 style="color: white; margin-bottom: 1rem; font-size: 1.1rem;">Payment Information ({{ event.price }})</h3>
+                    <div class="payment-methods">
+                        <label class="payment-option">
+                            <input type="radio" name="payment_method" value="UPI" checked required>
+                            <div class="payment-box">
+                                <span style="font-weight: 600;">UPI</span>
+                                <p style="font-size: 0.75rem; color: var(--text-muted);">Pay via PhonePe, GPay, etc.</p>
+                            </div>
+                        </label>
+                    </div>
+                    
+                    <div id="upi-details" style="margin-top: 1rem;">
+                        <div class="input-group">
+                            <label>UPI ID (VPA)</label>
+                            <input type="text" name="upi_id" class="input-field" placeholder="username@upi" required>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <input type="hidden" name="payment_method" value="N/A">
+                <input type="hidden" name="upi_id" value="N/A">
+                {% endif %}
+
+                <div style="margin-top: 2rem;">
+                    <button type="submit" class="btn-primary" style="width: 100%;">Complete Registration</button>
+                </div>
+                
+                <p style="text-align: center; margin-top: 1.5rem; font-size: 0.8rem; color: var(--text-muted);">
+                    By registering, you agree to follow the event guidelines and code of conduct.
+                </p>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+    <script>
+        const hamburger = document.getElementById('hamburger');
+        const sidebar = document.getElementById('sidebar');
+        const closeSidebar = document.getElementById('closeSidebar');
+
+        hamburger.onclick = () => sidebar.classList.add('active');
+        closeSidebar.onclick = () => sidebar.classList.remove('active');
+
+        // Close sidebar when clicking outside
+        document.onclick = (e) => {
+            if (!sidebar.contains(e.target) && !hamburger.contains(e.target) && sidebar.classList.contains('active')) {
+                sidebar.classList.remove('active');
+            }
+        };
+    </script>
+</body>
+</html>
+

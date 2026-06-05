@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Bookings | BCA Events</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div style="display: flex; align-items: center;">
+                <div class="hamburger" id="hamburger">☰</div>
+                <div class="logo">BCA<span>Events</span></div>
+            </div>
+            <div class="nav-links">
+                <a href="{{ url_for('dashboard') }}">Dashboard</a>
+                <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-logo">BCA<span>Events</span></div>
+            <div class="close-btn" id="closeSidebar">&times;</div>
+        </div>
+        <ul class="sidebar-links">
+            <li><a href="{{ url_for('dashboard') }}">🏠 Dashboard</a></li>
+            <li><a href="{{ url_for('profile') }}">👤 My Profile</a></li>
+            <li><a href="{{ url_for('history') }}" class="active">📋 My Bookings</a></li>
+            <li><hr style="border: 0; border-top: 1px solid var(--glass-border); margin: 1rem 0;"></li>
+            <li><a href="tel:9686837274" style="font-size: 0.85rem; gap: 0.8rem; color: var(--text-muted); word-break: break-all;"><span style="font-size: 1.1rem;">📞</span> 9686837274</a></li>
+            <li><a href="mailto:venu.rachakondaa@gmail.com" style="font-size: 0.85rem; gap: 0.8rem; color: var(--text-muted); word-break: break-all;"><span style="font-size: 1.1rem;">📧</span> venu.rachakondaa@gmail.com</a></li>
+            <li><hr style="border: 0; border-top: 1px solid var(--glass-border); margin: 1rem 0;"></li>
+            <li><a href="{{ url_for('logout') }}" style="color: var(--secondary);">🚪 Logout</a></li>
+        </ul>
+    </div>
+
+    <main class="container">
+        <div class="hero-section" style="text-align: center; margin-bottom: 4rem;">
+            <h1 class="hero-title">My <span>Bookings</span></h1>
+            <p class="hero-subtitle">History of all events you've signed up for.</p>
+        </div>
+
+
+        <div class="history-list" style="max-width: 900px; margin: 0 auto;">
+            {% if history %}
+                {% for item in history %}
+                <div class="history-card">
+                    <div>
+                        <h3 class="event-title" style="margin-bottom: 0.5rem; color: white;">{{ item.title }}</h3>
+                        <p style="color: var(--text-muted); font-size: 0.9rem;">
+                            📅 Event Date: {{ item.date }} | 📝 Registered: {{ item.reg_time }}
+                        </p>
+                    </div>
+                    <div>
+                        <a href="{{ url_for('download_ticket', event_id=item.id) }}" class="register-btn-sm" style="background: rgba(0, 242, 254, 0.2); color: var(--primary); text-decoration: none; padding: 0.6rem 1.2rem; border-radius: 8px;" target="_blank">📥 Download Ticket</a>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="login-card" style="text-align: center; padding: 4rem;">
+                    <p style="color: var(--text-muted); margin-bottom: 2rem;">You haven't registered for any events yet.</p>
+                    <a href="{{ url_for('dashboard') }}" class="login-btn" style="max-width: 250px; margin: 0 auto;">Browse Events</a>
+                </div>
+            {% endif %}
+        </div>
+    </main>
+
+    <script>
+        const hamburger = document.getElementById('hamburger');
+        const sidebar = document.getElementById('sidebar');
+        const closeSidebar = document.getElementById('closeSidebar');
+
+        hamburger.onclick = () => sidebar.classList.add('active');
+        closeSidebar.onclick = () => sidebar.classList.remove('active');
+
+        // Close sidebar when clicking outside
+        document.onclick = (e) => {
+            if (!sidebar.contains(e.target) && !hamburger.contains(e.target)) {
+                sidebar.classList.remove('active');
+            }
+        };
+    </script>
+</body>
+</html>

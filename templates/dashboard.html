@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | BCA Events</title>
+    <!-- Fonts and CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+            <div style="display: flex; align-items: center;">
+                <div class="hamburger" id="hamburger">☰</div>
+                <div class="logo" style="display: flex; align-items: center; gap: 10px;">
+                    <img src="{{ url_for('static', filename='logo.png') }}" alt="BCA Events Logo" style="height: 35px; border-radius: 8px; box-shadow: 0 0 10px rgba(0, 242, 254, 0.3);">
+                    <div>BCA<span>Events</span></div>
+                </div>
+            </div>
+            <div class="nav-links" style="display: flex; align-items: center;">
+                <span style="margin-right: 20px; color: var(--text-muted); font-weight: 500;">Welcome, <strong style="color: white;">{{ username }}</strong></span>
+                {% if current_user %}
+                <a href="{{ url_for('profile') }}" style="margin-right: 15px; display: inline-flex; align-items: center;" title="My Profile">
+                    <img src="{{ current_user.profile_photo }}" alt="Profile" style="width: 38px; height: 38px; border-radius: 50%; object-fit: cover; border: 2px solid var(--glass-border); transition: 0.3s;" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='var(--glass-border)'">
+                </a>
+                {% endif %}
+                <button onclick="window.location.href='{{ url_for('logout') }}'">Logout</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-logo" style="display: flex; align-items: center; gap: 10px;">
+                <img src="{{ url_for('static', filename='logo.png') }}" alt="BCA Events Logo" style="height: 40px; border-radius: 8px; box-shadow: 0 0 10px rgba(0, 242, 254, 0.3);">
+                <div>BCA<span>Events</span></div>
+            </div>
+            <div class="close-btn" id="closeSidebar">&times;</div>
+        </div>
+        <ul class="sidebar-links">
+            <li><a href="{{ url_for('dashboard') }}" class="active">🏠 Dashboard</a></li>
+            <li><a href="{{ url_for('profile') }}">👤 My Profile</a></li>
+            <li><a href="{{ url_for('history') }}">📋 My Bookings</a></li>
+            {% if is_host %}
+            <li><hr style="border: 0; border-top: 1px solid var(--glass-border); margin: 1rem 0;"></li>
+            <li style="padding: 0 1rem; color: var(--primary); font-size: 0.8rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">Host Management</li>
+            <li><a href="{{ url_for('add_event') }}">➕ Add New Event</a></li>
+            {% endif %}
+            <li><hr style="border: 0; border-top: 1px solid var(--glass-border); margin: 1rem 0;"></li>
+            <li><a href="tel:+919686837274" style="font-size: 0.85rem; gap: 0.8rem; color: var(--text-muted); word-break: break-all;"><span style="font-size: 1.1rem;">📞</span> 9686837274</a></li>
+            <li><a href="mailto:venu.rachakondaa@gmail.com" style="font-size: 0.85rem; gap: 0.8rem; color: var(--text-muted); word-break: break-all;"><span style="font-size: 1.1rem;">📧</span> venu.rachakondaa@gmail.com</a></li>
+            <li><hr style="border: 0; border-top: 1px solid var(--glass-border); margin: 1rem 0;"></li>
+            <li><a href="{{ url_for('logout') }}" style="color: var(--secondary);">🚪 Logout</a></li>
+        </ul>
+    </div>
+
+
+    <!-- Hero Section -->
+    <header class="hero-section">
+        <h1 class="hero-title">Future Tech<br>Experience</h1>
+        <p class="hero-subtitle">Discover exclusive hackathons, workshops, and seminars. <br>Design the future with
+            code.</p>
+        {% if is_host %}
+        <div style="margin-top: 2rem;">
+            <button onclick="window.location.href='{{ url_for('add_event') }}'" class="register-btn" style="padding: 1rem 2rem; font-size: 1.1rem; background: var(--primary); color: var(--bg-dark); font-weight: 700; border-radius: 50px; box-shadow: 0 0 20px rgba(0, 242, 254, 0.4);">+ Add New Event</button>
+        </div>
+        {% endif %}
+    </header>
+
+    <!-- Events Grid -->
+    <main>
+        {% if upcoming_events %}
+        <div class="carousel-container" style="--carousel-radius: {{ carousel_radius }}px;">
+            <div class="circle-carousel" id="carousel" style="transform: translateZ(calc(-1 * var(--carousel-radius)));">
+            {% for event in upcoming_events %}
+            <!-- Carousel Item Wrapper handles 3D placement -->
+            <div class="carousel-item" style="--carousel-angle: {{ event.carousel_angle }}deg; --carousel-tz: {{ event.carousel_tz }}px;">
+                <div class="glass-panel event-card {% if event.is_expired %}event-expired{% endif %}">
+                    <!-- Event Image -->
+                    <div class="image-wrapper" style="overflow: hidden; border-radius: 16px 16px 0 0; cursor: pointer;" 
+                         onclick="window.location.href='{{ url_for('event_detail', event_id=event.id) }}'">
+                        <img src="{{ event.image }}" alt="{{ event.title }}" class="card-image" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?q=80&w=2070&auto=format&fit=crop';">
+                        <div class="date-badge">{{ event.date }}</div>
+                    </div>
+
+                    <div class="card-content">
+                        <h3 class="event-title" style="cursor: pointer;" 
+                            onclick="window.location.href='{{ url_for('event_detail', event_id=event.id) }}'">
+                            {{ event.title }}
+                        </h3>
+                        <p class="event-desc">{{ event.desc }}</p>
+                    
+                    <!-- Moved Price Tag above the line -->
+                    <div style="margin-top: auto; padding-bottom: 1rem; text-align: left;">
+                        <span class="price-tag" style="font-size: 1.5rem; font-weight: 800; letter-spacing: 1px; color: {% if event.is_expired %}var(--text-muted){% else %}var(--secondary){% endif %};">
+                            {% if event.is_expired %}Not Available{% else %}{{ event.price }}{% endif %}
+                        </span>
+                    </div>
+
+                    <div class="card-footer" style="justify-content: center;">
+                        <div style="display: flex; gap: 8px; align-items: center; flex-wrap: nowrap;">
+                            {% if not event.is_expired %}
+                                {% if event.is_registered %}
+                                <a href="{{ url_for('download_ticket', event_id=event.id) }}" class="register-btn-sm" style="background: rgba(0, 242, 254, 0.2); color: var(--primary); text-decoration: none; padding: 0.4rem 0.6rem; font-size: 0.8rem; white-space: nowrap;" target="_blank">📥 Ticket</a>
+                                <form action="{{ url_for('unregister_event', event_id=event.id) }}" method="POST" style="display: inline; margin: 0;">
+                                    <button type="submit" class="register-btn-sm unregister-btn" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; white-space: nowrap;">Unregister</button>
+                                </form>
+                                {% else %}
+                                <button class="register-btn-sm" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; white-space: nowrap;" onclick="window.location.href='{{ url_for('register_event', event_id=event.id) }}'">Register</button>
+                                {% endif %}
+                            {% else %}
+                            <button class="register-btn-sm" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; white-space: nowrap; background: rgba(255,255,255,0.1); color: var(--text-muted); border: 1px solid rgba(255,255,255,0.1); cursor: not-allowed;" disabled>Closed</button>
+                            {% endif %}
+
+                            {% if is_host %}
+                            <form action="{{ url_for('delete_event', event_id=event.id) }}" method="POST" style="display: inline; margin: 0;" onsubmit="return confirmDelete(this, event);">
+                                <button type="submit" class="register-btn-sm" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; white-space: nowrap; background: rgba(255,255,255,0.1); color: var(--text-muted); border: 1px solid var(--glass-border); cursor: pointer;">Delete</button>
+                            </form>
+                            {% endif %}
+                        </div>
+                        </div>
+                        <div style="margin-top: 10px; text-align: center;">
+                            <a href="{{ url_for('event_detail', event_id=event.id) }}" style="font-size: 0.8rem; color: var(--primary); text-decoration: none; font-weight: 600;">View Purpose & Details →</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+            </div>
+            
+            </div>
+            
+            <div class="carousel-controls">
+                <button class="carousel-btn" onclick="rotateCarousel(-1)">◀ Prev</button>
+                <button class="carousel-btn" onclick="rotateCarousel(1)">Next ▶</button>
+            </div>
+        </div>
+        {% else %}
+        <div style="text-align: center; padding: 4rem 2rem; color: var(--text-muted);">
+            <h2 style="color: var(--text-light); margin-bottom: 1rem;">No Upcoming Events</h2>
+            <p>Stay tuned for exciting future events!</p>
+        </div>
+        {% endif %}
+    </main>
+
+    {% if past_events %}
+    <section class="past-events-section" style="max-width: 1200px; margin: 4rem auto; padding: 0 2rem;">
+        <h2 style="color: var(--text-light); text-align: center; margin-bottom: 3rem; font-size: 2.2rem; font-weight: 800; letter-spacing: 1px; text-transform: uppercase;">Past Events</h2>
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 2.5rem;">
+            {% for event in past_events %}
+            <div class="glass-panel event-card event-expired" style="height: auto; opacity: 0.85; transition: transform 0.3s; transform: scale(0.98);">
+                <div class="image-wrapper" style="overflow: hidden; border-radius: 16px 16px 0 0; position: relative; cursor: pointer;"
+                     onclick="window.location.href='{{ url_for('event_detail', event_id=event.id) }}'">
+                    <img src="{{ event.image }}" alt="{{ event.title }}" style="width: 100%; height: 220px; object-fit: cover; filter: grayscale(80%);" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?q=80&w=2070&auto=format&fit=crop';">
+                    <div class="date-badge" style="position: absolute; top: 12px; right: 12px; background: rgba(0,0,0,0.8); padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; color: white; border: 1px solid rgba(255,255,255,0.2);">{{ event.date }}</div>
+                </div>
+                <div class="card-content" style="padding: 1.5rem;">
+                    <h3 class="event-title" style="color: var(--text-muted); margin-bottom: 0.5rem; cursor: pointer;"
+                        onclick="window.location.href='{{ url_for('event_detail', event_id=event.id) }}'">{{ event.title }}</h3>
+                    <p class="event-desc" style="color: var(--text-muted); font-size: 0.95rem;">{{ event.desc }}</p>
+                    <div style="margin-top: 1.5rem; display: flex; justify-content: center; gap: 10px; align-items: center;">
+                        <button class="register-btn-sm" style="padding: 0.4rem 0.8rem; font-size: 0.85rem; background: rgba(255,255,255,0.05); color: var(--text-muted); border: 1px solid rgba(255,255,255,0.1); cursor: not-allowed;" disabled>Closed</button>
+                        {% if is_host %}
+                        <form action="{{ url_for('delete_event', event_id=event.id) }}" method="POST" style="display: inline; margin: 0;" onsubmit="return confirmDelete(this, event);">
+                            <button type="submit" class="register-btn-sm" style="padding: 0.4rem 0.8rem; font-size: 0.85rem; white-space: nowrap; background: rgba(255,255,255,0.1); color: var(--text-muted); border: 1px solid var(--glass-border); cursor: pointer;">Delete</button>
+                        </form>
+                        {% endif %}
+                        <a href="{{ url_for('event_detail', event_id=event.id) }}" style="font-size: 0.85rem; color: var(--primary); text-decoration: none; font-weight: 600; margin-left: auto;">Details →</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    <footer class="site-footer glass-panel" style="margin-top: 6rem; padding: 4rem 2rem 2rem; border-radius: 0; border-left: none; border-right: none; border-bottom: none; position: relative;">
+        <div style="max-width: 1200px; margin: 0 auto; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 3rem;">
+            <div style="flex: 1 1 300px;">
+                <h3 style="color: var(--primary); font-size: 1.8rem; margin-bottom: 1rem; font-weight: 800; display: flex; align-items: center; gap: 12px;">
+                    <img src="{{ url_for('static', filename='logo.png') }}" alt="BCA Events Logo" style="height: 45px; border-radius: 8px; box-shadow: 0 0 10px rgba(0, 242, 254, 0.3);">
+                    <div>BCA<span style="color: white;">Events</span></div>
+                </h3>
+                <p style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.6; margin-bottom: 1.5rem;">Empowering students to design the future with code. Join our exclusive hackathons, workshops, and seminars tailored for BCA students.</p>
+            </div>
+            <div style="flex: 1 1 200px;">
+                <h4 style="color: white; margin-bottom: 1.2rem; font-size: 1.2rem;">Quick Links</h4>
+                <ul style="list-style: none; padding: 0; line-height: 2;">
+                    <li><a href="{{ url_for('dashboard') }}" style="color: var(--text-muted); text-decoration: none; transition: color 0.3s;" onmouseover="this.style.color='var(--primary)'" onmouseout="this.style.color='var(--text-muted)'">Dashboard</a></li>
+                    <li><a href="{{ url_for('profile') }}" style="color: var(--text-muted); text-decoration: none; transition: color 0.3s;" onmouseover="this.style.color='var(--primary)'" onmouseout="this.style.color='var(--text-muted)'">My Profile</a></li>
+                    <li><a href="{{ url_for('history') }}" style="color: var(--text-muted); text-decoration: none; transition: color 0.3s;" onmouseover="this.style.color='var(--primary)'" onmouseout="this.style.color='var(--text-muted)'">My Bookings</a></li>
+                </ul>
+            </div>
+            <div style="flex: 1 1 250px;">
+                <h4 style="color: white; margin-bottom: 1.2rem; font-size: 1.2rem;">Contact Us</h4>
+                <p style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.6; margin-bottom: 0.5rem;"><a href="tel:+919686837274" style="color: var(--text-muted); text-decoration: none; transition: color 0.3s;" onmouseover="this.style.color='var(--primary)'" onmouseout="this.style.color='var(--text-muted)'"><span style="font-size: 1.2rem; vertical-align: middle; margin-right: 8px;">📞</span> +91 9686837274</a></p>
+                <p style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.6; margin-bottom: 1.5rem; word-break: break-all;"><a href="mailto:venu.rachakondaa@gmail.com" target="_blank" style="color: var(--text-muted); text-decoration: none; transition: color 0.3s;" onmouseover="this.style.color='var(--primary)'" onmouseout="this.style.color='var(--text-muted)'"><span style="font-size: 1.2rem; vertical-align: middle; margin-right: 8px;">📧</span> venu.rachakondaa@gmail.com</a></p>
+                <div style="display: flex; gap: 1rem;">
+                    <a href="https://www.facebook.com" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; justify-content: center; width: 45px; height: 45px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 50%; color: var(--text-muted); text-decoration: none; transition: all 0.3s ease; box-shadow: 0 4px 10px rgba(0,0,0,0.2);" onmouseover="this.style.background='rgba(0,242,254,0.15)'; this.style.transform='translateY(-5px)'; this.style.borderColor='var(--primary)'; this.style.color='white'" onmouseout="this.style.background='rgba(255,255,255,0.05)'; this.style.transform='translateY(0)'; this.style.borderColor='rgba(255,255,255,0.1)'; this.style.color='var(--text-muted)'" title="Facebook">
+                        <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.469h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.469h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                    </a>
+                    <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; justify-content: center; width: 45px; height: 45px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 50%; color: var(--text-muted); text-decoration: none; transition: all 0.3s ease; box-shadow: 0 4px 10px rgba(0,0,0,0.2);" onmouseover="this.style.background='rgba(0,242,254,0.15)'; this.style.transform='translateY(-5px)'; this.style.borderColor='var(--primary)'; this.style.color='white'" onmouseout="this.style.background='rgba(255,255,255,0.05)'; this.style.transform='translateY(0)'; this.style.borderColor='rgba(255,255,255,0.1)'; this.style.color='var(--text-muted)'" title="Twitter">
+                        <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723 10.054 10.054 0 01-3.127 1.184 4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/></svg>
+                    </a>
+                    <a href="https://www.instagram.com" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; justify-content: center; width: 45px; height: 45px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 50%; color: var(--text-muted); text-decoration: none; transition: all 0.3s ease; box-shadow: 0 4px 10px rgba(0,0,0,0.2);" onmouseover="this.style.background='rgba(0,242,254,0.15)'; this.style.transform='translateY(-5px)'; this.style.borderColor='var(--primary)'; this.style.color='white'" onmouseout="this.style.background='rgba(255,255,255,0.05)'; this.style.transform='translateY(0)'; this.style.borderColor='rgba(255,255,255,0.1)'; this.style.color='var(--text-muted)'" title="Instagram">
+                        <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+                    </a>
+                    <a href="https://www.linkedin.com/in/venu-rachakondaa" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; justify-content: center; width: 45px; height: 45px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 50%; color: var(--text-muted); text-decoration: none; transition: all 0.3s ease; box-shadow: 0 4px 10px rgba(0,0,0,0.2);" onmouseover="this.style.background='rgba(0,242,254,0.15)'; this.style.transform='translateY(-5px)'; this.style.borderColor='var(--primary)'; this.style.color='white'" onmouseout="this.style.background='rgba(255,255,255,0.05)'; this.style.transform='translateY(0)'; this.style.borderColor='rgba(255,255,255,0.1)'; this.style.color='var(--text-muted)'" title="LinkedIn">
+                        <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div style="width: 100%; text-align: center; margin-top: 3rem; padding-top: 2rem; border-top: 1px solid rgba(255,255,255,0.05); color: var(--text-muted); font-size: 0.85rem;">
+            &copy; 2026 BCA Events. All rights reserved. Designed with <span style="color: var(--primary);">❤</span> by Venu.
+        </div>
+    </footer>
+
+    <!-- Custom Delete Confirmation Modal -->
+    <div id="deleteModal" class="custom-modal">
+        <div class="modal-content glass-panel">
+            <h3 style="color: white; margin-bottom: 1rem; font-size: 1.5rem;">Delete Event</h3>
+            <p style="color: var(--text-muted); margin-bottom: 2rem;">Are you absolutely sure you want to delete this event? This action cannot be undone.</p>
+            <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                <button class="register-btn-sm" style="background: transparent; border: 1px solid var(--glass-border); color: white;" onclick="closeDeleteModal()">Cancel</button>
+                <button class="register-btn-sm" style="background: #ef4444; color: white;" onclick="executeDelete()">Yes, Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+    <script>
+        const hamburger = document.getElementById('hamburger');
+        const sidebar = document.getElementById('sidebar');
+        const closeSidebar = document.getElementById('closeSidebar');
+
+        hamburger.onclick = () => sidebar.classList.add('active');
+        closeSidebar.onclick = () => sidebar.classList.remove('active');
+
+        // Close sidebar when clicking outside
+        document.onclick = (e) => {
+            if (!sidebar.contains(e.target) && !hamburger.contains(e.target)) {
+                sidebar.classList.remove('active');
+            }
+        };
+
+        // Carousel Rotation Logic
+        let currentAngle = 0;
+        const totalEvents = {{ upcoming_events|length }};
+        const rotationStep = totalEvents > 0 ? 360 / totalEvents : 0;
+
+        function rotateCarousel(direction) {
+            // Subtracting the direction makes the carousel rotate in the opposite (intuitive) direction
+            currentAngle -= direction * rotationStep;
+            const carousel = document.getElementById('carousel');
+            if (carousel) {
+                // Ensure the container remains pushed back by the radius, and then rotates
+                carousel.style.transform = `translateZ(calc(-1 * var(--carousel-radius))) rotateY(${currentAngle}deg)`;
+            }
+        }
+
+        // Custom Delete Modal Logic
+        let formToDelete = null;
+
+        function confirmDelete(form, event) {
+            event.preventDefault(); // Prevent immediate submission
+            formToDelete = form;
+            const modal = document.getElementById('deleteModal');
+            modal.style.display = 'flex'; // Show modal
+            // Small delay to allow display block to apply before animating opacity
+            setTimeout(() => {
+                modal.classList.add('active');
+            }, 10);
+            return false;
+        }
+
+        function closeDeleteModal() {
+            formToDelete = null;
+            const modal = document.getElementById('deleteModal');
+            modal.classList.remove('active');
+            // Wait for fade out transition before hiding
+            setTimeout(() => {
+                modal.style.display = 'none';
+            }, 300);
+        }
+
+        function executeDelete() {
+            if (formToDelete) {
+                formToDelete.submit();
+            }
+        }
+    </script>
+
+</body>
+
+</html>

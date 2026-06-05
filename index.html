@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | BCA Events</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@700;800&display=swap" rel="stylesheet">
+    <!-- Styles -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="login-container">
+        <!-- Floating Ambient Shapes -->
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+
+        <div class="login-card glass-panel">
+            <div class="login-header">
+                <h1>Welcome Back</h1>
+                <p style="color: var(--text-muted); margin-bottom: 2rem;">BCA Event Management Portal</p>
+            </div>
+
+            <form id="loginForm" onsubmit="handleLogin(event)">
+                <div class="input-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" class="input-field" placeholder="Enter 'admin'" required>
+                </div>
+
+                <div class="input-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" class="input-field" placeholder="Enter 'password123'" required>
+                </div>
+
+                <div class="input-group">
+                    <label>Security Check</label>
+                    <div class="captcha-container">
+                        <canvas id="captchaCanvas" width="200" height="60"></canvas>
+                        <button type="button" class="refresh-btn" onclick="generateCaptcha()" title="Refresh Captcha">
+                            &#x21bb; <!-- Unicode Refresh Icon -->
+                        </button>
+                    </div>
+                    <input type="text" id="captchaInput" class="input-field" placeholder="Type the characters above" required>
+                </div>
+
+                <button type="submit" class="btn-primary">Sign In</button>
+                <div id="errorMsg" style="color: var(--accent); margin-top: 1rem; font-size: 0.9rem; display: none;"></div>
+            </form>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

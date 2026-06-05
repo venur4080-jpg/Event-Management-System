@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add New Event | BCA Events</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        .form-container {
+            max-width: 800px;
+            margin: 4rem auto;
+            padding: 2.5rem;
+            background: rgba(30, 41, 59, 0.4);
+            backdrop-filter: blur(12px);
+            border-radius: 24px;
+            border: 1px solid var(--glass-border);
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            color: white;
+            font-family: inherit;
+            transition: 0.3s;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 15px rgba(0, 242, 254, 0.2);
+        }
+
+        textarea.form-control {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 1rem;
+            background: var(--primary);
+            color: var(--bg-dark);
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.3s;
+            margin-top: 1rem;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0, 242, 254, 0.3);
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">BCA<span>Events</span></div>
+            <div class="nav-links">
+                <button onclick="window.location.href='{{ url_for('dashboard') }}'">Back to Dashboard</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="form-container">
+        <h2 style="color: white; margin-bottom: 2rem; text-align: center;">Add New Event</h2>
+        <form action="{{ url_for('add_event') }}" method="POST">
+            <div class="form-group">
+                <label for="title">Event Title</label>
+                <input type="text" id="title" name="title" class="form-control" placeholder="e.g. TechNova Codeathon" required>
+            </div>
+
+            <div class="grid-2">
+                <div class="form-group">
+                    <label for="date">Event Date</label>
+                    <input type="text" id="date" name="date" class="form-control" placeholder="e.g. Mar 15, 2026" required>
+                    <small style="color: var(--text-muted); font-size: 0.8rem;">Format: MMM DD, YYYY</small>
+                </div>
+                <div class="form-group">
+                    <label for="price">Price / Registration Fee</label>
+                    <input type="text" id="price" name="price" class="form-control" placeholder="e.g. Free or ₹800" required>
+                </div>
+            </div>
+
+            <div class="grid-2">
+                <div class="form-group">
+                    <label for="color">Theme Color (Hex)</label>
+                    <input type="text" id="color" name="color" class="form-control" placeholder="e.g. #4facfe" required>
+                </div>
+                <div class="form-group">
+                    <label for="image">Image URL</label>
+                    <input type="url" id="image" name="image" class="form-control" placeholder="https://picsum.photos/..." required oninput="document.getElementById('preview-img').src = this.value; document.getElementById('preview-container').style.display = 'block';">
+                </div>
+            </div>
+
+            <div id="preview-container" style="display: none; margin-bottom: 1.5rem; text-align: center;">
+                <label style="display: block; margin-bottom: 0.5rem; color: var(--text-muted); font-size: 0.8rem;">Image Preview</label>
+                <img id="preview-img" src="" alt="Preview" style="max-width: 100%; max-height: 200px; border-radius: 12px; border: 1px solid var(--glass-border); object-fit: cover;" onerror="this.src='https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?q=80&w=2070&auto=format&fit=crop';">
+                <p style="color: var(--secondary); font-size: 0.7rem; margin-top: 5px;">If the preview doesn't show your image, the link may be blocked or invalid.</p>
+            </div>
+
+            <div class="form-group">
+                <label for="desc">Short Description (for card)</label>
+                <input type="text" id="desc" name="desc" class="form-control" placeholder="A brief catchphrase..." required>
+            </div>
+
+            <div class="form-group">
+                <label for="purpose">Target & Purpose</label>
+                <textarea id="purpose" name="purpose" class="form-control" placeholder="What is the goal of this event?" required></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="full_details">Full Event Breakdown</label>
+                <textarea id="full_details" name="full_details" class="form-control" placeholder="Describe the schedule, speakers, etc." required></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="outcome">Key Outcomes</label>
+                <textarea id="outcome" name="outcome" class="form-control" placeholder="What will attendees gain? Use dots to separate points." required></textarea>
+                <small style="color: var(--text-muted); font-size: 0.8rem;">Example: Gain technical skills. Network with experts. Win prizes.</small>
+            </div>
+
+            <button type="submit" class="btn-submit">Public Event</button>
+        </form>
+    </div>
+</body>
+
+</html>
