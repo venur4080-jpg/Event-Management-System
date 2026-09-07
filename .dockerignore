@@ -1,0 +1,15 @@
+.venv
+venv
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.git
+.gitignore
+.vscode
+cloudflared.exe
+users.db-shm
+users.db-wal
+start_public_hosting.bat
+load_test.js
+test_system.py

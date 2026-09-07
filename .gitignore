@@ -81,6 +81,7 @@ static/uploads/
 *.bak
 *.swp
 *.swo
+*.pdf
 
 # Secrets
 *.pem
@@ -91,5 +92,5 @@ node_modules/
 # Coverage
 coverage/
 
-# JetBrains
-.idea/
+# Cloudflare Tunnel
+cloudflared.exe
