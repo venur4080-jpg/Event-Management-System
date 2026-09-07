@@ -80,6 +80,18 @@
             gap: 1rem;
         }
 
+        select.input-field {
+            background-color: #1e293b;
+            color: #ffffff;
+            cursor: pointer;
+        }
+
+        select.input-field option {
+            background-color: #1e293b;
+            color: #ffffff;
+            padding: 8px 12px;
+        }
+
         @media (max-width: 600px) {
             .input-row {
                 grid-template-columns: 1fr;
@@ -93,7 +105,7 @@
         <div class="nav-container" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
             <div style="display: flex; align-items: center;">
                 <div class="hamburger" id="hamburger">☰</div>
-                <div class="logo">BCA<span>Events</span></div>
+                <div class="logo">EV<span>ENTS</span></div>
             </div>
             <div class="nav-links">
                 <button onclick="window.location.href='{{ url_for('dashboard') }}'">Cancel</button>
@@ -104,7 +116,7 @@
     <!-- Sidebar -->
     <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
-            <div class="sidebar-logo">BCA<span>Events</span></div>
+            <div class="sidebar-logo">EV<span>ENTS</span></div>
             <div class="close-btn" id="closeSidebar">&times;</div>
         </div>
         <ul class="sidebar-links">
@@ -112,8 +124,8 @@
             <li><a href="{{ url_for('profile') }}">👤 My Profile</a></li>
             <li><a href="{{ url_for('history') }}">📋 My Bookings</a></li>
             <li><hr style="border: 0; border-top: 1px solid var(--glass-border); margin: 1rem 0;"></li>
-            <li><a href="tel:9686837274" style="font-size: 0.85rem; gap: 0.8rem; color: var(--text-muted); word-break: break-all;"><span style="font-size: 1.1rem;">📞</span> 9686837274</a></li>
-            <li><a href="mailto:venu.rachakondaa@gmail.com" style="font-size: 0.85rem; gap: 0.8rem; color: var(--text-muted); word-break: break-all;"><span style="font-size: 1.1rem;">📧</span> venu.rachakondaa@gmail.com</a></li>
+            <li style="display: flex; align-items: center; font-size: 0.85rem; gap: 0.8rem; color: var(--text-muted); padding: 0.7rem 1.5rem; user-select: text;"><span style="font-size: 1.1rem;">📞</span> +91 9686837274</li>
+            <li><a href="https://mail.google.com/mail/?view=cm&fs=1&to=venu.rachakondaa@gmail.com" target="_blank" rel="noopener noreferrer" style="font-size: 0.85rem; gap: 0.8rem; color: var(--text-muted); word-break: break-all;"><span style="font-size: 1.1rem;">📧</span> venu.rachakondaa@gmail.com</a></li>
             <li><hr style="border: 0; border-top: 1px solid var(--glass-border); margin: 1rem 0;"></li>
             <li><a href="{{ url_for('logout') }}" style="color: var(--secondary);">🚪 Logout</a></li>
         </ul>
@@ -123,46 +135,79 @@
     <div class="reg-container">
         <div class="reg-card">
             {% if success %}
-            <div class="success-box">
-                <span class="success-icon">✓</span>
-                <h2 class="reg-title">Registration Successful!</h2>
-                <p style="color: var(--text-muted);">
+            <div class="success-message">
+                <div class="success-icon">✓</div>
+                <h2 style="color: white; margin-bottom: 0.5rem;">Registration Successful!</h2>
+                <p style="color: var(--text-muted); margin-bottom: 2rem;">
+                    {% if team_name %}
+                    Team <strong>{{ team_name }}</strong> ({{ total_people }} Members) is now registered for <strong>{{ event.title }}</strong>.<br>
+                    {% else %}
                     You are now registered for <strong>{{ event.title }}</strong>.<br>
-                    Confirmation details have been sent to your email.
+                    {% endif %}
+                    Confirmation details have been recorded.
                 </p>
-                <div style="display: flex; gap: 1rem; justify-content: center;">
+                <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
                     <a href="{{ url_for('dashboard') }}" class="back-btn">Go to Dashboard</a>
-                    <a href="{{ url_for('download_ticket', event_id=event.id) }}" class="back-btn" style="background: var(--secondary); color: white;" target="_blank">Download Ticket (PDF)</a>
+                    <a href="{{ url_for('download_ticket', event_id=event.id) }}" class="back-btn" style="background: var(--secondary); color: white;" target="_blank">Download Official Ticket (PDF)</a>
                 </div>
             </div>
             {% else %}
             <div class="reg-header">
                 <h2 class="reg-title">Event Registration</h2>
                 <p class="reg-subtitle">{{ event.title }}</p>
-                <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 5px;">{{ event.date }}</p>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 5px;">{{ event.date }} • 📍 {{ event.venue or 'Tech Arena' }}</p>
             </div>
 
-            <form method="POST">
+            <form method="POST" id="regForm">
+                <!-- Solo vs Team Registration Toggle -->
+                <div style="display: flex; background: rgba(0,0,0,0.3); padding: 4px; border-radius: 12px; border: 1px solid var(--glass-border); margin-bottom: 1.5rem;">
+                    <button type="button" id="soloTabBtn" onclick="setRegType('solo')" style="flex: 1; padding: 8px; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; transition: all 0.3s; background: var(--primary); color: #0f172a;">👤 Solo Pass</button>
+                    <button type="button" id="teamTabBtn" onclick="setRegType('team')" style="flex: 1; padding: 8px; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; transition: all 0.3s; background: transparent; color: var(--text-muted);">👥 Team / Group</button>
+                </div>
+                <input type="hidden" name="reg_type" id="regTypeInput" value="solo">
+
+                <!-- Team Specific Options (Hidden by default) -->
+                <div id="teamOptionsSection" style="display: none; background: rgba(0,242,254,0.04); border: 1px solid rgba(0,242,254,0.2); border-radius: 14px; padding: 1.2rem; margin-bottom: 1.5rem;">
+                    <div class="input-group">
+                        <label style="color: var(--primary);">Team Name *</label>
+                        <input type="text" name="team_name" id="teamNameInput" class="input-field" placeholder="e.g. Byte Busters">
+                    </div>
+                    <div class="input-group" style="margin-top: 10px;">
+                        <label>Total Team Members (including you)</label>
+                        <select name="member_count" id="memberCountSelect" class="input-field" onchange="renderTeammateFields(this.value)">
+                            <option value="2">2 Members</option>
+                            <option value="3">3 Members</option>
+                            <option value="4">4 Members</option>
+                            <option value="5">5 Members</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Primary / Leader Information -->
+                <h4 id="primaryInfoTitle" style="color: white; font-size: 0.95rem; margin-bottom: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px;">Attendee Information</h4>
                 <div class="input-group">
-                    <label>Full Name</label>
+                    <label>Full Name *</label>
                     <input type="text" name="full_name" class="input-field" placeholder="John Doe" required>
                 </div>
 
                 <div class="input-row">
                     <div class="input-group">
-                        <label>Email Address</label>
+                        <label>Email Address *</label>
                         <input type="email" name="email" class="input-field" placeholder="john@example.com" required>
                     </div>
                     <div class="input-group">
-                        <label>Phone Number</label>
-                        <input type="tel" name="phone" class="input-field" placeholder="+91 00000 00000" required>
+                        <label>Phone Number *</label>
+                        <input type="tel" name="phone" class="input-field" placeholder="+91 98765 43210" required>
                     </div>
                 </div>
 
                 <div class="input-group">
-                    <label>College/Student ID</label>
+                    <label>College/Student ID *</label>
                     <input type="text" name="college_id" class="input-field" placeholder="BCA-2026-X1" required>
                 </div>
+
+                <!-- Dynamic Teammate Fields -->
+                <div id="teammatesContainer" style="display: none; margin-top: 1.5rem;"></div>
 
                 {% if event.price != 'Free' %}
                 <div class="payment-section" style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.1);">
@@ -172,7 +217,7 @@
                             <input type="radio" name="payment_method" value="UPI" checked required>
                             <div class="payment-box">
                                 <span style="font-weight: 600;">UPI</span>
-                                <p style="font-size: 0.75rem; color: var(--text-muted);">Pay via PhonePe, GPay, etc.</p>
+                                <p style="font-size: 0.75rem; color: var(--text-muted);">Pay via PhonePe, GPay, Paytm, etc.</p>
                             </div>
                         </label>
                     </div>
@@ -190,7 +235,7 @@
                 {% endif %}
 
                 <div style="margin-top: 2rem;">
-                    <button type="submit" class="btn-primary" style="width: 100%;">Complete Registration</button>
+                    <button type="submit" class="btn-primary" style="width: 100%; font-weight: 700;">Complete Registration</button>
                 </div>
                 
                 <p style="text-align: center; margin-top: 1.5rem; font-size: 0.8rem; color: var(--text-muted);">
@@ -202,6 +247,72 @@
     </div>
 
     <script src="{{ url_for('static', filename='script.js') }}"></script>
+    <script>
+        function setRegType(type) {
+            const regTypeInput = document.getElementById('regTypeInput');
+            const soloBtn = document.getElementById('soloTabBtn');
+            const teamBtn = document.getElementById('teamTabBtn');
+            const teamOptions = document.getElementById('teamOptionsSection');
+            const teammatesContainer = document.getElementById('teammatesContainer');
+            const primaryTitle = document.getElementById('primaryInfoTitle');
+            const teamNameInput = document.getElementById('teamNameInput');
+
+            regTypeInput.value = type;
+
+            if (type === 'team') {
+                soloBtn.style.background = 'transparent';
+                soloBtn.style.color = 'var(--text-muted)';
+                teamBtn.style.background = 'var(--primary)';
+                teamBtn.style.color = '#0f172a';
+                teamOptions.style.display = 'block';
+                teammatesContainer.style.display = 'block';
+                primaryTitle.textContent = 'Team Leader Information';
+                teamNameInput.required = true;
+                renderTeammateFields(document.getElementById('memberCountSelect').value);
+            } else {
+                soloBtn.style.background = 'var(--primary)';
+                soloBtn.style.color = '#0f172a';
+                teamBtn.style.background = 'transparent';
+                teamBtn.style.color = 'var(--text-muted)';
+                teamOptions.style.display = 'none';
+                teammatesContainer.style.display = 'none';
+                primaryTitle.textContent = 'Attendee Information';
+                teamNameInput.required = false;
+            }
+        }
+
+        function renderTeammateFields(count) {
+            const container = document.getElementById('teammatesContainer');
+            const num = parseInt(count) || 2;
+            let html = '';
+            for (let i = 2; i <= num; i++) {
+                html += `
+                    <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); border-radius: 12px; padding: 1.2rem; margin-top: 1rem;">
+                        <h5 style="color: var(--primary); margin: 0 0 0.8rem 0; font-size: 0.9rem;">👥 Teammate #${i} Details</h5>
+                        <div class="input-group" style="margin-bottom: 0.8rem;">
+                            <label>Full Name *</label>
+                            <input type="text" name="member_${i}_name" class="input-field" placeholder="Teammate Name" required>
+                        </div>
+                        <div class="input-row" style="margin-bottom: 0.8rem;">
+                            <div class="input-group">
+                                <label>Email Address</label>
+                                <input type="email" name="member_${i}_email" class="input-field" placeholder="teammate@example.com">
+                            </div>
+                            <div class="input-group">
+                                <label>Phone Number</label>
+                                <input type="tel" name="member_${i}_phone" class="input-field" placeholder="+91 00000 00000">
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <label>College/Student ID</label>
+                            <input type="text" name="member_${i}_college" class="input-field" placeholder="e.g. BCA-2026-X${i}">
+                        </div>
+                    </div>
+                `;
+            }
+            container.innerHTML = html;
+        }
+    </script>
     <script>
         const hamburger = document.getElementById('hamburger');
         const sidebar = document.getElementById('sidebar');
@@ -216,7 +327,27 @@
                 sidebar.classList.remove('active');
             }
         };
+
+        // Mark registration success for confetti on event detail page
+        {% if success %}
+        sessionStorage.setItem('just_registered_{{ event.id }}', '1');
+        // Redirect to event detail after 2 seconds
+        setTimeout(() => {
+            window.location.href = '{{ url_for("event_detail", event_id=event.id) }}';
+        }, 2000);
+        {% endif %}
     </script>
+
+    <script src="{{ url_for('static', filename='toast.js') }}"></script>
+    <script src="{{ url_for('static', filename='confetti.js') }}"></script>
+    {% if success %}
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            window.launchConfetti && launchConfetti(3000);
+            window.showToast && showToast('Registration successful! 🎉 Redirecting...', 'success', 2500);
+        });
+    </script>
+    {% endif %}
 </body>
 </html>
 

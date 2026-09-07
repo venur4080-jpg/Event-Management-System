@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add New Event | BCA Events</title>
+    <title>Add New Event | EVENTS</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <style>
         .form-container {
@@ -85,10 +85,16 @@
 </head>
 
 <body>
+    <script>
+        if (localStorage.getItem('theme') === 'light') {
+            document.body.classList.add('light-mode');
+        }
+    </script>
     <nav class="navbar">
         <div class="nav-container">
-            <div class="logo">BCA<span>Events</span></div>
-            <div class="nav-links">
+            <div class="logo">EV<span>ENTS</span></div>
+            <div class="nav-links" style="display: flex; align-items: center; gap: 15px;">
+                <button class="theme-toggle-btn" id="themeToggle" title="Toggle Light/Dark Mode" type="button" style="margin-right: 0;">🌓</button>
                 <button onclick="window.location.href='{{ url_for('dashboard') }}'">Back to Dashboard</button>
             </div>
         </div>
@@ -155,6 +161,17 @@
             <button type="submit" class="btn-submit">Public Event</button>
         </form>
     </div>
+
+    <script>
+        // Theme Toggle Switch
+        const themeToggle = document.getElementById('themeToggle');
+        if (themeToggle) {
+            themeToggle.onclick = () => {
+                const isLight = document.body.classList.toggle('light-mode');
+                localStorage.setItem('theme', isLight ? 'light' : 'dark');
+            };
+        }
+    </script>
 </body>
 
 </html>

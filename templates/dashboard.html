@@ -4,60 +4,125 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard | BCA Events</title>
+    <title>Dashboard | EVENTS</title>
+    <meta name="description" content="Discover and register for hackathons, workshops, and seminars on the EVENTS dashboard.">
     <!-- Fonts and CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <!-- Theme loader (before paint to avoid flash) -->
+    <script src="{{ url_for('static', filename='themes.js') }}"></script>
 </head>
 
 <body>
+    <script>
+        // Restore light/dark preference before first paint
+        if (localStorage.getItem('theme') === 'light') {
+            document.body.classList.add('light-mode');
+        }
+        // Apply saved colour theme
+        if (window.loadPersistedTheme) loadPersistedTheme();
+    </script>
+
+    <!-- Skip Navigation (Accessibility) -->
+    <a class="skip-nav" href="#mainContent">Skip to main content</a>
 
     <!-- Navigation -->
-    <nav class="navbar">
+    <nav class="navbar" role="navigation" aria-label="Main navigation">
         <div class="nav-container" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
             <div style="display: flex; align-items: center;">
-                <div class="hamburger" id="hamburger">☰</div>
+                <button class="hamburger" id="hamburger" aria-label="Open sidebar menu" aria-expanded="false" aria-controls="sidebar" style="background:none;border:none;cursor:pointer;">☰</button>
                 <div class="logo" style="display: flex; align-items: center; gap: 10px;">
-                    <img src="{{ url_for('static', filename='logo.png') }}" alt="BCA Events Logo" style="height: 35px; border-radius: 8px; box-shadow: 0 0 10px rgba(0, 242, 254, 0.3);">
-                    <div>BCA<span>Events</span></div>
+                    <img src="{{ url_for('static', filename='logo.png') }}" alt="EVENTS Logo" style="height: 35px; border-radius: 8px; box-shadow: 0 0 10px rgba(0, 242, 254, 0.3);">
+                    <div aria-label="EVENTS home">EV<span>ENTS</span></div>
                 </div>
             </div>
             <div class="nav-links" style="display: flex; align-items: center;">
                 <span style="margin-right: 20px; color: var(--text-muted); font-weight: 500;">Welcome, <strong style="color: white;">{{ username }}</strong></span>
                 {% if current_user %}
-                <a href="{{ url_for('profile') }}" style="margin-right: 15px; display: inline-flex; align-items: center;" title="My Profile">
-                    <img src="{{ current_user.profile_photo }}" alt="Profile" style="width: 38px; height: 38px; border-radius: 50%; object-fit: cover; border: 2px solid var(--glass-border); transition: 0.3s;" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='var(--glass-border)'">
+                <a href="{{ url_for('profile') }}" style="margin-right: 15px; display: inline-flex; align-items: center;" title="My Profile" aria-label="Go to your profile">
+                    <img src="{{ current_user.profile_photo }}" alt="Profile picture of {{ username }}" style="width: 38px; height: 38px; border-radius: 50%; object-fit: cover; border: 2px solid var(--glass-border); transition: 0.3s;" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='var(--glass-border)'">
                 </a>
                 {% endif %}
-                <button onclick="window.location.href='{{ url_for('logout') }}'">Logout</button>
+                <!-- Theme colour palette selector -->
+                <div class="theme-select-wrapper" aria-label="Choose colour theme">
+                    <select id="themeSelect" aria-label="Select colour theme" onchange="applyTheme(this.value)" title="Choose a colour theme">
+                        <option value="ocean">🌊 Ocean</option>
+                        <option value="sunset">🌅 Sunset</option>
+                        <option value="neon">💜 Neon</option>
+                    </select>
+                </div>
+
+                <!-- Notification Bell -->
+                <div style="position:relative;margin-right:0.5rem">
+                    <button id="notifBell" aria-label="Notifications" title="Notifications" style="
+                        background:transparent;border:1px solid var(--glass-border);color:var(--text-main);
+                        width:40px;height:40px;border-radius:50%;cursor:pointer;font-size:1.1rem;
+                        display:flex;align-items:center;justify-content:center;transition:0.2s;
+                        position:relative;
+                    " onmouseover="this.style.background='var(--bg-card)'" onmouseout="this.style.background='transparent'">🔔
+                        <span id="notifBadge" style="
+                            position:absolute;top:-2px;right:-2px;background:#ef4444;color:white;
+                            width:18px;height:18px;border-radius:50%;font-size:0.7rem;font-weight:800;
+                            display:none;align-items:center;justify-content:center;
+                        ">0</span>
+                    </button>
+                    <!-- Notification Dropdown -->
+                    <div id="notifPanel" style="
+                        position:absolute;top:calc(100%+10px);right:-1rem;
+                        width:320px;max-height:400px;
+                        background:var(--bg-card,rgba(15,23,42,0.97));
+                        border:1px solid var(--glass-border);border-radius:16px;
+                        box-shadow:0 20px 50px rgba(0,0,0,0.4);
+                        z-index:9999;overflow:hidden;display:none;
+                        backdrop-filter:blur(14px);
+                    " onclick="event.stopPropagation()">
+                        <div style="padding:1rem;border-bottom:1px solid var(--glass-border);font-weight:700;font-size:0.9rem;color:var(--text-main)">
+                            🔔 Notifications
+                        </div>
+                        <div id="notifList" style="max-height:340px;overflow-y:auto">
+                            <div style="padding:1.5rem;color:var(--text-muted);text-align:center;font-size:0.85rem">Loading...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="theme-toggle-btn" id="themeToggle" title="Toggle Light/Dark Mode" type="button" aria-label="Toggle light or dark mode">🌓</button>
+                {% if is_admin or session.get('username') in ['admin', 'Venu R'] %}
+                <a href="{{ url_for('admin_dashboard') }}" style="margin-right:10px;color:var(--admin-accent,#f59e0b);font-weight:700;font-size:0.85rem;text-decoration:none;white-space:nowrap" title="Admin Panel">⚡ Admin</a>
+                {% endif %}
+                <button onclick="window.location.href='{{ url_for('logout') }}'" aria-label="Log out of your account">Logout</button>
             </div>
         </div>
     </nav>
 
     <!-- Sidebar -->
-    <div class="sidebar" id="sidebar">
+    <nav class="sidebar" id="sidebar" role="complementary" aria-label="Sidebar navigation" aria-hidden="true">
         <div class="sidebar-header">
             <div class="sidebar-logo" style="display: flex; align-items: center; gap: 10px;">
-                <img src="{{ url_for('static', filename='logo.png') }}" alt="BCA Events Logo" style="height: 40px; border-radius: 8px; box-shadow: 0 0 10px rgba(0, 242, 254, 0.3);">
-                <div>BCA<span>Events</span></div>
+                <img src="{{ url_for('static', filename='logo.png') }}" alt="EVENTS Logo" style="height: 40px; border-radius: 8px; box-shadow: 0 0 10px rgba(0, 242, 254, 0.3);">
+                <div>EV<span>ENTS</span></div>
             </div>
-            <div class="close-btn" id="closeSidebar">&times;</div>
+            <button class="close-btn" id="closeSidebar" aria-label="Close sidebar" style="background:none;border:none;cursor:pointer;">&times;</button>
         </div>
-        <ul class="sidebar-links">
-            <li><a href="{{ url_for('dashboard') }}" class="active">🏠 Dashboard</a></li>
+        <ul class="sidebar-links" role="list">
+            <li><a href="{{ url_for('dashboard') }}" class="active" aria-current="page">🏠 Dashboard</a></li>
             <li><a href="{{ url_for('profile') }}">👤 My Profile</a></li>
             <li><a href="{{ url_for('history') }}">📋 My Bookings</a></li>
-            {% if is_host %}
-            <li><hr style="border: 0; border-top: 1px solid var(--glass-border); margin: 1rem 0;"></li>
-            <li style="padding: 0 1rem; color: var(--primary); font-size: 0.8rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">Host Management</li>
-            <li><a href="{{ url_for('add_event') }}">➕ Add New Event</a></li>
+            {% if is_admin or session.get('username') in ['admin', 'Venu R'] %}
+            <li><a href="{{ url_for('admin_dashboard') }}" style="color:var(--admin-accent,#f59e0b);font-weight:700">⚡ Admin Panel</a></li>
             {% endif %}
-            <li><hr style="border: 0; border-top: 1px solid var(--glass-border); margin: 1rem 0;"></li>
-            <li><a href="tel:+919686837274" style="font-size: 0.85rem; gap: 0.8rem; color: var(--text-muted); word-break: break-all;"><span style="font-size: 1.1rem;">📞</span> 9686837274</a></li>
-            <li><a href="mailto:venu.rachakondaa@gmail.com" style="font-size: 0.85rem; gap: 0.8rem; color: var(--text-muted); word-break: break-all;"><span style="font-size: 1.1rem;">📧</span> venu.rachakondaa@gmail.com</a></li>
-            <li><hr style="border: 0; border-top: 1px solid var(--glass-border); margin: 1rem 0;"></li>
-            <li><a href="{{ url_for('logout') }}" style="color: var(--secondary);">🚪 Logout</a></li>
+            {% if is_host %}
+            <li role="separator"><hr style="border: 0; border-top: 1px solid var(--glass-border); margin: 1rem 0;"></li>
+            <li style="padding: 0 1rem; color: var(--primary); font-size: 0.8rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;" role="heading" aria-level="3">Host Management</li>
+            <li><a href="{{ url_for('add_event') }}">➕ Add New Event</a></li>
+            <li><a href="{{ url_for('host_analytics') }}">📈 Host Analytics</a></li>
+            <li><a href="{{ url_for('scan_ticket') }}">🎟️ Check-In Scanner</a></li>
+            {% endif %}
+            <li role="separator"><hr style="border: 0; border-top: 1px solid var(--glass-border); margin: 1rem 0;"></li>
+            <li style="display: flex; align-items: center; font-size: 0.85rem; gap: 0.8rem; color: var(--text-muted); padding: 0.7rem 1.5rem; user-select: text;"><span aria-hidden="true" style="font-size: 1.1rem;">📞</span> +91 9686837274</li>
+            <li><a href="https://mail.google.com/mail/?view=cm&fs=1&to=venu.rachakondaa@gmail.com" target="_blank" rel="noopener noreferrer" aria-label="Email venu.rachakondaa@gmail.com on Gmail" style="font-size: 0.85rem; gap: 0.8rem; color: var(--text-muted); word-break: break-all;"><span aria-hidden="true" style="font-size: 1.1rem;">📧</span> venu.rachakondaa@gmail.com</a></li>
+            <li role="separator"><hr style="border: 0; border-top: 1px solid var(--glass-border); margin: 1rem 0;"></li>
+            <li><a href="{{ url_for('logout') }}" style="color: var(--secondary);" aria-label="Log out">🚪 Logout</a></li>
         </ul>
-    </div>
+    </nav>
 
 
     <!-- Hero Section -->
@@ -66,20 +131,67 @@
         <p class="hero-subtitle">Discover exclusive hackathons, workshops, and seminars. <br>Design the future with
             code.</p>
         {% if is_host %}
-        <div style="margin-top: 2rem;">
+        <div style="margin-top: 2rem; display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
             <button onclick="window.location.href='{{ url_for('add_event') }}'" class="register-btn" style="padding: 1rem 2rem; font-size: 1.1rem; background: var(--primary); color: var(--bg-dark); font-weight: 700; border-radius: 50px; box-shadow: 0 0 20px rgba(0, 242, 254, 0.4);">+ Add New Event</button>
+            <button onclick="window.location.href='{{ url_for('scan_ticket') }}'" class="register-btn" style="padding: 1rem 2rem; font-size: 1.1rem; background: rgba(0, 242, 254, 0.15); color: var(--primary); border: 1px solid var(--primary); font-weight: 700; border-radius: 50px;">🎟️ Check-In Scanner</button>
         </div>
         {% endif %}
     </header>
 
+    <!-- Search, Filter & View Controls -->
+    <div class="search-filter-container">
+        <!-- Search Input with Voice Search -->
+        <div class="search-box" style="position: relative; display: flex; align-items: center;">
+            <input type="text" id="searchInput" placeholder="Search events by title or keywords..." oninput="filterEvents()" style="padding-right: 45px;">
+            <button id="voiceSearchBtn" type="button" onclick="startVoiceSearch()" title="Voice Search" style="position: absolute; right: 10px; background: transparent; border: none; font-size: 1.2rem; cursor: pointer; color: var(--primary); transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'">🎙️</button>
+        </div>
+
+        <!-- Filters & View Toggle -->
+        <div class="filters-group">
+            <select id="categoryFilter" class="filter-select" onchange="filterEvents()">
+                <option value="all">All Categories</option>
+                <option value="AI & ML">AI & ML</option>
+                <option value="Cybersecurity">Cybersecurity</option>
+                <option value="Web Development">Web Development</option>
+                <option value="Cloud & DevOps">Cloud & DevOps</option>
+                <option value="Data Science">Data Science</option>
+                <option value="IoT & Robotics">IoT & Robotics</option>
+                <option value="UI/UX Design">UI/UX Design</option>
+                <option value="Gaming">Gaming</option>
+                <option value="General Tech">General Tech</option>
+            </select>
+
+            <select id="priceFilter" class="filter-select" onchange="filterEvents()">
+                <option value="all">All Prices</option>
+                <option value="free">Free Only</option>
+                <option value="paid">Paid Only</option>
+            </select>
+
+            <button class="calendar-nav-btn" id="viewToggleBtn" onclick="toggleView()">📅 Calendar View</button>
+        </div>
+    </div>
+
+    <!-- Calendar View Container (initially hidden) -->
+    <div id="calendarViewContainer" class="calendar-container" style="display: none;">
+        <div class="calendar-header">
+            <button class="calendar-nav-btn" onclick="prevMonth()">◀ Prev</button>
+            <h2 id="calendarTitle">Month Year</h2>
+            <button class="calendar-nav-btn" onclick="nextMonth()">Next ▶</button>
+        </div>
+        <div class="calendar-grid" id="calendarGrid">
+            <!-- Dynamically populated weekdays and days -->
+        </div>
+    </div>
+
     <!-- Events Grid -->
-    <main>
+    <main id="mainGridContainer" id="mainContent" role="main" aria-label="Upcoming events">
         {% if upcoming_events %}
-        <div class="carousel-container" style="--carousel-radius: {{ carousel_radius }}px;">
+        <div class="carousel-container" id="carouselContainer" style="--carousel-radius: {{ carousel_radius }}px;">
             <div class="circle-carousel" id="carousel" style="transform: translateZ(calc(-1 * var(--carousel-radius)));">
             {% for event in upcoming_events %}
             <!-- Carousel Item Wrapper handles 3D placement -->
-            <div class="carousel-item" style="--carousel-angle: {{ event.carousel_angle }}deg; --carousel-tz: {{ event.carousel_tz }}px;">
+            <div class="carousel-item" style="--carousel-angle: {{ event.carousel_angle }}deg; --carousel-tz: {{ event.carousel_tz }}px;"
+                 data-title="{{ event.title|lower }}" data-category="{{ event.category }}" data-price="{% if event.price.lower() == 'free' %}free{% else %}paid{% endif %}">
                 <div class="glass-panel event-card {% if event.is_expired %}event-expired{% endif %}">
                     <!-- Event Image -->
                     <div class="image-wrapper" style="overflow: hidden; border-radius: 16px 16px 0 0; cursor: pointer;" 
@@ -150,10 +262,13 @@
 
     {% if past_events %}
     <section class="past-events-section" style="max-width: 1200px; margin: 4rem auto; padding: 0 2rem;">
-        <h2 style="color: var(--text-light); text-align: center; margin-bottom: 3rem; font-size: 2.2rem; font-weight: 800; letter-spacing: 1px; text-transform: uppercase;">Past Events</h2>
-        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 2.5rem;">
+        <div style="text-align: center; margin-bottom: 3rem;">
+            <button type="button" id="togglePastEventsBtn" class="btn-past-events">Past Events</button>
+        </div>
+        <div id="pastEventsContainer" style="display: none; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 2.5rem;">
             {% for event in past_events %}
-            <div class="glass-panel event-card event-expired" style="height: auto; opacity: 0.85; transition: transform 0.3s; transform: scale(0.98);">
+            <div class="glass-panel event-card event-expired" style="height: auto; opacity: 0.85; transition: transform 0.3s; transform: scale(0.98);"
+                 data-title="{{ event.title|lower }}" data-category="{{ event.category }}" data-price="{% if event.price.lower() == 'free' %}free{% else %}paid{% endif %}">
                 <div class="image-wrapper" style="overflow: hidden; border-radius: 16px 16px 0 0; position: relative; cursor: pointer;"
                      onclick="window.location.href='{{ url_for('event_detail', event_id=event.id) }}'">
                     <img src="{{ event.image }}" alt="{{ event.title }}" style="width: 100%; height: 220px; object-fit: cover; filter: grayscale(80%);" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?q=80&w=2070&auto=format&fit=crop';">
@@ -183,8 +298,8 @@
         <div style="max-width: 1200px; margin: 0 auto; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 3rem;">
             <div style="flex: 1 1 300px;">
                 <h3 style="color: var(--primary); font-size: 1.8rem; margin-bottom: 1rem; font-weight: 800; display: flex; align-items: center; gap: 12px;">
-                    <img src="{{ url_for('static', filename='logo.png') }}" alt="BCA Events Logo" style="height: 45px; border-radius: 8px; box-shadow: 0 0 10px rgba(0, 242, 254, 0.3);">
-                    <div>BCA<span style="color: white;">Events</span></div>
+                    <img src="{{ url_for('static', filename='logo.png') }}" alt="EVENTS Logo" style="height: 45px; border-radius: 8px; box-shadow: 0 0 10px rgba(0, 242, 254, 0.3);">
+                    <div>EV<span style="color: white;">ENTS</span></div>
                 </h3>
                 <p style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.6; margin-bottom: 1.5rem;">Empowering students to design the future with code. Join our exclusive hackathons, workshops, and seminars tailored for BCA students.</p>
             </div>
@@ -198,8 +313,8 @@
             </div>
             <div style="flex: 1 1 250px;">
                 <h4 style="color: white; margin-bottom: 1.2rem; font-size: 1.2rem;">Contact Us</h4>
-                <p style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.6; margin-bottom: 0.5rem;"><a href="tel:+919686837274" style="color: var(--text-muted); text-decoration: none; transition: color 0.3s;" onmouseover="this.style.color='var(--primary)'" onmouseout="this.style.color='var(--text-muted)'"><span style="font-size: 1.2rem; vertical-align: middle; margin-right: 8px;">📞</span> +91 9686837274</a></p>
-                <p style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.6; margin-bottom: 1.5rem; word-break: break-all;"><a href="mailto:venu.rachakondaa@gmail.com" target="_blank" style="color: var(--text-muted); text-decoration: none; transition: color 0.3s;" onmouseover="this.style.color='var(--primary)'" onmouseout="this.style.color='var(--text-muted)'"><span style="font-size: 1.2rem; vertical-align: middle; margin-right: 8px;">📧</span> venu.rachakondaa@gmail.com</a></p>
+                <p style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.6; margin-bottom: 0.5rem; user-select: text;"><span style="font-size: 1.2rem; vertical-align: middle; margin-right: 8px;">📞</span> +91 9686837274</p>
+                <p style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.6; margin-bottom: 1.5rem; word-break: break-all;"><a href="https://mail.google.com/mail/?view=cm&fs=1&to=venu.rachakondaa@gmail.com" target="_blank" rel="noopener noreferrer" style="color: var(--text-muted); text-decoration: none; transition: color 0.3s;" onmouseover="this.style.color='var(--primary)'" onmouseout="this.style.color='var(--text-muted)'"><span style="font-size: 1.2rem; vertical-align: middle; margin-right: 8px;">📧</span> venu.rachakondaa@gmail.com</a></p>
                 <div style="display: flex; gap: 1rem;">
                     <a href="https://www.facebook.com" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; justify-content: center; width: 45px; height: 45px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 50%; color: var(--text-muted); text-decoration: none; transition: all 0.3s ease; box-shadow: 0 4px 10px rgba(0,0,0,0.2);" onmouseover="this.style.background='rgba(0,242,254,0.15)'; this.style.transform='translateY(-5px)'; this.style.borderColor='var(--primary)'; this.style.color='white'" onmouseout="this.style.background='rgba(255,255,255,0.05)'; this.style.transform='translateY(0)'; this.style.borderColor='rgba(255,255,255,0.1)'; this.style.color='var(--text-muted)'" title="Facebook">
                         <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.469h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.469h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
@@ -217,7 +332,7 @@
             </div>
         </div>
         <div style="width: 100%; text-align: center; margin-top: 3rem; padding-top: 2rem; border-top: 1px solid rgba(255,255,255,0.05); color: var(--text-muted); font-size: 0.85rem;">
-            &copy; 2026 BCA Events. All rights reserved. Designed with <span style="color: var(--primary);">❤</span> by Venu.
+            &copy; 2026 EVENTS. All rights reserved. Designed with <span style="color: var(--primary);">❤</span> by Venu.
         </div>
     </footer>
 
@@ -234,45 +349,349 @@
     </div>
 
     <script src="{{ url_for('static', filename='script.js') }}"></script>
+    <script src="{{ url_for('static', filename='animations.js') }}"></script>
+    <script src="{{ url_for('static', filename='onboarding.js') }}"></script>
     <script>
         const hamburger = document.getElementById('hamburger');
         const sidebar = document.getElementById('sidebar');
         const closeSidebar = document.getElementById('closeSidebar');
 
-        hamburger.onclick = () => sidebar.classList.add('active');
-        closeSidebar.onclick = () => sidebar.classList.remove('active');
+        function openSidebar() {
+            sidebar.classList.add('active');
+            sidebar.setAttribute('aria-hidden', 'false');
+            hamburger.setAttribute('aria-expanded', 'true');
+        }
+        function closeSidebarFn() {
+            sidebar.classList.remove('active');
+            sidebar.setAttribute('aria-hidden', 'true');
+            hamburger.setAttribute('aria-expanded', 'false');
+        }
+        hamburger.onclick = openSidebar;
+        closeSidebar.onclick = closeSidebarFn;
 
-        // Close sidebar when clicking outside
-        document.onclick = (e) => {
+        // Close sidebar when clicking outside or pressing Escape
+        document.addEventListener('click', (e) => {
             if (!sidebar.contains(e.target) && !hamburger.contains(e.target)) {
-                sidebar.classList.remove('active');
+                closeSidebarFn();
             }
-        };
+        });
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeSidebarFn();
+        });
+
+        // Theme Toggle Switch
+        const themeToggle = document.getElementById('themeToggle');
+        if (themeToggle) {
+            themeToggle.onclick = () => {
+                const isLight = document.body.classList.toggle('light-mode');
+                localStorage.setItem('theme', isLight ? 'light' : 'dark');
+                const calendar = document.getElementById('calendarViewContainer');
+                if (calendar && calendar.style.display !== 'none') {
+                    renderCalendar();
+                }
+            };
+        }
 
         // Carousel Rotation Logic
         let currentAngle = 0;
-        const totalEvents = {{ upcoming_events|length }};
-        const rotationStep = totalEvents > 0 ? 360 / totalEvents : 0;
+        let rotationStep = 0;
+        let upcomingEventsData = [];
+
+        function initEventsData() {
+            upcomingEventsData = [];
+            const items = document.querySelectorAll('.carousel-item');
+            items.forEach(item => {
+                const titleEl = item.querySelector('.event-title');
+                const imageEl = item.querySelector('.card-image');
+                const dateEl = item.querySelector('.date-badge');
+                const descEl = item.querySelector('.event-desc');
+                const onclickAttr = titleEl ? titleEl.getAttribute('onclick') : '';
+                const urlMatch = onclickAttr ? onclickAttr.match(/\/event\/(\d+)/) : null;
+                const id = urlMatch ? urlMatch[1] : '';
+
+                upcomingEventsData.push({
+                    id: parseInt(id),
+                    title: titleEl ? titleEl.textContent.trim() : '',
+                    category: item.getAttribute('data-category'),
+                    price: item.getAttribute('data-price'),
+                    date: dateEl ? dateEl.textContent.trim() : '',
+                    desc: descEl ? descEl.textContent.trim() : '',
+                    image: imageEl ? imageEl.src : '',
+                    element: item
+                });
+            });
+
+            const totalEvents = upcomingEventsData.length;
+            rotationStep = totalEvents > 0 ? 360 / totalEvents : 0;
+        }
 
         function rotateCarousel(direction) {
-            // Subtracting the direction makes the carousel rotate in the opposite (intuitive) direction
             currentAngle -= direction * rotationStep;
             const carousel = document.getElementById('carousel');
             if (carousel) {
-                // Ensure the container remains pushed back by the radius, and then rotates
                 carousel.style.transform = `translateZ(calc(-1 * var(--carousel-radius))) rotateY(${currentAngle}deg)`;
             }
         }
+
+        // Filter and Search Logic
+        function filterEvents() {
+            const searchVal = document.getElementById('searchInput').value.toLowerCase();
+            const catVal = document.getElementById('categoryFilter').value;
+            const priceVal = document.getElementById('priceFilter').value;
+
+            // 1. Filter upcoming carousel items
+            let visibleCount = 0;
+            upcomingEventsData.forEach(ev => {
+                const matchSearch = ev.title.toLowerCase().includes(searchVal) || ev.desc.toLowerCase().includes(searchVal);
+                const matchCat = catVal === 'all' || ev.category === catVal;
+                const matchPrice = priceVal === 'all' || ev.price === priceVal;
+
+                if (matchSearch && matchCat && matchPrice) {
+                    ev.element.style.display = 'block';
+                    visibleCount++;
+                } else {
+                    ev.element.style.display = 'none';
+                }
+            });
+
+            recalculateCarousel(visibleCount);
+
+            // 2. Filter past events
+            const pastContainer = document.getElementById('pastEventsContainer');
+            if (pastContainer) {
+                const pastCards = pastContainer.querySelectorAll('.event-card');
+                pastCards.forEach(card => {
+                    const title = card.getAttribute('data-title') || '';
+                    const desc = card.querySelector('.event-desc').textContent.toLowerCase();
+                    const category = card.getAttribute('data-category');
+                    const price = card.getAttribute('data-price');
+
+                    const matchSearch = title.includes(searchVal) || desc.includes(searchVal);
+                    const matchCat = catVal === 'all' || category === catVal;
+                    const matchPrice = priceVal === 'all' || price === priceVal;
+
+                    if (matchSearch && matchCat && matchPrice) {
+                        card.style.display = 'flex';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+            }
+        }
+
+        function recalculateCarousel(visibleCount) {
+            const carousel = document.getElementById('carousel');
+            const carouselContainer = document.getElementById('carouselContainer');
+            if (!carousel || !carouselContainer) return;
+
+            if (visibleCount === 0) {
+                carouselContainer.style.display = 'none';
+                return;
+            }
+            carouselContainer.style.display = 'block';
+
+            let radius = 0;
+            if (visibleCount > 1) {
+                radius = Math.round((350 / 2) / Math.tan(Math.PI / visibleCount));
+            }
+            radius = Math.max(radius + 50, 450);
+            carouselContainer.style.setProperty('--carousel-radius', radius + 'px');
+
+            let index = 0;
+            upcomingEventsData.forEach(ev => {
+                if (ev.element.style.display !== 'none') {
+                    const angle = Math.round((360 / visibleCount) * index * 100) / 100;
+                    ev.element.style.setProperty('--carousel-angle', angle + 'deg');
+                    ev.element.style.setProperty('--carousel-tz', radius + 'px');
+                    index++;
+                }
+            });
+
+            rotationStep = visibleCount > 0 ? 360 / visibleCount : 0;
+            currentAngle = 0;
+            carousel.style.transform = `translateZ(calc(-1 * var(--carousel-radius))) rotateY(${currentAngle}deg)`;
+        }
+
+        // Calendar View Logic
+        let currentMonth = new Date().getMonth();
+        let currentYear = new Date().getFullYear();
+        const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+        function toggleView() {
+            const grid = document.getElementById('mainGridContainer');
+            const calendar = document.getElementById('calendarViewContainer');
+            const btn = document.getElementById('viewToggleBtn');
+            const pastSection = document.querySelector('.past-events-section');
+
+            if (grid.style.display === 'none') {
+                grid.style.display = 'block';
+                calendar.style.display = 'none';
+                btn.innerHTML = '📅 Calendar View';
+                if (pastSection) pastSection.style.display = 'block';
+            } else {
+                grid.style.display = 'none';
+                calendar.style.display = 'block';
+                btn.innerHTML = '🏠 Grid View';
+                if (pastSection) pastSection.style.display = 'none';
+                renderCalendar();
+            }
+        }
+
+        function renderCalendar() {
+            const gridEl = document.getElementById('calendarGrid');
+            const titleEl = document.getElementById('calendarTitle');
+            gridEl.innerHTML = '';
+            titleEl.textContent = `${monthNames[currentMonth]} ${currentYear}`;
+
+            const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+            weekdays.forEach(day => {
+                const dayEl = document.createElement('div');
+                dayEl.className = 'calendar-weekday';
+                dayEl.textContent = day;
+                gridEl.appendChild(dayEl);
+            });
+
+            const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+            const totalDays = new Date(currentYear, currentMonth + 1, 0).getDate();
+
+            for (let i = 0; i < firstDay; i++) {
+                const emptyDay = document.createElement('div');
+                emptyDay.className = 'calendar-day empty';
+                gridEl.appendChild(emptyDay);
+            }
+
+            const eventsByDay = {};
+            const allEvents = [...upcomingEventsData];
+
+            const pastCards = document.querySelectorAll('#pastEventsContainer .event-card');
+            pastCards.forEach(card => {
+                const titleEl = card.querySelector('.event-title');
+                const dateEl = card.querySelector('.date-badge');
+                const onclickAttr = titleEl ? titleEl.getAttribute('onclick') : '';
+                const urlMatch = onclickAttr ? onclickAttr.match(/\/event\/(\d+)/) : null;
+                const id = urlMatch ? urlMatch[1] : '';
+                const category = card.getAttribute('data-category');
+                const price = card.getAttribute('data-price');
+                const descEl = card.querySelector('.event-desc');
+
+                allEvents.push({
+                    id: parseInt(id),
+                    title: titleEl ? titleEl.textContent.trim() : '',
+                    category: category,
+                    price: price,
+                    date: dateEl ? dateEl.textContent.trim() : '',
+                    desc: descEl ? descEl.textContent.trim() : '',
+                    isPast: true
+                });
+            });
+
+            allEvents.forEach(ev => {
+                try {
+                    const dateObj = new Date(ev.date);
+                    if (dateObj.getMonth() === currentMonth && dateObj.getFullYear() === currentYear) {
+                        const day = dateObj.getDate();
+                        if (!eventsByDay[day]) eventsByDay[day] = [];
+                        eventsByDay[day].push(ev);
+                    }
+                } catch (e) {}
+            });
+
+            const today = new Date();
+            for (let d = 1; d <= totalDays; d++) {
+                const dayEl = document.createElement('div');
+                dayEl.className = 'calendar-day';
+                if (d === today.getDate() && currentMonth === today.getMonth() && currentYear === today.getFullYear()) {
+                    dayEl.classList.add('today');
+                }
+
+                const numEl = document.createElement('div');
+                numEl.className = 'calendar-day-number';
+                numEl.textContent = d;
+                dayEl.appendChild(numEl);
+
+                if (eventsByDay[d]) {
+                    const listEl = document.createElement('div');
+                    listEl.className = 'calendar-events-list';
+
+                    eventsByDay[d].forEach(ev => {
+                        const itemEl = document.createElement('div');
+                        itemEl.className = 'calendar-event-item';
+                        itemEl.textContent = ev.title;
+                        itemEl.title = `${ev.title}\nCategory: ${ev.category}\nPrice: ${ev.price}`;
+                        itemEl.onclick = (e) => {
+                            e.stopPropagation();
+                            window.location.href = `/event/${ev.id}`;
+                        };
+
+                        const isLightMode = document.body.classList.contains('light-mode');
+                        if (ev.isPast) {
+                            itemEl.style.borderLeftColor = isLightMode ? '#5f6368' : '#dadce0';
+                            itemEl.style.background = isLightMode ? '#f1f3f4' : 'rgba(95, 99, 104, 0.2)';
+                            itemEl.style.color = isLightMode ? '#5f6368' : '#dadce0';
+                        } else if (ev.price === 'free') {
+                            itemEl.style.borderLeftColor = isLightMode ? '#1a73e8' : '#8ab4f8';
+                            itemEl.style.background = isLightMode ? '#e8f0fe' : 'rgba(26, 115, 232, 0.25)';
+                            itemEl.style.color = isLightMode ? '#1a73e8' : '#8ab4f8';
+                        } else {
+                            itemEl.style.borderLeftColor = isLightMode ? '#d93025' : '#f28b82';
+                            itemEl.style.background = isLightMode ? '#fce8e6' : 'rgba(217, 48, 37, 0.25)';
+                            itemEl.style.color = isLightMode ? '#d93025' : '#f28b82';
+                        }
+
+                        listEl.appendChild(itemEl);
+                    });
+                    dayEl.appendChild(listEl);
+                }
+
+                gridEl.appendChild(dayEl);
+            }
+        }
+
+        function prevMonth() {
+            currentMonth--;
+            if (currentMonth < 0) {
+                currentMonth = 11;
+                currentYear--;
+            }
+            renderCalendar();
+        }
+
+        function nextMonth() {
+            currentMonth++;
+            if (currentMonth > 11) {
+                currentMonth = 0;
+                currentYear++;
+            }
+            renderCalendar();
+        }
+
+        // Initialize lists
+        initEventsData();
+
+        // Initialize theme selector value from localStorage
+        document.addEventListener('DOMContentLoaded', () => {
+            if (window.loadPersistedTheme) loadPersistedTheme();
+            // Scroll-reveal for glass panels
+            const reveals = document.querySelectorAll('.glass-panel, .history-card, .calendar-container');
+            reveals.forEach(el => el.classList.add('reveal'));
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(e => {
+                    if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); }
+                });
+            }, { threshold: 0.08 });
+            reveals.forEach(el => observer.observe(el));
+            // Trigger onboarding for first-time users
+            if (window.initOnboarding) initOnboarding();
+        });
 
         // Custom Delete Modal Logic
         let formToDelete = null;
 
         function confirmDelete(form, event) {
-            event.preventDefault(); // Prevent immediate submission
+            event.preventDefault();
             formToDelete = form;
             const modal = document.getElementById('deleteModal');
-            modal.style.display = 'flex'; // Show modal
-            // Small delay to allow display block to apply before animating opacity
+            modal.style.display = 'flex';
             setTimeout(() => {
                 modal.classList.add('active');
             }, 10);
@@ -283,7 +702,6 @@
             formToDelete = null;
             const modal = document.getElementById('deleteModal');
             modal.classList.remove('active');
-            // Wait for fade out transition before hiding
             setTimeout(() => {
                 modal.style.display = 'none';
             }, 300);
@@ -294,7 +712,73 @@
                 formToDelete.submit();
             }
         }
+
+        // Voice Search (Speech Recognition)
+        function startVoiceSearch() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) {
+                if (window.showToast) showToast('Voice search is not supported in this browser. Please use Chrome or Edge.', 'info');
+                return;
+            }
+            const recognition = new SpeechRecognition();
+            recognition.lang = 'en-US';
+            const btn = document.getElementById('voiceSearchBtn');
+            btn.textContent = '🔴';
+            if (window.showToast) showToast('🎙️ Listening... Speak now (e.g. "AI Hackathon")', 'info', 2500);
+
+            recognition.onresult = (e) => {
+                const transcript = e.results[0][0].transcript;
+                const input = document.getElementById('searchInput');
+                input.value = transcript;
+                filterEvents();
+                btn.textContent = '🎙️';
+                if (window.showToast) showToast(`Searching for: "${transcript}"`, 'success', 2500);
+            };
+            recognition.onerror = () => {
+                btn.textContent = '🎙️';
+            };
+            recognition.onend = () => {
+                btn.textContent = '🎙️';
+            };
+            try {
+                recognition.start();
+            } catch (err) {
+                btn.textContent = '🎙️';
+            }
+        }
+
+        // Toggle Past Events Visibility
+        const togglePastEventsBtn = document.getElementById('togglePastEventsBtn');
+        const pastEventsContainer = document.getElementById('pastEventsContainer');
+
+        if (togglePastEventsBtn && pastEventsContainer) {
+            togglePastEventsBtn.onclick = () => {
+                const isHidden = pastEventsContainer.style.display === 'none' || pastEventsContainer.style.display === '';
+                if (isHidden) {
+                    pastEventsContainer.style.display = 'grid';
+                    togglePastEventsBtn.textContent = 'Hide Past Events';
+                    togglePastEventsBtn.classList.add('active');
+                } else {
+                    pastEventsContainer.style.display = 'none';
+                    togglePastEventsBtn.textContent = 'Past Events';
+                    togglePastEventsBtn.classList.remove('active');
+                }
+            };
+        }
     </script>
+
+    <!-- New JS Modules -->
+    <script src="{{ url_for('static', filename='toast.js') }}"></script>
+    <script src="{{ url_for('static', filename='confetti.js') }}"></script>
+    <script src="{{ url_for('static', filename='notifications.js') }}"></script>
+    <script src="{{ url_for('static', filename='chatbot.js') }}"></script>
+
+    <!-- Flask flash messages via toast -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, msg in messages %}
+        <div data-flash="{{ msg }}" data-flash-type="{{ category }}"></div>
+      {% endfor %}
+    {% endwith %}
 
 </body>
 

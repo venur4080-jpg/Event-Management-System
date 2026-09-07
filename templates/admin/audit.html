@@ -1,0 +1,50 @@
+{% extends "admin/base.html" %}
+{% block content %}
+<div class="admin-header">
+    <h1>📋 Audit <span>Log</span></h1>
+    <input type="text" id="logSearch" class="search-admin" placeholder="Search logs..." oninput="filterLogs(this.value)">
+</div>
+
+<div class="panel-section">
+    <div class="panel-section-header">
+        <h3>System Activity (Last 500 entries)</h3>
+        <form action="{{ url_for('admin_clear_audit') }}" method="POST"
+              onsubmit="return confirm('Clear all audit logs? This cannot be undone.')">
+            <button class="action-btn btn-danger" type="submit">🗑 Clear All</button>
+        </form>
+    </div>
+    <div id="log-container">
+        {% for entry in logs %}
+        <div class="log-entry" data-search="{{ entry.username }} {{ entry.action }} {{ entry.details }}">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:1rem">
+                <div>
+                    <span style="color:var(--text-muted);font-weight:600">{{ entry.username or 'System' }}</span>
+                    <span style="color:var(--text-muted)"> → </span>
+                    <span class="log-action">{{ entry.action }}</span>
+                    {% if entry.details %}
+                    <span style="color:var(--text-muted)"> — {{ entry.details }}</span>
+                    {% endif %}
+                </div>
+                <div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px">
+                    <span class="log-time" style="white-space:nowrap">{{ entry.created_at }}</span>
+                    {% if entry.ip_address %}
+                    <span style="color:var(--text-muted);font-size:0.72rem">{{ entry.ip_address }}</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div style="padding:3rem;text-align:center;color:var(--text-muted)">No audit log entries yet.</div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+function filterLogs(query) {
+    const q = query.toLowerCase();
+    document.querySelectorAll('#log-container .log-entry').forEach(e => {
+        e.style.display = e.getAttribute('data-search').toLowerCase().includes(q) ? '' : 'none';
+    });
+}
+</script>
+{% endblock %}

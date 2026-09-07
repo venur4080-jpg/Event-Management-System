@@ -3,19 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Profile | BCA Events</title>
+    <title>My Profile | EVENTS</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css" rel="stylesheet">
 </head>
 <body>
+    <script>
+        if (localStorage.getItem('theme') === 'light') {
+            document.body.classList.add('light-mode');
+        }
+    </script>
     <nav class="navbar">
         <div class="nav-container">
             <div style="display: flex; align-items: center;">
                 <div class="hamburger" id="hamburger">☰</div>
-                <div class="logo">BCA<span>Events</span></div>
+                <div class="logo">EV<span>ENTS</span></div>
             </div>
-            <div class="nav-links">
+            <div class="nav-links" style="display: flex; align-items: center; gap: 15px;">
                 <a href="{{ url_for('dashboard') }}">Dashboard</a>
+                <button class="theme-toggle-btn" id="themeToggle" title="Toggle Light/Dark Mode" type="button" style="margin-right: 0;">🌓</button>
                 <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
             </div>
         </div>
@@ -24,16 +30,25 @@
     <!-- Sidebar -->
     <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
-            <div class="sidebar-logo">BCA<span>Events</span></div>
+            <div class="sidebar-logo">EV<span>ENTS</span></div>
             <div class="close-btn" id="closeSidebar">&times;</div>
         </div>
         <ul class="sidebar-links">
             <li><a href="{{ url_for('dashboard') }}">🏠 Dashboard</a></li>
             <li><a href="{{ url_for('profile') }}" class="active">👤 My Profile</a></li>
             <li><a href="{{ url_for('history') }}">📋 My Bookings</a></li>
+            {% if is_admin or session.get('username') in ['admin', 'Venu R'] %}
+            <li><a href="{{ url_for('admin_dashboard') }}" style="color:var(--admin-accent, #f59e0b); font-weight:700">⚡ Admin Panel</a></li>
+            {% endif %}
+            {% if is_host %}
             <li><hr style="border: 0; border-top: 1px solid var(--glass-border); margin: 1rem 0;"></li>
-            <li><a href="tel:9686837274" style="font-size: 0.85rem; gap: 0.8rem; color: var(--text-muted); word-break: break-all;"><span style="font-size: 1.1rem;">📞</span> 9686837274</a></li>
-            <li><a href="mailto:venu.rachakondaa@gmail.com" style="font-size: 0.85rem; gap: 0.8rem; color: var(--text-muted); word-break: break-all;"><span style="font-size: 1.1rem;">📧</span> venu.rachakondaa@gmail.com</a></li>
+            <li style="padding: 0 1rem; color: var(--primary); font-size: 0.8rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">Host Management</li>
+            <li><a href="{{ url_for('add_event') }}">➕ Add New Event</a></li>
+            <li><a href="{{ url_for('host_analytics') }}">📈 Host Analytics</a></li>
+            {% endif %}
+            <li><hr style="border: 0; border-top: 1px solid var(--glass-border); margin: 1rem 0;"></li>
+            <li style="display: flex; align-items: center; font-size: 0.85rem; gap: 0.8rem; color: var(--text-muted); padding: 0.7rem 1.5rem; user-select: text;"><span style="font-size: 1.1rem;">📞</span> +91 9686837274</li>
+            <li><a href="https://mail.google.com/mail/?view=cm&fs=1&to=venu.rachakondaa@gmail.com" target="_blank" rel="noopener noreferrer" style="font-size: 0.85rem; gap: 0.8rem; color: var(--text-muted); word-break: break-all;"><span style="font-size: 1.1rem;">📧</span> venu.rachakondaa@gmail.com</a></li>
             <li><hr style="border: 0; border-top: 1px solid var(--glass-border); margin: 1rem 0;"></li>
             <li><a href="{{ url_for('logout') }}" style="color: var(--secondary);">🚪 Logout</a></li>
         </ul>
@@ -50,9 +65,11 @@
                 <div class="profile-header">
                     <div class="profile-pic-wrapper">
                         <img src="{{ url_for('static', filename=user.profile_photo) if not user.profile_photo.startswith('http') else user.profile_photo }}" alt="Profile" class="profile-pic" id="profilePreview">
-                        <label for="photoUpload" class="pic-edit-btn">✎</label>
+                        <label for="photoUpload" class="pic-edit-btn" title="Upload Photo">✎</label>
+                        <button type="button" class="pic-delete-btn" id="deletePicBtn" title="Delete Profile Photo" style="{% if user.profile_photo.startswith('http') %}display: none;{% endif %}">🗑</button>
                         <input type="file" id="photoUpload" name="profile_photo" hidden accept="image/*" onchange="previewImage(this)">
                         <input type="hidden" name="cropped_image_data" id="croppedImageData">
+                        <input type="hidden" name="delete_profile_photo" id="deleteProfilePhoto" value="false">
                     </div>
                     <h2 class="hero-title" style="font-size: 2rem; margin-bottom: 0.5rem;">{{ user.username }}</h2>
                     <p style="color: var(--text-muted);">Manage your personal information</p>
@@ -97,7 +114,7 @@
                             <input type="password" name="confirm_password" class="input-field" required placeholder="••••••••">
                         </div>
                     </div>
-                    <button type="submit" class="unique-save-btn" style="background: linear-gradient(90deg, #ff0080, #7928ca); box-shadow: 0 10px 30px rgba(255, 0, 128, 0.3); max-width: 250px; margin-left: 0;">Update Password</button>
+                    <button type="submit" class="btn-secondary" style="max-width: 250px; margin-left: 0; margin-top: 0;">Update Password</button>
                 </form>
             </div>
 
@@ -110,9 +127,9 @@
 
     <!-- Crop Modal -->
     <div id="cropModal" class="modal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.8);">
-        <div class="modal-content" style="background-color: var(--card-bg); margin: 5% auto; padding: 20px; border: 1px solid var(--glass-border); width: 90%; max-width: 600px; border-radius: 16px;">
+        <div class="modal-content" style="background-color: var(--bg-dark); margin: 5% auto; padding: 20px; border: 1px solid var(--glass-border); width: 90%; max-width: 600px; border-radius: 16px;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                <h3 style="color: var(--text-color); margin: 0;">Crop Profile Picture</h3>
+                <h3 style="color: var(--text-main); margin: 0;">Crop Profile Picture</h3>
                 <span id="closeCropModal" style="color: var(--text-muted); font-size: 28px; font-weight: bold; cursor: pointer;">&times;</span>
             </div>
             <div style="max-height: 400px; overflow: hidden; display: flex; justify-content: center; align-items: center;">
@@ -147,6 +164,16 @@
         const cropAndSave = document.getElementById('cropAndSave');
         const croppedImageData = document.getElementById('croppedImageData');
         const profilePreview = document.getElementById('profilePreview');
+        const deletePicBtn = document.getElementById('deletePicBtn');
+        const deleteProfilePhoto = document.getElementById('deleteProfilePhoto');
+
+        deletePicBtn.onclick = () => {
+            deleteProfilePhoto.value = 'true';
+            profilePreview.src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent('{{ user.username }}');
+            document.getElementById('photoUpload').value = '';
+            croppedImageData.value = '';
+            deletePicBtn.style.display = 'none';
+        };
 
         closeCropModal.onclick = () => {
             cropModal.style.display = 'none';
@@ -190,10 +217,23 @@
                 profilePreview.src = base64Image;
                 croppedImageData.value = base64Image;
                 
+                // Show the delete button and reset deletion state
+                deleteProfilePhoto.value = 'false';
+                deletePicBtn.style.display = 'flex';
+                
                 cropModal.style.display = 'none';
                 cropper.destroy();
                 cropper = null;
             }
+        }
+
+        // Theme Toggle Switch
+        const themeToggle = document.getElementById('themeToggle');
+        if (themeToggle) {
+            themeToggle.onclick = () => {
+                const isLight = document.body.classList.toggle('light-mode');
+                localStorage.setItem('theme', isLight ? 'light' : 'dark');
+            };
         }
     </script>
 </body>

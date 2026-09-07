@@ -1875,11 +1875,8 @@ if __name__ == '__main__':
     print("="*75)
     print("  Server is actively listening for requests.\n")
 
-    port = int(os.environ.get('PORT', 5000))
-    host = '0.0.0.0'
-
     if is_dev:
-        app.run(debug=True, threaded=True, host=host, port=port)
+        app.run(debug=True, threaded=True, host='127.0.0.1', port=5000)
     else:
         started = False
         # 1. High-Performance ASGI Uvicorn Server (Windows IOCP Event Loop - supports 1000+ VUs)
@@ -1888,8 +1885,8 @@ if __name__ == '__main__':
 
             uvicorn.run(
                 "app:asgi_app",
-                host=host,
-                port=port,
+                host='127.0.0.1',
+                port=5000,
                 log_level='warning',
                 access_log=False,
                 limit_concurrency=2500,
@@ -1908,8 +1905,8 @@ if __name__ == '__main__':
                 from waitress import serve
                 serve(
                     app,
-                    host=host,
-                    port=port,
+                    host='127.0.0.1',
+                    port=5000,
                     threads=64,
                     connection_limit=500,
                     channel_timeout=60,
@@ -1923,7 +1920,7 @@ if __name__ == '__main__':
 
         if not started:
             # 3. Fallback to Werkzeug
-            app.run(debug=False, threaded=True, host=host, port=port)
+            app.run(debug=False, threaded=True, host='127.0.0.1', port=5000)
 
 
 

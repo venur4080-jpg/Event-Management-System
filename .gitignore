@@ -94,3 +94,5 @@ coverage/
 
 # Cloudflare Tunnel
 cloudflared.exe
+*.db-wal
+*.db-shm

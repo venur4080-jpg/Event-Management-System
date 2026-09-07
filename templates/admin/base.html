@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel | EVENTS</title>
+    <meta name="description" content="EVENTS system administrator control panel">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="{{ url_for('static', filename='themes.js') }}"></script>
+    <script>
+        if (localStorage.getItem('theme') === 'light') document.body.classList.add('light-mode');
+        if (window.loadPersistedTheme) loadPersistedTheme();
+    </script>
+    <style>
+        :root { --admin-accent: #f59e0b; }
+        .admin-layout { display: flex; min-height: 100vh; }
+        .admin-sidebar {
+            width: 260px; background: rgba(10,15,30,0.98); border-right: 1px solid var(--glass-border);
+            padding: 2rem 1.5rem; display: flex; flex-direction: column; gap: 0.5rem;
+            position: sticky; top: 0; height: 100vh; overflow-y: auto; flex-shrink: 0;
+        }
+        .admin-sidebar .logo-block { margin-bottom: 2rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--glass-border); }
+        .admin-sidebar .logo-block h2 { color: var(--admin-accent); font-family: var(--font-heading); font-size: 1.3rem; }
+        .admin-sidebar .logo-block p { color: var(--text-muted); font-size: 0.8rem; margin-top: 4px; }
+        .admin-nav-item {
+            display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem;
+            border-radius: 10px; color: var(--text-muted); text-decoration: none;
+            font-size: 0.92rem; font-weight: 500; transition: all 0.2s ease; cursor: pointer;
+            border: none; background: none; width: 100%; text-align: left;
+        }
+        .admin-nav-item:hover, .admin-nav-item.active {
+            background: rgba(245,158,11,0.1); color: var(--admin-accent);
+        }
+        .admin-main { flex: 1; padding: 2rem; overflow-x: auto; }
+        .admin-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+        .admin-header h1 { font-family: var(--font-heading); font-size: 2rem; color: var(--text-main); }
+        .admin-header span { color: var(--admin-accent); }
+        .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1.5rem; margin-bottom: 2.5rem; }
+        .stat-card {
+            background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border);
+            border-radius: 16px; padding: 1.5rem; transition: all 0.3s;
+        }
+        .stat-card:hover { transform: translateY(-3px); border-color: var(--admin-accent); }
+        .stat-card .stat-label { color: var(--text-muted); font-size: 0.83rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.5rem; }
+        .stat-card .stat-value { font-size: 2.2rem; font-weight: 800; font-family: var(--font-heading); color: var(--admin-accent); }
+        .stat-card .stat-sub { color: var(--text-muted); font-size: 0.8rem; margin-top: 4px; }
+        .panel-section { background: rgba(255,255,255,0.04); border: 1px solid var(--glass-border); border-radius: 16px; margin-bottom: 2rem; overflow: hidden; }
+        .panel-section-header {
+            padding: 1.2rem 1.5rem; border-bottom: 1px solid var(--glass-border);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .panel-section-header h3 { color: var(--text-main); font-size: 1.1rem; font-weight: 700; }
+        .admin-table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+        .admin-table th { padding: 0.9rem 1rem; text-align: left; color: var(--admin-accent); font-weight: 700; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--glass-border); }
+        .admin-table td { padding: 0.85rem 1rem; border-bottom: 1px solid rgba(255,255,255,0.04); color: var(--text-main); vertical-align: middle; }
+        .admin-table tr:hover td { background: rgba(255,255,255,0.03); }
+        .badge { padding: 3px 10px; border-radius: 50px; font-size: 0.75rem; font-weight: 700; display: inline-block; }
+        .badge-host { background: rgba(245,158,11,0.15); color: #f59e0b; border: 1px solid rgba(245,158,11,0.3); }
+        .badge-user { background: rgba(100,116,139,0.15); color: #94a3b8; border: 1px solid rgba(100,116,139,0.2); }
+        .badge-admin { background: rgba(239,68,68,0.15); color: #ef4444; border: 1px solid rgba(239,68,68,0.3); }
+        .badge-active { background: rgba(16,185,129,0.15); color: #10b981; border: 1px solid rgba(16,185,129,0.3); }
+        .action-btn {
+            padding: 0.35rem 0.85rem; border-radius: 8px; font-size: 0.8rem; font-weight: 600;
+            cursor: pointer; border: none; transition: all 0.2s; font-family: inherit;
+        }
+        .btn-danger { background: rgba(239,68,68,0.1); color: #ef4444; border: 1px solid rgba(239,68,68,0.3); }
+        .btn-danger:hover { background: #ef4444; color: white; }
+        .btn-success { background: rgba(16,185,129,0.1); color: #10b981; border: 1px solid rgba(16,185,129,0.3); }
+        .btn-success:hover { background: #10b981; color: white; }
+        .btn-warning { background: rgba(245,158,11,0.1); color: #f59e0b; border: 1px solid rgba(245,158,11,0.3); }
+        .btn-warning:hover { background: #f59e0b; color: #0f172a; }
+        .search-admin { background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); color: var(--text-main); padding: 0.5rem 1rem; border-radius: 50px; outline: none; font-size: 0.88rem; transition: 0.2s; }
+        .search-admin:focus { border-color: var(--admin-accent); }
+        .log-entry { padding: 0.75rem 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 0.85rem; }
+        .log-entry:hover { background: rgba(255,255,255,0.02); }
+        .log-action { color: var(--admin-accent); font-weight: 600; }
+        .log-time { color: var(--text-muted); font-size: 0.77rem; }
+
+        body.light-mode .admin-sidebar { background: rgba(255,255,255,0.95); }
+        body.light-mode .stat-card, body.light-mode .panel-section { background: rgba(255,255,255,0.8); }
+        body.light-mode .admin-table td { color: #1e293b; }
+        body.light-mode .admin-table th { color: #92400e; }
+    </style>
+</head>
+<body>
+<a class="skip-nav" href="#admin-content">Skip to content</a>
+
+<div class="admin-layout">
+    <!-- Admin Sidebar -->
+    <aside class="admin-sidebar" role="navigation" aria-label="Admin navigation">
+        <div class="logo-block">
+            <h2>⚡ Admin Panel</h2>
+            <p>Logged in as <strong style="color:var(--admin-accent)">{{ username }}</strong></p>
+        </div>
+
+        <a href="{{ url_for('admin_dashboard') }}" class="admin-nav-item {% if active=='dashboard' %}active{% endif %}">
+            📊 Overview
+        </a>
+        <a href="{{ url_for('admin_users') }}" class="admin-nav-item {% if active=='users' %}active{% endif %}">
+            👥 Users ({{ stats.total_users }})
+        </a>
+        <a href="{{ url_for('admin_events') }}" class="admin-nav-item {% if active=='events' %}active{% endif %}">
+            🗓️ Events ({{ stats.total_events }})
+        </a>
+        <a href="{{ url_for('admin_audit') }}" class="admin-nav-item {% if active=='audit' %}active{% endif %}">
+            📋 Audit Log
+        </a>
+        <a href="{{ url_for('scan_ticket') }}" class="admin-nav-item">
+            🎟️ Check-In Scanner
+        </a>
+        <div style="margin-top:auto; padding-top:2rem; border-top:1px solid var(--glass-border);">
+            <a href="{{ url_for('dashboard') }}" class="admin-nav-item">🏠 Back to Dashboard</a>
+            <a href="{{ url_for('logout') }}" class="admin-nav-item" style="color:#ef4444">🚪 Logout</a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main id="admin-content" class="admin-main" role="main">
+        {% block content %}{% endblock %}
+    </main>
+</div>
+
+<script src="{{ url_for('static', filename='toast.js') }}"></script>
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% for category, msg in messages %}
+    <div data-flash="{{ msg }}" data-flash-type="{{ category }}"></div>
+  {% endfor %}
+{% endwith %}
+</body>
+</html>

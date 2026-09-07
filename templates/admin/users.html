@@ -1,0 +1,76 @@
+{% extends "admin/base.html" %}
+{% block content %}
+<div class="admin-header">
+    <h1>👥 Users <span>Management</span></h1>
+    <input type="text" id="userSearch" class="search-admin" placeholder="Search users..." oninput="filterTable('userTable',this.value)">
+</div>
+
+<div class="panel-section">
+    <div class="panel-section-header">
+        <h3>All Users ({{ users|length }})</h3>
+        <a href="{{ url_for('admin_export_users') }}" class="action-btn btn-success" style="text-decoration:none">⬇ Export CSV</a>
+    </div>
+    <table class="admin-table" id="userTable">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Username</th>
+                <th>Full Name</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Registrations</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for u in users %}
+            <tr>
+                <td style="color:var(--text-muted)">{{ u.id }}</td>
+                <td><strong>{{ u.username }}</strong></td>
+                <td>{{ u.full_name or '—' }}</td>
+                <td style="color:var(--text-muted)">{{ u.email or '—' }}</td>
+                <td>
+                    {% if u.is_admin %}
+                    <span class="badge badge-admin">Admin</span>
+                    {% elif u.role == 'host' %}
+                    <span class="badge badge-host">Host</span>
+                    {% else %}
+                    <span class="badge badge-user">User</span>
+                    {% endif %}
+                </td>
+                <td><span class="badge badge-active">{{ u.reg_count }}</span></td>
+                <td style="display:flex;gap:6px;flex-wrap:wrap">
+                    {% if u.role != 'host' and not u.is_admin %}
+                    <form action="{{ url_for('admin_promote_user', user_id=u.id) }}" method="POST" style="margin:0">
+                        <button class="action-btn btn-warning" type="submit" title="Promote to host">⬆ Host</button>
+                    </form>
+                    {% elif u.role == 'host' and not u.is_admin %}
+                    <form action="{{ url_for('admin_demote_user', user_id=u.id) }}" method="POST" style="margin:0">
+                        <button class="action-btn btn-warning" type="submit" title="Demote to user">⬇ User</button>
+                    </form>
+                    {% endif %}
+                    {% if not u.is_admin %}
+                    <form action="{{ url_for('admin_delete_user', user_id=u.id) }}" method="POST" style="margin:0"
+                          onsubmit="return confirm('Delete user {{ u.username }}? This cannot be undone.')">
+                        <button class="action-btn btn-danger" type="submit">🗑 Delete</button>
+                    </form>
+                    {% endif %}
+                </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="7" style="text-align:center;padding:2rem;color:var(--text-muted)">No users found</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<script>
+function filterTable(tableId, query) {
+    const rows = document.querySelectorAll(`#${tableId} tbody tr`);
+    const q = query.toLowerCase();
+    rows.forEach(r => {
+        r.style.display = r.textContent.toLowerCase().includes(q) ? '' : 'none';
+    });
+}
+</script>
+{% endblock %}

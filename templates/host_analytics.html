@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Host Analytics | EVENTS</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .analytics-container {
+            max-width: 1200px;
+            margin: 4rem auto;
+            padding: 0 2rem;
+            animation: fadeIn 0.8s ease-out;
+        }
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+        .metric-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 2rem;
+            text-align: center;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+            transition: 0.3s;
+        }
+        .metric-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary);
+        }
+        .metric-title {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            letter-spacing: 1.5px;
+            margin-bottom: 0.8rem;
+            font-weight: 600;
+        }
+        .metric-value {
+            font-size: 3rem;
+            font-weight: 800;
+            color: var(--primary);
+            font-family: var(--font-heading);
+            text-shadow: 0 0 15px rgba(0, 242, 254, 0.3);
+        }
+        .charts-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+            margin-bottom: 4rem;
+        }
+        @media (max-width: 992px) {
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        .chart-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 2rem;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+        }
+        .chart-title {
+            font-family: var(--font-heading);
+            color: var(--primary);
+            font-size: 1.3rem;
+            margin-bottom: 1.5rem;
+            text-shadow: 0 0 10px rgba(0, 242, 254, 0.2);
+        }
+        .events-table-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 2.5rem;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+            overflow-x: auto;
+        }
+        .events-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+        .events-table th, .events-table td {
+            padding: 1.2rem 1rem;
+            border-bottom: 1px solid var(--glass-border);
+        }
+        .events-table th {
+            color: var(--primary);
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+        }
+        .events-table td {
+            color: var(--text-main);
+            font-size: 0.95rem;
+        }
+        .events-table tr:last-child td {
+            border-bottom: none;
+        }
+        .csv-btn {
+            background: rgba(0, 242, 254, 0.15);
+            border: 1px solid var(--primary);
+            color: var(--primary);
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: 0.3s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .csv-btn:hover {
+            background: var(--primary);
+            color: #0f172a;
+            box-shadow: 0 0 15px rgba(0, 242, 254, 0.4);
+            transform: translateY(-1px);
+        }
+    </style>
+</head>
+<body>
+    <script>
+        if (localStorage.getItem('theme') === 'light') {
+            document.body.classList.add('light-mode');
+        }
+    </script>
+
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+            <div style="display: flex; align-items: center;">
+                <div class="hamburger" id="hamburger">☰</div>
+                <div class="logo" style="display: flex; align-items: center; gap: 10px;">
+                    <img src="{{ url_for('static', filename='logo.png') }}" alt="EVENTS Logo" style="height: 35px; border-radius: 8px; box-shadow: 0 0 10px rgba(0, 242, 254, 0.3);">
+                    <div>EV<span>ENTS</span></div>
+                </div>
+            </div>
+            <div class="nav-links" style="display: flex; align-items: center;">
+                <span style="margin-right: 20px; color: var(--text-muted); font-weight: 500;">Welcome, <strong style="color: white;">{{ username }}</strong></span>
+                <button class="theme-toggle-btn" id="themeToggle" title="Toggle Light/Dark Mode" type="button">🌓</button>
+                {% if is_admin or session.get('username') in ['admin', 'Venu R'] %}
+                <a href="{{ url_for('admin_dashboard') }}" style="margin-right:10px;margin-left:10px;color:var(--admin-accent,#f59e0b);font-weight:700;font-size:0.85rem;text-decoration:none;white-space:nowrap" title="Admin Panel">⚡ Admin</a>
+                {% endif %}
+                <button onclick="window.location.href='{{ url_for('logout') }}'">Logout</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-logo" style="display: flex; align-items: center; gap: 10px;">
+                <img src="{{ url_for('static', filename='logo.png') }}" alt="EVENTS Logo" style="height: 40px; border-radius: 8px; box-shadow: 0 0 10px rgba(0, 242, 254, 0.3);">
+                <div>EV<span>ENTS</span></div>
+            </div>
+            <div class="close-btn" id="closeSidebar">&times;</div>
+        </div>
+        <ul class="sidebar-links">
+            <li><a href="{{ url_for('dashboard') }}">🏠 Dashboard</a></li>
+            <li><a href="{{ url_for('profile') }}">👤 My Profile</a></li>
+            <li><a href="{{ url_for('history') }}">📋 My Bookings</a></li>
+            {% if is_admin or session.get('username') in ['admin', 'Venu R'] %}
+            <li><a href="{{ url_for('admin_dashboard') }}" style="color:var(--admin-accent, #f59e0b); font-weight:700">⚡ Admin Panel</a></li>
+            {% endif %}
+            <li><hr style="border: 0; border-top: 1px solid var(--glass-border); margin: 1rem 0;"></li>
+            <li style="padding: 0 1rem; color: var(--primary); font-size: 0.8rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">Host Management</li>
+            <li><a href="{{ url_for('add_event') }}">➕ Add New Event</a></li>
+            <li><a href="{{ url_for('host_analytics') }}" class="active">📈 Host Analytics</a></li>
+            <li><hr style="border: 0; border-top: 1px solid var(--glass-border); margin: 1rem 0;"></li>
+            <li style="display: flex; align-items: center; font-size: 0.85rem; gap: 0.8rem; color: var(--text-muted); padding: 0.7rem 1.5rem; user-select: text;"><span style="font-size: 1.1rem;">📞</span> +91 9686837274</li>
+            <li><a href="https://mail.google.com/mail/?view=cm&fs=1&to=venu.rachakondaa@gmail.com" target="_blank" rel="noopener noreferrer" style="font-size: 0.85rem; gap: 0.8rem; color: var(--text-muted); word-break: break-all;"><span style="font-size: 1.1rem;">📧</span> venu.rachakondaa@gmail.com</a></li>
+            <li><hr style="border: 0; border-top: 1px solid var(--glass-border); margin: 1rem 0;"></li>
+            <li><a href="{{ url_for('logout') }}" style="color: var(--secondary);">🚪 Logout</a></li>
+        </ul>
+    </div>
+
+    <!-- Main Container -->
+    <div class="analytics-container">
+        <h1 class="hero-title" style="font-size: 2.8rem; margin-bottom: 2rem;">Host Analytics Dashboard</h1>
+
+        <!-- Metrics Row -->
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <div class="metric-title">Total Event Bookings</div>
+                <div class="metric-value">{{ total_registrations }}</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-title">Unique Users Registered</div>
+                <div class="metric-value">{{ unique_users }}</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-title">Total Managed Events</div>
+                <div class="metric-value">{{ events|length }}</div>
+            </div>
+        </div>
+
+        <!-- Charts Grid -->
+        <div class="charts-grid">
+            <div class="chart-card">
+                <div class="chart-title">Registration Levels by Event (Top 10)</div>
+                <div style="position: relative; height: 350px;">
+                    <canvas id="popularityChart"></canvas>
+                </div>
+            </div>
+            <div class="chart-card">
+                <div class="chart-title">Bookings by Category</div>
+                <div style="position: relative; height: 350px;">
+                    <canvas id="categoryChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detailed Events Table -->
+        <div class="events-table-card">
+            <div class="chart-title" style="margin-bottom: 2rem;">All Events & Registration Lists</div>
+            <table class="events-table">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Date</th>
+                        <th>Category</th>
+                        <th>Price</th>
+                        <th>Bookings</th>
+                        <th style="text-align: right;">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for event in events %}
+                    <tr>
+                        <td style="font-weight: 600; color: var(--text-main);">{{ event.title }}</td>
+                        <td>{{ event.date }}</td>
+                        <td>
+                            <span style="padding: 4px 10px; border-radius: 20px; background: rgba(0,242,254,0.1); border: 1px solid var(--primary); font-size: 0.8rem; font-weight: 600; color: var(--primary);">
+                                {{ event.category }}
+                            </span>
+                        </td>
+                        <td>{{ event.price }}</td>
+                        <td style="font-weight: 700; color: var(--secondary);">{{ event.reg_count }}</td>
+                        <td style="text-align: right;">
+                            <a href="{{ url_for('host_export_csv', event_id=event.id) }}" class="csv-btn">
+                                📥 Export CSV
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        const hamburger = document.getElementById('hamburger');
+        const sidebar = document.getElementById('sidebar');
+        const closeSidebar = document.getElementById('closeSidebar');
+
+        hamburger.onclick = () => sidebar.classList.add('active');
+        closeSidebar.onclick = () => sidebar.classList.remove('active');
+
+        document.onclick = (e) => {
+            if (!sidebar.contains(e.target) && !hamburger.contains(e.target) && sidebar.classList.contains('active')) {
+                sidebar.classList.remove('active');
+            }
+        };
+
+        // Theme Toggle Switch
+        const themeToggle = document.getElementById('themeToggle');
+        if (themeToggle) {
+            themeToggle.onclick = () => {
+                const isLight = document.body.classList.toggle('light-mode');
+                localStorage.setItem('theme', isLight ? 'light' : 'dark');
+            };
+        }
+
+        // Charts configuration
+        const gridColor = () => document.body.classList.contains('light-mode') ? 'rgba(0, 0, 0, 0.05)' : 'rgba(255, 255, 255, 0.05)';
+        const textColor = () => document.body.classList.contains('light-mode') ? '#0f172a' : '#94a3b8';
+
+        // 1. Popularity Horizontal Bar Chart
+        const popCtx = document.getElementById('popularityChart').getContext('2d');
+        const popLabels = {{ chart_labels|tojson }};
+        const popData = {{ chart_data|tojson }};
+
+        // Slice top 10 for bar chart to keep it clean
+        const slicedLabels = popLabels.slice(0, 10);
+        const slicedData = popData.slice(0, 10);
+
+        const popularityChart = new Chart(popCtx, {
+            type: 'bar',
+            data: {
+                labels: slicedLabels,
+                datasets: [{
+                    label: 'Registrations',
+                    data: slicedData,
+                    backgroundColor: 'rgba(0, 242, 254, 0.6)',
+                    borderColor: 'rgba(0, 242, 254, 1)',
+                    borderWidth: 1,
+                    borderRadius: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                indexAxis: 'y',
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    x: {
+                        grid: { color: gridColor() },
+                        ticks: { color: textColor(), stepSize: 1 }
+                    },
+                    y: {
+                        grid: { display: false },
+                        ticks: { color: textColor() }
+                    }
+                }
+            }
+        });
+
+        // 2. Category Pie Chart
+        const catCtx = document.getElementById('categoryChart').getContext('2d');
+        const catLabels = {{ cat_labels|tojson }};
+        const catData = {{ cat_data|tojson }};
+
+        const categoryChart = new Chart(catCtx, {
+            type: 'pie',
+            data: {
+                labels: catLabels,
+                datasets: [{
+                    data: catData,
+                    backgroundColor: [
+                        'rgba(0, 242, 254, 0.7)',
+                        'rgba(255, 0, 128, 0.7)',
+                        'rgba(79, 172, 254, 0.7)',
+                        'rgba(254, 225, 64, 0.7)',
+                        'rgba(161, 140, 209, 0.7)',
+                        'rgba(251, 194, 235, 0.7)',
+                        'rgba(132, 250, 176, 0.7)',
+                        'rgba(250, 112, 154, 0.7)'
+                    ],
+                    borderWidth: 1,
+                    borderColor: 'rgba(255, 255, 255, 0.1)'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: { color: textColor(), font: { size: 10 } }
+                    }
+                }
+            }
+        });
+
+        // Sync theme changes with charts
+        if (themeToggle) {
+            themeToggle.addEventListener('click', () => {
+                setTimeout(() => {
+                    popularityChart.options.scales.x.grid.color = gridColor();
+                    popularityChart.options.scales.x.ticks.color = textColor();
+                    popularityChart.options.scales.y.ticks.color = textColor();
+                    categoryChart.options.plugins.legend.labels.color = textColor();
+                    
+                    popularityChart.update();
+                    categoryChart.update();
+                }, 50);
+            });
+        }
+    </script>
+</body>
+</html>

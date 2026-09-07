@@ -1,0 +1,100 @@
+{% extends "admin/base.html" %}
+{% block content %}
+<div class="admin-header">
+    <h1>📊 Overview <span>Dashboard</span></h1>
+    <span style="color:var(--text-muted);font-size:0.9rem">{{ now }}</span>
+</div>
+
+<!-- Stats -->
+<div class="stat-grid">
+    <div class="stat-card">
+        <div class="stat-label">Total Users</div>
+        <div class="stat-value">{{ stats.total_users }}</div>
+        <div class="stat-sub">Registered accounts</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Total Events</div>
+        <div class="stat-value">{{ stats.total_events }}</div>
+        <div class="stat-sub">In system</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Registrations</div>
+        <div class="stat-value">{{ stats.total_regs }}</div>
+        <div class="stat-sub">All time</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Reviews</div>
+        <div class="stat-value">{{ stats.total_reviews }}</div>
+        <div class="stat-sub">Submitted</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Hosts</div>
+        <div class="stat-value">{{ stats.total_hosts }}</div>
+        <div class="stat-sub">Active hosts</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Today's Regs</div>
+        <div class="stat-value" style="color:#10b981">{{ stats.today_regs }}</div>
+        <div class="stat-sub">Registered today</div>
+    </div>
+</div>
+
+<!-- Recent Registrations -->
+<div class="panel-section">
+    <div class="panel-section-header">
+        <h3>🔥 Recent Registrations</h3>
+        <a href="{{ url_for('admin_users') }}" style="font-size:0.85rem;color:var(--admin-accent);text-decoration:none">View all →</a>
+    </div>
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>User</th>
+                <th>Event</th>
+                <th>Registered At</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for r in recent_regs %}
+            <tr>
+                <td>{{ r.username }}</td>
+                <td>{{ r.event_title }}</td>
+                <td style="color:var(--text-muted)">{{ r.timestamp }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="3" style="color:var(--text-muted);padding:2rem;text-align:center">No registrations yet</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Top Events -->
+<div class="panel-section">
+    <div class="panel-section-header">
+        <h3>🏆 Top Events by Registration</h3>
+    </div>
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>Event</th>
+                <th>Date</th>
+                <th>Registrations</th>
+                <th>Seats Left</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for ev in top_events %}
+            <tr>
+                <td><strong>{{ ev.title }}</strong></td>
+                <td style="color:var(--text-muted)">{{ ev.date }}</td>
+                <td><span class="badge badge-active">{{ ev.reg_count }}</span></td>
+                <td style="color:{% if ev.seats_left < 10 %}#ef4444{% else %}#10b981{% endif %}">
+                    {{ ev.seats_left }} / {{ ev.seats_total }}
+                </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="4" style="color:var(--text-muted);padding:2rem;text-align:center">No events</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

@@ -1,4 +1,17 @@
 Flask==3.0.0
 Flask-Bcrypt
+Flask-Mail
+Flask-Cors
 fpdf2
 qrcode[pil]
+Pillow
+python-dotenv
+requests
+razorpay
+openai
+uvicorn[standard]
+asgiref
+a2wsgi
+waitress
+gunicorn
+

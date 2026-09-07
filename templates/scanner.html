@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Ticket Scanner | EVENTS</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+    <style>
+        .scanner-container {
+            max-width: 1100px;
+            margin: 2rem auto;
+            padding: 0 1.5rem;
+        }
+        .scanner-grid {
+            display: grid;
+            grid-template-columns: 1.1fr 0.9fr;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+        @media (max-width: 850px) {
+            .scanner-grid { grid-template-columns: 1fr; }
+        }
+        .scanner-card {
+            background: rgba(30, 41, 59, 0.6);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        }
+        #reader {
+            width: 100%;
+            border-radius: 14px;
+            overflow: hidden;
+            border: 2px dashed rgba(0, 242, 254, 0.4);
+            background: rgba(0,0,0,0.3);
+        }
+        .status-box {
+            display: none;
+            padding: 1.5rem;
+            border-radius: 16px;
+            margin-top: 1.5rem;
+            animation: fadeIn 0.4s ease-out;
+        }
+        .status-success {
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid #10b981;
+            color: #ecfdf5;
+        }
+        .status-warning {
+            background: rgba(245, 158, 11, 0.15);
+            border: 1px solid #f59e0b;
+            color: #fffbeb;
+        }
+        .status-error {
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid #ef4444;
+            color: #fef2f2;
+        }
+        .feed-item {
+            padding: 0.9rem 1rem;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.9rem;
+            transition: background 0.2s;
+        }
+        .feed-item:hover { background: rgba(255,255,255,0.02); }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="nav-container" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <div class="logo">EV<span>ENTS</span></div>
+                <span style="background: rgba(0,242,254,0.15); color: var(--primary); font-size: 0.75rem; font-weight: 800; padding: 4px 10px; border-radius: 50px; border: 1px solid var(--primary); text-transform: uppercase;">Check-in Portal</span>
+            </div>
+            <div class="nav-links">
+                <a href="{{ url_for('dashboard') }}" class="logout-btn" style="text-decoration:none; margin-right: 10px;">🏠 Dashboard</a>
+                {% if is_admin %}
+                <a href="{{ url_for('admin_dashboard') }}" style="color:var(--admin-accent,#f59e0b); font-weight:700; margin-right:15px; text-decoration:none;">⚡ Admin</a>
+                {% endif %}
+                <button onclick="window.location.href='{{ url_for('logout') }}'">Logout</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="scanner-container">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1rem;">
+            <div>
+                <h1 style="font-family: var(--font-heading); color: white; font-size: 2rem; margin: 0;">🎟️ Ticket QR Scanner</h1>
+                <p style="color: var(--text-muted); font-size: 0.95rem; margin-top: 4px;">Scan attendee PDF tickets or enter registration ID to check-in students in real time.</p>
+            </div>
+            <div style="background: rgba(0, 242, 254, 0.1); border: 1px solid var(--primary); padding: 0.7rem 1.4rem; border-radius: 14px; text-align: center;">
+                <div style="font-size: 0.75rem; color: var(--primary); text-transform: uppercase; font-weight: 800; letter-spacing: 1px;">Live Check-in Count</div>
+                <div id="checkinCounter" style="font-size: 1.8rem; font-weight: 800; color: white;">0</div>
+            </div>
+        </div>
+
+        <div class="scanner-grid">
+            <!-- Left: QR Camera Scanner -->
+            <div class="scanner-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <h3 style="color: white; margin: 0; font-size: 1.2rem;">📷 Camera Scanner</h3>
+                    <div style="display: flex; gap: 8px;">
+                        <button id="startCamBtn" onclick="startScanner()" class="register-btn-sm" style="background: var(--primary); color: #0f172a; padding: 0.4rem 0.9rem; font-weight: 700;">Start Camera</button>
+                        <button id="stopCamBtn" onclick="stopScanner()" class="register-btn-sm" style="background: rgba(239,68,68,0.2); color: #ef4444; border: 1px solid rgba(239,68,68,0.4); padding: 0.4rem 0.9rem; display: none;">Stop</button>
+                    </div>
+                </div>
+
+                <div id="reader"></div>
+
+                <!-- Manual Fallback Input -->
+                <div style="margin-top: 1.5rem; padding-top: 1.2rem; border-top: 1px solid var(--glass-border);">
+                    <label style="color: var(--text-muted); font-size: 0.85rem; font-weight: 600; display: block; margin-bottom: 6px;">Manual Ticket Lookup (ID / Name / Student ID)</label>
+                    <form onsubmit="handleManualVerify(event)" style="display: flex; gap: 8px;">
+                        <input type="text" id="manualInput" class="input-field" placeholder="Enter Registration ID or Name..." style="flex: 1;" required>
+                        <button type="submit" class="register-btn-sm" style="background: var(--primary); color: #0f172a; font-weight: 700; white-space: nowrap; padding: 0.6rem 1.2rem;">Verify</button>
+                    </form>
+                </div>
+
+                <!-- Scan Result Status Box -->
+                <div id="statusBox" class="status-box">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <span id="statusIcon" style="font-size: 2rem;">✓</span>
+                        <div>
+                            <h4 id="statusTitle" style="margin: 0; font-size: 1.1rem; font-weight: 800;">Valid Ticket Verified!</h4>
+                            <p id="statusMsg" style="margin: 4px 0 0; font-size: 0.88rem; opacity: 0.9;"></p>
+                        </div>
+                    </div>
+                    <div id="attendeeCard" style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1); font-size: 0.85rem; line-height: 1.6;"></div>
+                </div>
+            </div>
+
+            <!-- Right: Recent Check-in Stream -->
+            <div class="scanner-card">
+                <h3 style="color: white; margin: 0 0 1rem; font-size: 1.2rem;">📋 Recent Check-in Feed</h3>
+                <div id="checkinFeed" style="max-height: 440px; overflow-y: auto;">
+                    <div style="text-align: center; color: var(--text-muted); padding: 2rem; font-size: 0.9rem;">
+                        No check-ins recorded yet in this session.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='toast.js') }}"></script>
+    <script>
+        let html5QrcodeScanner = null;
+        let isScanning = false;
+        let sessionCheckins = [];
+
+        // Audio Beep generator using Web Audio API
+        function playBeep(type = 'success') {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+
+                if (type === 'success') {
+                    osc.frequency.setValueAtTime(800, ctx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(1200, ctx.currentTime + 0.15);
+                    gain.gain.setValueAtTime(0.3, ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.2);
+                    osc.start();
+                    osc.stop(ctx.currentTime + 0.2);
+                } else {
+                    osc.frequency.setValueAtTime(300, ctx.currentTime);
+                    osc.frequency.setValueAtTime(200, ctx.currentTime + 0.15);
+                    gain.gain.setValueAtTime(0.4, ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+                    osc.start();
+                    osc.stop(ctx.currentTime + 0.3);
+                }
+            } catch (e) {}
+        }
+
+        async function verifyTicketPayload(payload) {
+            try {
+                const resp = await fetch('/api/verify_ticket', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ code: payload })
+                });
+                const data = await resp.json();
+                displayResult(data);
+            } catch (err) {
+                displayResult({ ok: false, error: 'Network error verifying ticket.' });
+            }
+        }
+
+        function displayResult(data) {
+            const box = document.getElementById('statusBox');
+            const icon = document.getElementById('statusIcon');
+            const title = document.getElementById('statusTitle');
+            const msg = document.getElementById('statusMsg');
+            const card = document.getElementById('attendeeCard');
+
+            box.style.display = 'block';
+            box.className = 'status-box';
+
+            if (data.ok) {
+                if (data.already_checked_in) {
+                    playBeep('warning');
+                    box.classList.add('status-warning');
+                    icon.textContent = '⚠️';
+                    title.textContent = 'Already Checked In';
+                    msg.textContent = `This ticket was already verified at ${data.checkin_time || 'earlier today'}.`;
+                } else {
+                    playBeep('success');
+                    box.classList.add('status-success');
+                    icon.textContent = '✓';
+                    title.textContent = 'Check-in Verified!';
+                    msg.textContent = `Successfully checked-in for ${data.event_title}.`;
+                    addToFeed(data);
+                }
+
+                card.innerHTML = `
+                    <div><strong>👤 Attendee:</strong> ${data.attendee} (${data.username})</div>
+                    <div><strong>🎓 College ID:</strong> ${data.college_id}</div>
+                    <div><strong>🗓️ Event:</strong> ${data.event_title}</div>
+                    ${data.team_name ? `<div><strong>👥 Team:</strong> ${data.team_name}</div>` : ''}
+                `;
+            } else {
+                playBeep('error');
+                box.classList.add('status-error');
+                icon.textContent = '✗';
+                title.textContent = 'Invalid / Not Found';
+                msg.textContent = data.error || 'Ticket details could not be verified.';
+                card.innerHTML = '';
+            }
+        }
+
+        function addToFeed(item) {
+            sessionCheckins.unshift(item);
+            document.getElementById('checkinCounter').textContent = sessionCheckins.length;
+            const feed = document.getElementById('checkinFeed');
+            feed.innerHTML = sessionCheckins.map(c => `
+                <div class="feed-item">
+                    <div>
+                        <strong style="color: white;">${c.attendee}</strong>
+                        <div style="color: var(--text-muted); font-size: 0.78rem;">${c.event_title} • ${c.college_id}</div>
+                    </div>
+                    <span style="background: rgba(16,185,129,0.2); color: #10b981; font-weight: 700; font-size: 0.75rem; padding: 3px 8px; border-radius: 4px;">
+                        ${c.checkin_time || 'Just now'}
+                    </span>
+                </div>
+            `).join('');
+        }
+
+        function handleManualVerify(e) {
+            e.preventDefault();
+            const input = document.getElementById('manualInput');
+            const val = input.value.trim();
+            if (val) {
+                verifyTicketPayload(val);
+                input.value = '';
+            }
+        }
+
+        function startScanner() {
+            if (isScanning) return;
+            html5QrcodeScanner = new Html5Qrcode("reader");
+            const config = { fps: 10, qrbox: { width: 250, height: 250 } };
+
+            html5QrcodeScanner.start(
+                { facingMode: "environment" },
+                config,
+                (decodedText) => {
+                    verifyTicketPayload(decodedText);
+                    // Pause briefly to avoid rapid duplicate triggers
+                    html5QrcodeScanner.pause(true);
+                    setTimeout(() => {
+                        try { html5QrcodeScanner.resume(); } catch(e){}
+                    }, 2500);
+                },
+                (errorMessage) => {}
+            ).then(() => {
+                isScanning = true;
+                document.getElementById('startCamBtn').style.display = 'none';
+                document.getElementById('stopCamBtn').style.display = 'inline-block';
+            }).catch(err => {
+                if (window.showToast) showToast('Could not access camera. Please allow camera permissions or use manual entry.', 'error');
+            });
+        }
+
+        function stopScanner() {
+            if (html5QrcodeScanner && isScanning) {
+                html5QrcodeScanner.stop().then(() => {
+                    isScanning = false;
+                    document.getElementById('startCamBtn').style.display = 'inline-block';
+                    document.getElementById('stopCamBtn').style.display = 'none';
+                    document.getElementById('reader').innerHTML = '';
+                });
+            }
+        }
+    </script>
+</body>
+</html>
