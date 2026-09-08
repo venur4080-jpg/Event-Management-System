@@ -1808,10 +1808,34 @@ def add_security_headers(response):
             pass
     return response
 
+@app.route('/favicon.ico')
+def favicon():
+    file_path = os.path.join(app.root_path, 'static', 'logo.png')
+    if os.path.exists(file_path):
+        return send_file(file_path, mimetype='image/png')
+    return ('', 204)
+
+@app.route('/manifest.json')
+def manifest():
+    file_path = os.path.join(app.root_path, 'static', 'manifest.json')
+    if os.path.exists(file_path):
+        return send_file(file_path, mimetype='application/json')
+    return ('', 204)
+
+@app.route('/service-worker.js')
+def service_worker():
+    file_path = os.path.join(app.root_path, 'static', 'service-worker.js')
+    if os.path.exists(file_path):
+        return send_file(file_path, mimetype='application/javascript')
+    return ('', 204)
+
 @app.errorhandler(404)
 def handle_404(e):
     if request.path.startswith('/api/'):
         return jsonify({'ok': False, 'error': 'Endpoint not found'}), 404
+    # Do not flash error toasts or redirect for background assets, icons, fonts, or maps
+    if any(request.path.endswith(ext) for ext in ('.ico', '.png', '.jpg', '.jpeg', '.svg', '.gif', '.webp', '.map', '.js', '.css', '.json', '.txt', '.woff', '.woff2', '.ttf')):
+        return "Not found", 404
     flash("The requested page was not found.", "error")
     return redirect(url_for('dashboard' if session.get('loggedin') else 'login'))
 
