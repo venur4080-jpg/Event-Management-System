@@ -470,7 +470,7 @@
                             <input type="text" class="input-field locked-input" value="{{ user.user_id }}" readonly disabled title="User ID is automatically assigned by system and cannot be changed">
                             <span class="lock-icon" title="Fixed System Identifier">🔒</span>
                         </div>
-                        <small style="color: var(--text-muted); font-size: 0.76rem; margin-top: 5px; display: block;">Permanent default system identifier (read-only).</small>
+                        <small style="color: var(--primary); font-size: 0.76rem; margin-top: 5px; display: block;">💡 Log in using last 4 digits (<code>{{ user.user_id[-4:] if user.user_id|length >= 4 else user.user_id }}</code>) or your registered Email.</small>
                     </div>
 
                     <div class="input-group" style="margin-bottom: 0.8rem;">
@@ -479,10 +479,10 @@
                             <span class="handle-badge">@{{ user.username }}</span>
                         </div>
                         <div class="locked-field-wrapper">
-                            <input type="text" class="input-field locked-input" value="{{ user.username }}" readonly disabled title="Username is your unique login handle">
+                            <input type="text" class="input-field locked-input" value="{{ user.username }}" readonly disabled title="Username is your unique public handle">
                             <span class="lock-icon" title="Unique Account Handle">👤</span>
                         </div>
-                        <small style="color: var(--text-muted); font-size: 0.76rem; margin-top: 5px; display: block;">Your login identity and public account handle.</small>
+                        <small style="color: var(--text-muted); font-size: 0.76rem; margin-top: 5px; display: block;">Public profile handle (Login by username or name is disabled).</small>
                     </div>
                 </div>
 

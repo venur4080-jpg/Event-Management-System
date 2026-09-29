@@ -144,11 +144,17 @@
             <form method="POST" action="">
                 <input type="hidden" name="action" value="login">
 
-                <!-- User ID -->
+                <!-- User ID or Email -->
                 <div class="input-group">
-                    <label for="username">User ID</label>
+                    <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.4rem;">
+                        <label for="username" style="margin-bottom: 0;">User ID (Last 4 Digits) or Email</label>
+                        <span style="font-size: 0.72rem; color: var(--primary); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">No Name Login</span>
+                    </div>
                     <input type="text" id="username" name="username" class="input-field" required
-                        value="{{ username or '' }}" placeholder="Enter your username" autocomplete="username">
+                        value="{{ username or '' }}" placeholder="e.g. 0003 or yourname@example.com" autocomplete="username">
+                    <small style="color: var(--text-muted); font-size: 0.78rem; margin-top: 5px; display: block; line-height: 1.4;">
+                        🔒 Enter your <strong>4-digit User ID</strong> (e.g. <code>0003</code>) or registered <strong>Email address</strong>.
+                    </small>
                 </div>
 
                 <!-- Password with Eyeball -->

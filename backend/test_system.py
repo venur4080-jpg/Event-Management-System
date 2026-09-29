@@ -449,6 +449,93 @@ class EventManagementSystemTests(unittest.TestCase):
         conn.commit()
         conn.close()
 
+    def test_09_user_id_and_email_authentication(self):
+        """Test authentication strictly via 4-digit User ID and Email, blocking login by name."""
+        from flask_bcrypt import Bcrypt
+        bcrypt = Bcrypt()
+        pwd_hash = bcrypt.generate_password_hash('SecretPass123!').decode('utf-8')
+        
+        conn = sqlite3.connect('users.db', timeout=15)
+        c = conn.cursor()
+        c.execute("DELETE FROM users WHERE username='uid_auth_test_user'")
+        c.execute("""INSERT INTO users (username, password, full_name, email, phone, college_id, user_id, is_active)
+                     VALUES ('uid_auth_test_user', ?, 'Test Auth User', 'uid_auth@example.com', '9876543210', 'COL-UID-999', 'UID-0042', 1)""",
+                  (pwd_hash,))
+        conn.commit()
+        conn.close()
+
+        # 1. Login with registered Email -> SUCCESS
+        resp_email = self.client.post('/', data={
+            'action': 'login',
+            'username': 'uid_auth@example.com',
+            'password': 'SecretPass123!'
+        }, follow_redirects=False)
+        self.assertEqual(resp_email.status_code, 303)
+        self.assertIn('/dashboard', resp_email.headers.get('Location', ''))
+
+        # 2. Login with 4-digit User ID '0042' -> SUCCESS
+        resp_4digits = self.client.post('/', data={
+            'action': 'login',
+            'username': '0042',
+            'password': 'SecretPass123!'
+        }, follow_redirects=False)
+        self.assertEqual(resp_4digits.status_code, 303)
+        self.assertIn('/dashboard', resp_4digits.headers.get('Location', ''))
+
+        # 3. Login with full UID 'UID-0042' -> SUCCESS
+        resp_uid = self.client.post('/', data={
+            'action': 'login',
+            'username': 'UID-0042',
+            'password': 'SecretPass123!'
+        }, follow_redirects=False)
+        self.assertEqual(resp_uid.status_code, 303)
+        self.assertIn('/dashboard', resp_uid.headers.get('Location', ''))
+
+        # 4. Attempt to login with plain username 'uid_auth_test_user' -> BLOCKED with explicit error message
+        resp_name = self.client.post('/', data={
+            'action': 'login',
+            'username': 'uid_auth_test_user',
+            'password': 'SecretPass123!'
+        }, follow_redirects=True)
+        self.assertEqual(resp_name.status_code, 200)
+        self.assertIn(b'Login with username or name is not allowed', resp_name.data)
+        self.assertIn(b'Please enter your 4-digit User ID', resp_name.data)
+
+        # 5. Attempt to login with full name 'Test Auth User' -> BLOCKED with explicit error message
+        resp_fullname = self.client.post('/', data={
+            'action': 'login',
+            'username': 'Test Auth User',
+            'password': 'SecretPass123!'
+        }, follow_redirects=True)
+        self.assertEqual(resp_fullname.status_code, 200)
+        self.assertIn(b'Login with username or name is not allowed', resp_fullname.data)
+
+        # 6. Forgot Password reset using 4-digit User ID '0042' -> SUCCESS
+        resp_forgot_uid = self.client.post('/forgot_password', data={
+            'username': '0042',
+            'college_id': 'COL-UID-999',
+            'phone': '9876543210',
+            'new_password': 'BrandNewPass456!',
+            'confirm_password': 'BrandNewPass456!'
+        }, follow_redirects=True)
+        self.assertEqual(resp_forgot_uid.status_code, 200)
+        self.assertIn(b'Password reset successful', resp_forgot_uid.data)
+
+        # 7. Login with newly updated password via Email -> SUCCESS
+        resp_login_new = self.client.post('/', data={
+            'action': 'login',
+            'username': 'uid_auth@example.com',
+            'password': 'BrandNewPass456!'
+        }, follow_redirects=False)
+        self.assertEqual(resp_login_new.status_code, 303)
+
+        # Clean up
+        conn = sqlite3.connect('users.db', timeout=15)
+        c = conn.cursor()
+        c.execute("DELETE FROM users WHERE username='uid_auth_test_user'")
+        conn.commit()
+        conn.close()
+
 if __name__ == '__main__':
     unittest.main()
 

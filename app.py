@@ -28,7 +28,7 @@ if __name__ == '__main__':
     print("=" * 75)
     print("  Local Access URL:    http://127.0.0.1:5000")
     print("  Network URL:         http://localhost:5000")
-    print("  Default Admin Login: Username: admin  |  Password: password123")
+    print("  Default Admin Login: User ID: 0001 (or Email: admin@example.com)  |  Password: password123")
     print("  Engine:              " + ("Flask Dev Server (Debug Mode)" if is_dev else "High-Concurrency Async Server (Uvicorn / Waitress)"))
     print("  To Stop Server:      Press CTRL + C in this terminal")
     print("=" * 75)

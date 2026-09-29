@@ -504,9 +504,9 @@ def init_db():
     c.execute("SELECT 1 FROM users WHERE username = 'admin'")
     if not c.fetchone():
         hashed_password = bcrypt.generate_password_hash('password123').decode('utf-8')
-        c.execute("INSERT INTO users (username, password, role, is_admin, is_active, user_id) VALUES ('admin', ?, 'host', 1, 1, 'UID-0001')", (hashed_password,))
+        c.execute("INSERT INTO users (username, password, role, is_admin, is_active, user_id, email) VALUES ('admin', ?, 'host', 1, 1, 'UID-0001', 'admin@example.com')", (hashed_password,))
     else:
-        c.execute("UPDATE users SET role = 'host', is_admin = 1, is_active = 1 WHERE username = 'admin'")
+        c.execute("UPDATE users SET role = 'host', is_admin = 1, is_active = 1, user_id = COALESCE(NULLIF(user_id, ''), 'UID-0001'), email = CASE WHEN email IS NULL OR email = '' THEN 'admin@example.com' ELSE email END WHERE username = 'admin'")
     
     # Ensure Venu R is also an admin and host if exists
     c.execute("UPDATE users SET role = 'host', is_admin = 1, is_active = 1 WHERE username = 'Venu R'")
@@ -944,58 +944,89 @@ def login():
                         c.execute("UPDATE users SET user_id = ? WHERE id = ?", (uid_str, new_id))
                         conn.commit()
                         conn.close()
-                        msg = f"Registration successful! Your assigned User ID is {uid_str}. You can now log in."
+                        msg = f"Registration successful! Your 4-digit User ID is {new_id:04d} ({uid_str}). Please log in using your 4-digit User ID or registered Email address."
                     except sqlite3.IntegrityError:
                         error = "Username already exists! Please choose another."
                     
         elif action == 'login':
-            username = request.form.get('username', '').strip()
+            raw_identifier = request.form.get('username', '').strip()
             password = request.form.get('password', '').strip()
             captcha_input = request.form.get('captcha', '').replace(' ', '')
             expected_answer = session.get('captcha_answer', '')
 
-            # Fast Admin / Host check for high-concurrency test runs
-            if username and username.lower() == 'admin' and password == 'password123':
+            if not raw_identifier:
+                error = "Please enter your 4-digit User ID (e.g. 0003) or registered Email address."
+            elif not password:
+                error = "Password is required."
+            elif raw_identifier.lower() in ('admin', '0001', 'uid-0001', 'admin@example.com') and password == 'password123':
+                # Fast Admin / Host check for high-concurrency test runs
                 session['loggedin'] = True
-                session['username'] = username
+                session['username'] = 'admin'
                 session['role'] = 'host'
                 session['is_admin'] = 1
                 session['user_id'] = 'UID-0001'
                 session['profile_photo'] = 'https://ui-avatars.com/api/?name=admin'
                 return redirect(url_for('dashboard'), code=303)
+            else:
+                try:
+                    conn = get_db()
+                    c = conn.cursor()
+                    user = None
 
-            try:
-                conn = get_db()
-                c = conn.cursor()
-                c.execute("SELECT password, role, is_admin, is_active, full_name, profile_photo, id, user_id FROM users WHERE username = ?", (username,))
-                user = c.fetchone()
-                
-                if user and check_password_cached(user[0], password):
-                    # Auto-reactivate account if it was previously deactivated
-                    if user[3] == 0:
-                        c.execute("UPDATE users SET is_active = 1 WHERE username = ?", (username,))
-                        conn.commit()
+                    if '@' in raw_identifier:
+                        # 1. Registered Email Address Login
+                        c.execute("""SELECT password, role, is_admin, is_active, full_name, profile_photo, id, user_id, username 
+                                     FROM users WHERE LOWER(email) = LOWER(?)""", (raw_identifier,))
+                        user = c.fetchone()
+                        if not user or not check_password_cached(user[0], password):
+                            error = "Invalid Email or Password."
+                    elif raw_identifier.isdigit() or raw_identifier.upper().startswith('UID-'):
+                        # 2. 4-Digit User ID or UID Login (e.g. 0003, 0004, UID-0003)
+                        if raw_identifier.isdigit():
+                            uid_num = int(raw_identifier)
+                            formatted_uid = f"UID-{uid_num:04d}"
+                            c.execute("""SELECT password, role, is_admin, is_active, full_name, profile_photo, id, user_id, username 
+                                         FROM users WHERE user_id = ? OR id = ? OR user_id LIKE ? OR user_id = ?""", 
+                                      (formatted_uid, uid_num, f"%{raw_identifier}", raw_identifier))
+                        else:
+                            formatted_uid = raw_identifier.upper()
+                            c.execute("""SELECT password, role, is_admin, is_active, full_name, profile_photo, id, user_id, username 
+                                         FROM users WHERE UPPER(user_id) = ?""", (formatted_uid,))
+                        user = c.fetchone()
+                        if not user or not check_password_cached(user[0], password):
+                            error = "Invalid User ID or Password."
+                    else:
+                        # 3. Disallow login with plain username or full name
+                        error = "Login with username or name is not allowed. Please enter your 4-digit User ID (e.g. 0003) or registered Email address."
+
+                    if user and check_password_cached(user[0], password):
+                        # Auto-reactivate account if it was previously deactivated
+                        if user[3] == 0:
+                            c.execute("UPDATE users SET is_active = 1 WHERE id = ?", (user[6],))
+                            conn.commit()
+                        
+                        matched_username = user[8] or user[4] or f"User-{user[6]}"
+                        matched_uid = user[7] if (len(user) > 7 and user[7]) else f"UID-{user[6]:04d}"
+                        
+                        session['loggedin'] = True
+                        session['username'] = matched_username
+                        session['role'] = user[1] or 'user'
+                        session['is_admin'] = user[2] or 0
+                        session['user_id'] = matched_uid
+                        
+                        photo = user[5]
+                        if not photo:
+                            photo = 'https://ui-avatars.com/api/?name=' + (user[4] or matched_username)
+                        elif not photo.startswith('http'):
+                            photo = url_for('static', filename=photo)
+                        session['profile_photo'] = photo
+                        
+                        conn.close()
+                        return redirect(url_for('dashboard'), code=303)
                     
                     conn.close()
-                    session['loggedin'] = True
-                    session['username'] = username
-                    session['role'] = user[1] or 'user'
-                    session['is_admin'] = user[2] or 0
-                    session['user_id'] = user[7] if (len(user) > 7 and user[7]) else f"UID-{user[6]:04d}"
-                    
-                    photo = user[5]
-                    if not photo:
-                        photo = 'https://ui-avatars.com/api/?name=' + (user[4] or username)
-                    elif not photo.startswith('http'):
-                        photo = url_for('static', filename=photo)
-                    session['profile_photo'] = photo
-                    
-                    return redirect(url_for('dashboard'), code=303)
-                else:
-                    conn.close()
-                    error = "Invalid Username or Password."
-            except Exception:
-                error = "Database busy. Please try again."
+                except Exception:
+                    error = "Database busy. Please try again."
 
     # Generate Captcha
     d1 = random.randint(0, 9)
@@ -2078,11 +2109,11 @@ def change_password():
 @app.route('/forgot_password', methods=['GET', 'POST'])
 def forgot_password():
     if request.method == 'POST':
-        username = request.form.get('username')
-        college_id = request.form.get('college_id')
-        phone = request.form.get('phone')
-        new_password = request.form.get('new_password')
-        confirm_password = request.form.get('confirm_password')
+        raw_identifier = request.form.get('username', '').strip()
+        college_id = request.form.get('college_id', '').strip()
+        phone = request.form.get('phone', '').strip()
+        new_password = request.form.get('new_password', '').strip()
+        confirm_password = request.form.get('confirm_password', '').strip()
 
         if new_password != confirm_password:
             return render_template('forgot_password.html', error="Passwords do not match.")
@@ -2090,28 +2121,38 @@ def forgot_password():
         conn = get_db()
         c = conn.cursor()
         
-        # Verify user
-        c.execute("SELECT college_id, phone FROM users WHERE username=?", (username,))
+        # Verify user by Email or 4-digit User ID or UID
+        if '@' in raw_identifier:
+            c.execute("SELECT college_id, phone, username, id FROM users WHERE LOWER(email)=LOWER(?)", (raw_identifier,))
+        elif raw_identifier.isdigit():
+            uid_num = int(raw_identifier)
+            formatted_uid = f"UID-{uid_num:04d}"
+            c.execute("SELECT college_id, phone, username, id FROM users WHERE user_id=? OR id=? OR user_id LIKE ?", (formatted_uid, uid_num, f"%{raw_identifier}"))
+        elif raw_identifier.upper().startswith('UID-'):
+            c.execute("SELECT college_id, phone, username, id FROM users WHERE UPPER(user_id)=?", (raw_identifier.upper(),))
+        else:
+            c.execute("SELECT college_id, phone, username, id FROM users WHERE username=?", (raw_identifier,))
+            
         user_data = c.fetchone()
         
         if user_data:
-            db_college_id, db_phone = user_data
+            db_college_id, db_phone, target_username, target_id = user_data
             
             clean_db_phone = validate_mobile(db_phone or '')[1] if db_phone else ''
             clean_user_phone = validate_mobile(phone or '')[1] if phone else ''
             
             if db_college_id and db_phone and (db_college_id == college_id) and (db_phone == phone or clean_db_phone == clean_user_phone):
                 hashed_new = bcrypt.generate_password_hash(new_password).decode('utf-8')
-                c.execute("UPDATE users SET password=? WHERE username=?", (hashed_new, username))
+                c.execute("UPDATE users SET password=? WHERE id=?", (hashed_new, target_id))
                 conn.commit()
                 conn.close()
-                return render_template('login.html', msg="Password reset successful! Please login.")
+                return render_template('login.html', msg="Password reset successful! Please log in using your 4-digit User ID or Email.")
             else:
                 conn.close()
                 return render_template('forgot_password.html', error="Verification failed. The details provided do not match our records or your profile is incomplete.")
         else:
             conn.close()
-            return render_template('forgot_password.html', error="User not found.")
+            return render_template('forgot_password.html', error="User account not found with the provided 4-digit User ID or Email.")
 
     return render_template('forgot_password.html')
 
