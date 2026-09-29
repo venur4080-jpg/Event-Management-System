@@ -426,6 +426,7 @@ def init_db():
         ("ALTER TABLE users ADD COLUMN is_active INTEGER DEFAULT 1",),
         ("ALTER TABLE users ADD COLUMN badges TEXT DEFAULT '[]'",),
         ("ALTER TABLE users ADD COLUMN is_admin INTEGER DEFAULT 0",),
+        ("ALTER TABLE users ADD COLUMN user_id TEXT DEFAULT ''",),
         ("ALTER TABLE registrations ADD COLUMN checked_in INTEGER DEFAULT 0",),
         ("ALTER TABLE registrations ADD COLUMN checkin_time DATETIME",),
         ("ALTER TABLE registrations ADD COLUMN team_name TEXT DEFAULT ''",),
@@ -503,12 +504,21 @@ def init_db():
     c.execute("SELECT 1 FROM users WHERE username = 'admin'")
     if not c.fetchone():
         hashed_password = bcrypt.generate_password_hash('password123').decode('utf-8')
-        c.execute("INSERT INTO users (username, password, role, is_admin, is_active) VALUES ('admin', ?, 'host', 1, 1)", (hashed_password,))
+        c.execute("INSERT INTO users (username, password, role, is_admin, is_active, user_id) VALUES ('admin', ?, 'host', 1, 1, 'UID-0001')", (hashed_password,))
     else:
         c.execute("UPDATE users SET role = 'host', is_admin = 1, is_active = 1 WHERE username = 'admin'")
     
     # Ensure Venu R is also an admin and host if exists
     c.execute("UPDATE users SET role = 'host', is_admin = 1, is_active = 1 WHERE username = 'Venu R'")
+
+    # Backfill default User IDs for any accounts missing a user_id
+    try:
+        c.execute("SELECT id, user_id FROM users")
+        for r in c.fetchall():
+            if not r[1]:
+                c.execute("UPDATE users SET user_id = ? WHERE id = ?", (f"UID-{r[0]:04d}", r[0]))
+    except Exception:
+        pass
 
     # Composite Indices for High Concurrency Performance
     for idx in [
@@ -543,22 +553,29 @@ def inject_user_data():
         user_is_host = is_host()
         
         photo = session.get('profile_photo')
-        if not photo:
+        user_id = session.get('user_id')
+        if not photo or not user_id:
             conn = get_db()
             c = conn.cursor()
-            c.execute("SELECT profile_photo FROM users WHERE username=?", (username,))
+            c.execute("SELECT profile_photo, id, user_id FROM users WHERE username=?", (username,))
             res = c.fetchone()
             conn.close()
             
-            if res and res[0]:
-                photo = res[0]
-                if not photo.startswith('http'):
-                    photo = url_for('static', filename=photo)
-            else:
-                photo = 'https://ui-avatars.com/api/?name=' + username
-            session['profile_photo'] = photo
+            if res:
+                if not photo:
+                    if res[0]:
+                        photo = res[0]
+                        if not photo.startswith('http'):
+                            photo = url_for('static', filename=photo)
+                    else:
+                        photo = 'https://ui-avatars.com/api/?name=' + username
+                    session['profile_photo'] = photo
+                
+                if not user_id:
+                    user_id = res[2] if (len(res) > 2 and res[2]) else f"UID-{res[1]:04d}"
+                    session['user_id'] = user_id
         
-        current_user = {'username': username, 'profile_photo': photo}
+        current_user = {'username': username, 'profile_photo': photo, 'user_id': user_id or 'UID-0001'}
     return dict(current_user=current_user, is_admin=user_is_admin, is_host=user_is_host)
 
 # ─── Universal Validation Helpers for Email & Mobile Number ─────────────────
@@ -922,9 +939,12 @@ def login():
                                      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)""", 
                                   (username, hashed_password, full_name, first_name, middle_name, last_name, 
                                    email, phone, address, country, state, city, pincode))
+                        new_id = c.lastrowid
+                        uid_str = f"UID-{new_id:04d}"
+                        c.execute("UPDATE users SET user_id = ? WHERE id = ?", (uid_str, new_id))
                         conn.commit()
                         conn.close()
-                        msg = "Registration successful! You can now log in with your credentials."
+                        msg = f"Registration successful! Your assigned User ID is {uid_str}. You can now log in."
                     except sqlite3.IntegrityError:
                         error = "Username already exists! Please choose another."
                     
@@ -940,13 +960,14 @@ def login():
                 session['username'] = username
                 session['role'] = 'host'
                 session['is_admin'] = 1
+                session['user_id'] = 'UID-0001'
                 session['profile_photo'] = 'https://ui-avatars.com/api/?name=admin'
                 return redirect(url_for('dashboard'), code=303)
 
             try:
                 conn = get_db()
                 c = conn.cursor()
-                c.execute("SELECT password, role, is_admin, is_active, full_name, profile_photo FROM users WHERE username = ?", (username,))
+                c.execute("SELECT password, role, is_admin, is_active, full_name, profile_photo, id, user_id FROM users WHERE username = ?", (username,))
                 user = c.fetchone()
                 
                 if user and check_password_cached(user[0], password):
@@ -960,6 +981,7 @@ def login():
                     session['username'] = username
                     session['role'] = user[1] or 'user'
                     session['is_admin'] = user[2] or 0
+                    session['user_id'] = user[7] if (len(user) > 7 and user[7]) else f"UID-{user[6]:04d}"
                     
                     photo = user[5]
                     if not photo:
@@ -1898,7 +1920,7 @@ def profile():
     msg = request.args.get('msg')
     error = request.args.get('error')
 
-    c.execute("SELECT username, full_name, email, phone, college_id, profile_photo, first_name, middle_name, last_name, address, country, state, city, pincode FROM users WHERE username=?", (username,))
+    c.execute("SELECT username, full_name, email, phone, college_id, profile_photo, first_name, middle_name, last_name, address, country, state, city, pincode, id, user_id FROM users WHERE username=?", (username,))
     user_data = c.fetchone()
     conn.close()
 
@@ -1917,7 +1939,11 @@ def profile():
         elif len(names) >= 3:
             fn, mn, ln = names[0], " ".join(names[1:-1]), names[-1]
 
+    uid_val = user_data[15] if (len(user_data) > 15 and user_data[15]) else f"UID-{user_data[14]:04d}"
+
     user = {
+        'id': user_data[14],
+        'user_id': uid_val,
         'username': user_data[0],
         'full_name': user_data[1] or '',
         'email': user_data[2] or '',
