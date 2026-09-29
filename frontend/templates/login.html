@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login & Registration | EVENTS</title>
+    <!-- Link to static CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@700;800&display=swap"
+        rel="stylesheet">
+    <style>
+        .register-container-card {
+            max-width: 680px !important;
+            padding: 2.5rem !important;
+        }
+        .form-section-header {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--primary);
+            font-weight: 800;
+            margin: 1.5rem 0 0.8rem 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            padding-bottom: 6px;
+        }
+        .grid-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 0.8rem;
+        }
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.8rem;
+        }
+        @media (max-width: 650px) {
+            .grid-3, .grid-2 {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .login-card, .login-card * {
+            color-scheme: dark !important;
+        }
+        /* Hide Microsoft Edge native password reveal icon */
+        input::-ms-reveal,
+        input::-ms-clear,
+        input[type="password"]::-ms-reveal,
+        input[type="password"]::-ms-clear {
+            display: none !important;
+            width: 0 !important;
+            height: 0 !important;
+            visibility: hidden !important;
+            pointer-events: none !important;
+        }
+        .login-card .input-field,
+        .input-field,
+        input.input-field,
+        input,
+        select,
+        textarea {
+            background-color: rgba(0, 0, 0, 0.3) !important;
+            background: rgba(0, 0, 0, 0.3) !important;
+            border: 1px solid var(--glass-border) !important;
+            color: #ffffff !important;
+            color-scheme: dark !important;
+        }
+        .login-card .input-field:focus,
+        .input-field:focus,
+        input:focus,
+        select:focus,
+        textarea:focus {
+            background-color: rgba(0, 0, 0, 0.45) !important;
+            background: rgba(0, 0, 0, 0.45) !important;
+            border-color: var(--primary) !important;
+            box-shadow: 0 0 12px rgba(0, 242, 254, 0.25) !important;
+            color: #ffffff !important;
+        }
+        /* Chrome / Edge / Safari Autofill Override */
+        input:-webkit-autofill,
+        textarea:-webkit-autofill,
+        select:-webkit-autofill {
+            -webkit-box-shadow: 0 0 0px 1000px #101726 inset !important;
+            box-shadow: 0 0 0px 1000px #101726 inset !important;
+            -webkit-text-fill-color: #ffffff !important;
+            caret-color: #ffffff !important;
+            color: #ffffff !important;
+            background-color: #101726 !important;
+            border: 1px solid var(--glass-border) !important;
+            transition: background-color 5000000s ease-in-out 0s, color 5000000s ease-in-out 0s !important;
+        }
+        input:-webkit-autofill:hover,
+        textarea:-webkit-autofill:hover,
+        select:-webkit-autofill:hover {
+            -webkit-box-shadow: 0 0 0px 1000px #101726 inset !important;
+            box-shadow: 0 0 0px 1000px #101726 inset !important;
+            -webkit-text-fill-color: #ffffff !important;
+            color: #ffffff !important;
+        }
+        input:-webkit-autofill:focus,
+        textarea:-webkit-autofill:focus,
+        select:-webkit-autofill:focus {
+            border-color: var(--primary) !important;
+            -webkit-box-shadow: 0 0 0px 1000px #101726 inset, 0 0 12px rgba(0, 242, 254, 0.25) !important;
+            box-shadow: 0 0 0px 1000px #101726 inset, 0 0 12px rgba(0, 242, 254, 0.25) !important;
+            -webkit-text-fill-color: #ffffff !important;
+            color: #ffffff !important;
+        }
+        /* Standard Autofill */
+        input:autofill,
+        textarea:autofill,
+        select:autofill {
+            box-shadow: 0 0 0px 1000px #101726 inset !important;
+            -webkit-text-fill-color: #ffffff !important;
+            caret-color: #ffffff !important;
+            color: #ffffff !important;
+            background-color: #101726 !important;
+            border: 1px solid var(--glass-border) !important;
+            transition: background-color 5000000s ease-in-out 0s, color 5000000s ease-in-out 0s !important;
+        }
+        input:autofill:focus,
+        textarea:autofill:focus,
+        select:autofill:focus {
+            border-color: var(--primary) !important;
+            box-shadow: 0 0 0px 1000px #101726 inset, 0 0 12px rgba(0, 242, 254, 0.25) !important;
+            -webkit-text-fill-color: #ffffff !important;
+            color: #ffffff !important;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="login-container">
+
+        <!-- Login Form -->
+        <div class="login-card" id="login-card">
+            <h2 class="form-title">Welcome Back</h2>
+            <form method="POST" action="">
+                <input type="hidden" name="action" value="login">
+
+                <!-- User ID -->
+                <div class="input-group">
+                    <label for="username">User ID</label>
+                    <input type="text" id="username" name="username" class="input-field" required
+                        value="{{ username or '' }}" placeholder="Enter your username" autocomplete="username">
+                </div>
+
+                <!-- Password with Eyeball -->
+                <div class="input-group">
+                    <label for="password">Password</label>
+                    <div class="password-toggle-wrapper">
+                        <input type="password" id="password" name="password" class="input-field" required placeholder="Enter password" autocomplete="current-password">
+                        <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('password', this)" title="Show password" tabindex="-1" aria-label="Toggle password visibility">
+                            <svg class="eye-icon eye-open" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
+                                <circle cx="12" cy="12" r="3"/>
+                            </svg>
+                            <svg class="eye-icon eye-closed" style="display: none;" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/>
+                                <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/>
+                                <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/>
+                                <line x1="2" x2="22" y1="2" y2="22"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- CAPTCHA Section -->
+                <label class="captcha-label">CAPTCHA</label>
+                <div class="captcha-section">
+                    <!-- Numbers Display -->
+                    <div class="captcha-display">
+                        {{ challenge_display }}
+                    </div>
+
+                    <!-- Refresh Button -->
+                    <button type="button" class="refresh-btn" onclick="window.location.reload();" title="Refresh">
+                        &#x27F3;
+                    </button>
+
+                    <!-- Input -->
+                    <div class="captcha-input-container">
+                        <input type="text" name="captcha" class="input-field" placeholder="Enter CAPTCHA" required
+                            autocomplete="off">
+                    </div>
+                </div>
+
+                {% if error %}
+                <p class="error-msg" style="margin-top: 1rem;">{{ error }}</p>
+                {% endif %}
+
+                {% if msg %}
+                <div style="background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); padding: 10px; border-radius: 8px; margin: 1rem 0; text-align: center; font-size: 0.9rem;">
+                    {{ msg }}
+                </div>
+                {% endif %}
+
+                <div style="text-align: right; margin-bottom: 1.5rem; margin-top: 0.5rem;">
+                    <a href="{{ url_for('forgot_password') }}" style="color: var(--primary); font-size: 0.9rem; text-decoration: none; font-weight: 500;">Forgot Password?</a>
+                </div>
+
+                <button type="submit" class="btn-primary">LOGIN</button>
+
+                <button type="button" class="btn-secondary" onclick="toggleForms()">Create an Account</button>
+            </form>
+        </div>
+
+        <!-- Comprehensive Register Form (Hidden by default) -->
+        <div class="login-card register-container-card" id="register-card" style="display: none;">
+            <h2 class="form-title" style="margin-bottom: 0.3rem;">Create Account</h2>
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem;">Fill in your complete profile details to join EVENTS.</p>
+            
+            <form method="POST" action="" id="registrationForm" onsubmit="return validateRegistrationForm()">
+                <input type="hidden" name="action" value="register">
+
+                <!-- 1. Account Credentials -->
+                <div class="form-section-header" style="margin-top: 0;">
+                    <span>🔐</span> Account Credentials
+                </div>
+                
+                <div class="input-group">
+                    <label>Username / User ID *</label>
+                    <input type="text" name="reg_username" id="reg_username" class="input-field" required placeholder="Choose a unique username" autocomplete="username">
+                </div>
+
+                <div class="grid-2">
+                    <div class="input-group">
+                        <label>Password *</label>
+                        <div class="password-toggle-wrapper">
+                            <input type="password" id="reg_password" name="reg_password" class="input-field" required placeholder="••••••••" autocomplete="new-password">
+                            <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('reg_password', this)" title="Show password" tabindex="-1" aria-label="Toggle password visibility">
+                                <svg class="eye-icon eye-open" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
+                                    <circle cx="12" cy="12" r="3"/>
+                                </svg>
+                                <svg class="eye-icon eye-closed" style="display: none;" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/>
+                                    <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/>
+                                    <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/>
+                                    <line x1="2" x2="22" y1="2" y2="22"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label>Confirm Password *</label>
+                        <div class="password-toggle-wrapper">
+                            <input type="password" id="reg_confirm_password" name="reg_confirm_password" class="input-field" required placeholder="••••••••" autocomplete="new-password">
+                            <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('reg_confirm_password', this)" title="Show password" tabindex="-1" aria-label="Toggle password visibility">
+                                <svg class="eye-icon eye-open" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
+                                    <circle cx="12" cy="12" r="3"/>
+                                </svg>
+                                <svg class="eye-icon eye-closed" style="display: none;" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/>
+                                    <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/>
+                                    <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/>
+                                    <line x1="2" x2="22" y1="2" y2="22"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. Personal Information -->
+                <div class="form-section-header">
+                    <span>👤</span> Personal Details
+                </div>
+                <div class="grid-3">
+                    <div class="input-group">
+                        <label>First Name *</label>
+                        <input type="text" name="first_name" id="first_name" class="input-field" required placeholder="e.g. Rahul" autocomplete="given-name">
+                    </div>
+                    <div class="input-group">
+                        <label>Middle Name</label>
+                        <input type="text" name="middle_name" id="middle_name" class="input-field" placeholder="e.g. Kumar" autocomplete="additional-name">
+                    </div>
+                    <div class="input-group">
+                        <label>Last Name *</label>
+                        <input type="text" name="last_name" id="last_name" class="input-field" required placeholder="e.g. Sharma" autocomplete="family-name">
+                    </div>
+                </div>
+
+                <!-- 3. Contact & OTP Verification -->
+                <div class="form-section-header">
+                    <span>📱</span> Contact & Verification
+                </div>
+
+                <!-- Mobile Number with OTP -->
+                <div class="otp-group-wrapper">
+                    <label style="display: block; margin-bottom: 0.4rem; color: var(--text-muted); font-size: 0.9rem;">Mobile Number (Verify with OTP) *</label>
+                    <div class="otp-row">
+                        <input type="tel" name="phone" id="reg_phone" class="input-field" placeholder="e.g. 9876543210" required oninput="handleRegPhoneInput(this)" maxlength="15" autocomplete="tel">
+                        <button type="button" class="otp-action-btn" id="sendPhoneOtpBtn" onclick="handleSendOtp('mobile', 'reg_phone')">
+                            Send OTP
+                        </button>
+                        <span id="phoneVerifiedBadge" class="otp-verified-badge" style="display: none;">✓ Verified</span>
+                    </div>
+                    <div id="phoneOtpDrawer" class="otp-input-drawer">
+                        <input type="text" id="phoneOtpInput" class="input-field" placeholder="Enter 6-digit OTP" style="width: 160px;" maxlength="6">
+                        <button type="button" class="otp-action-btn" onclick="handleVerifyOtp('mobile', 'reg_phone', 'phoneOtpInput')">Verify</button>
+                    </div>
+                    <span id="phoneOtpStatus" class="otp-status-text"></span>
+                </div>
+
+                <!-- Email Address with OTP -->
+                <div class="otp-group-wrapper">
+                    <label style="display: block; margin-bottom: 0.4rem; color: var(--text-muted); font-size: 0.9rem;">Email Address (Verify with OTP) *</label>
+                    <div class="otp-row">
+                        <input type="email" name="email" id="reg_email" class="input-field" placeholder="e.g. rahul.sharma@example.com" required oninput="handleRegEmailInput(this)" autocomplete="email">
+                        <button type="button" class="otp-action-btn" id="sendEmailOtpBtn" onclick="handleSendOtp('email', 'reg_email')">
+                            Send OTP
+                        </button>
+                        <span id="emailVerifiedBadge" class="otp-verified-badge" style="display: none;">✓ Verified</span>
+                    </div>
+                    <div id="emailOtpDrawer" class="otp-input-drawer">
+                        <input type="text" id="emailOtpInput" class="input-field" placeholder="Enter 6-digit OTP" style="width: 160px;" maxlength="6">
+                        <button type="button" class="otp-action-btn" onclick="handleVerifyOtp('email', 'reg_email', 'emailOtpInput')">Verify</button>
+                    </div>
+                    <span id="emailOtpStatus" class="otp-status-text"></span>
+                </div>
+
+                <!-- 4. Address Details -->
+                <div class="form-section-header">
+                    <span>📍</span> Residential Address
+                </div>
+
+                <div class="input-group">
+                    <label>Address / Street *</label>
+                    <input type="text" name="address" id="reg_address" class="input-field" required placeholder="Flat / House No., Street, Area" autocomplete="street-address">
+                </div>
+
+                <div class="grid-2">
+                    <div class="input-group">
+                        <label>Country *</label>
+                        <input type="text" name="country" id="reg_country" class="input-field" required value="India" placeholder="e.g. India" autocomplete="country-name">
+                    </div>
+                    <div class="input-group">
+                        <label>State *</label>
+                        <input type="text" name="state" id="reg_state" class="input-field" required placeholder="e.g. Karnataka" autocomplete="address-level1">
+                    </div>
+                </div>
+
+                <div class="grid-2">
+                    <div class="input-group">
+                        <label>City / Town / Village *</label>
+                        <input type="text" name="city" id="reg_city" class="input-field" required placeholder="e.g. Bangalore" autocomplete="address-level2">
+                    </div>
+                    <div class="input-group">
+                        <label>PIN Code *</label>
+                        <input type="text" name="pincode" id="reg_pincode" class="input-field" required placeholder="e.g. 560001" maxlength="10" autocomplete="postal-code">
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-primary" style="margin-top: 1.5rem; font-size: 1.05rem;">CREATE ACCOUNT</button>
+
+                <button type="button" class="btn-secondary" onclick="toggleForms()">Back to Login</button>
+            </form>
+        </div>
+
+    </div>
+
+    <!-- Link to static JS -->
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+    <script>
+        // Password Visibility Toggle with Eyeball
+        function togglePasswordVisibility(inputId, btn) {
+            const input = document.getElementById(inputId);
+            if (!input) return;
+            const isPassword = input.type === 'password';
+            input.type = isPassword ? 'text' : 'password';
+
+            const openIcon = btn.querySelector('.eye-open');
+            const closedIcon = btn.querySelector('.eye-closed');
+            if (openIcon && closedIcon) {
+                if (isPassword) {
+                    openIcon.style.display = 'none';
+                    closedIcon.style.display = 'block';
+                    btn.title = 'Hide password';
+                } else {
+                    openIcon.style.display = 'block';
+                    closedIcon.style.display = 'none';
+                    btn.title = 'Show password';
+                }
+            }
+        }
+
+        // Toggle between Login and Register Cards
+        function toggleForms() {
+            var loginCard = document.getElementById('login-card');
+            var regCard = document.getElementById('register-card');
+
+            if (loginCard.style.display === 'none') {
+                loginCard.style.display = 'block';
+                regCard.style.display = 'none';
+            } else {
+                loginCard.style.display = 'none';
+                regCard.style.display = 'block';
+            }
+        }
+
+        // Real-time live input validation handlers
+        function handleRegPhoneInput(input) {
+            const statusEl = document.getElementById('phoneOtpStatus');
+            const drawerEl = document.getElementById('phoneOtpDrawer');
+            if (drawerEl && drawerEl.classList.contains('active')) {
+                // If OTP drawer is open, keep it
+            }
+            if (!input.value.trim()) {
+                statusEl.textContent = '';
+                return;
+            }
+            const res = validateMobileNumber(input.value);
+            if (!res.valid) {
+                statusEl.className = 'otp-status-text error';
+                statusEl.textContent = '❌ ' + res.error;
+            } else {
+                statusEl.className = 'otp-status-text success';
+                statusEl.textContent = '✓ Valid 10-digit mobile number (' + res.cleaned + ')';
+            }
+        }
+
+        function handleRegEmailInput(input) {
+            const statusEl = document.getElementById('emailOtpStatus');
+            const drawerEl = document.getElementById('emailOtpDrawer');
+            if (drawerEl && drawerEl.classList.contains('active')) {
+                // If OTP drawer is open, keep it
+            }
+            if (!input.value.trim()) {
+                statusEl.textContent = '';
+                return;
+            }
+            const res = validateEmailAddress(input.value);
+            if (!res.valid) {
+                statusEl.className = 'otp-status-text error';
+                statusEl.textContent = '❌ ' + res.error;
+            } else {
+                statusEl.className = 'otp-status-text success';
+                statusEl.textContent = '✓ Valid email format (' + res.cleaned + ')';
+            }
+        }
+
+        // OTP Verification Logic
+        let isPhoneVerified = false;
+        let isEmailVerified = false;
+
+        async function handleSendOtp(type, inputId) {
+            const val = document.getElementById(inputId).value.trim();
+            const statusEl = document.getElementById(type === 'mobile' ? 'phoneOtpStatus' : 'emailOtpStatus');
+            const drawerEl = document.getElementById(type === 'mobile' ? 'phoneOtpDrawer' : 'emailOtpDrawer');
+            const btnEl = document.getElementById(type === 'mobile' ? 'sendPhoneOtpBtn' : 'sendEmailOtpBtn');
+
+            if (!val) {
+                statusEl.className = 'otp-status-text error';
+                statusEl.textContent = `Please enter a valid ${type === 'mobile' ? 'mobile number' : 'email address'} first.`;
+                return;
+            }
+
+            // Strict pre-check format
+            if (type === 'mobile') {
+                const phoneCheck = validateMobileNumber(val);
+                if (!phoneCheck.valid) {
+                    statusEl.className = 'otp-status-text error';
+                    statusEl.textContent = '❌ ' + phoneCheck.error;
+                    return;
+                }
+            } else {
+                const emailCheck = validateEmailAddress(val);
+                if (!emailCheck.valid) {
+                    statusEl.className = 'otp-status-text error';
+                    statusEl.textContent = '❌ ' + emailCheck.error;
+                    return;
+                }
+            }
+
+            btnEl.disabled = true;
+            btnEl.textContent = 'Sending...';
+            statusEl.className = 'otp-status-text info';
+            statusEl.textContent = 'Generating & dispatching OTP...';
+
+            try {
+                const res = await fetch('/api/send_otp', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ type: type, target: val })
+                });
+                const data = await res.json();
+
+                if (data && data.ok) {
+                    drawerEl.style.display = 'flex';
+                    drawerEl.classList.add('active');
+                    btnEl.textContent = 'Resend OTP';
+                    btnEl.disabled = false;
+                    statusEl.className = 'otp-status-text success';
+                    statusEl.textContent = (data.message || 'OTP sent.') + (data.demo_otp ? ` (OTP: ${data.demo_otp})` : '');
+                    
+                    const otpInput = document.getElementById(type === 'mobile' ? 'phoneOtpInput' : 'emailOtpInput');
+                    if (otpInput) {
+                        otpInput.value = '';
+                        otpInput.focus();
+                    }
+                } else {
+                    btnEl.disabled = false;
+                    btnEl.textContent = 'Send OTP';
+                    statusEl.className = 'otp-status-text error';
+                    statusEl.textContent = (data && data.error) ? data.error : 'Failed to send OTP.';
+                }
+            } catch (err) {
+                btnEl.disabled = false;
+                btnEl.textContent = 'Send OTP';
+                statusEl.className = 'otp-status-text error';
+                statusEl.textContent = 'Network error while contacting verification server.';
+            }
+        }
+
+        async function handleVerifyOtp(type, targetInputId, otpInputId) {
+            const target = document.getElementById(targetInputId).value.trim();
+            const otp = document.getElementById(otpInputId).value.trim();
+            const statusEl = document.getElementById(type === 'mobile' ? 'phoneOtpStatus' : 'emailOtpStatus');
+            const drawerEl = document.getElementById(type === 'mobile' ? 'phoneOtpDrawer' : 'emailOtpDrawer');
+            const badgeEl = document.getElementById(type === 'mobile' ? 'phoneVerifiedBadge' : 'emailVerifiedBadge');
+            const sendBtn = document.getElementById(type === 'mobile' ? 'sendPhoneOtpBtn' : 'sendEmailOtpBtn');
+
+            if (!otp || otp.length < 4) {
+                statusEl.className = 'otp-status-text error';
+                statusEl.textContent = 'Please enter the 6-digit OTP received.';
+                return;
+            }
+
+            try {
+                const res = await fetch('/api/verify_otp', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ type: type, target: target, otp: otp })
+                });
+                const data = await res.json();
+
+                if (data && data.ok) {
+                    if (type === 'mobile') isPhoneVerified = true;
+                    if (type === 'email') isEmailVerified = true;
+
+                    drawerEl.style.display = 'none';
+                    drawerEl.classList.remove('active');
+                    if (sendBtn) sendBtn.style.display = 'none';
+                    if (badgeEl) {
+                        badgeEl.style.display = 'inline-flex';
+                        badgeEl.textContent = '✓ Verified';
+                    }
+                    statusEl.className = 'otp-status-text success';
+                    statusEl.textContent = `✓ ${type === 'mobile' ? 'Mobile number' : 'Email address'} successfully verified!`;
+                } else {
+                    statusEl.className = 'otp-status-text error';
+                    statusEl.textContent = (data && data.error) ? data.error : 'Invalid OTP. Please try again.';
+                }
+            } catch (err) {
+                statusEl.className = 'otp-status-text error';
+                statusEl.textContent = 'Network error verifying OTP.';
+            }
+        }
+
+        function validateRegistrationForm() {
+            const pwd = document.getElementById('reg_password').value;
+            const cpwd = document.getElementById('reg_confirm_password').value;
+
+            if (pwd !== cpwd) {
+                alert('⚠️ Passwords do not match!');
+                document.getElementById('reg_confirm_password').focus();
+                return false;
+            }
+
+            const phoneVal = document.getElementById('reg_phone').value;
+            const phoneCheck = validateMobileNumber(phoneVal);
+            if (!phoneCheck.valid) {
+                alert('⚠️ ' + phoneCheck.error);
+                document.getElementById('reg_phone').focus();
+                return false;
+            }
+
+            const emailVal = document.getElementById('reg_email').value;
+            const emailCheck = validateEmailAddress(emailVal);
+            if (!emailCheck.valid) {
+                alert('⚠️ ' + emailCheck.error);
+                document.getElementById('reg_email').focus();
+                return false;
+            }
+
+            return true;
+        }
+    </script>
+</body>
+
+</html>

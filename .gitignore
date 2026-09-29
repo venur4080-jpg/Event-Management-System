@@ -76,6 +76,8 @@ venv.bak/
 
 # Static uploads
 static/uploads/
+frontend/static/uploads/
+**/uploads/
 
 # Other
 *.bak

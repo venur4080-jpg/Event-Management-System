@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile | EVENTS</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@700;800&display=swap" rel="stylesheet">
+    <style>
+        .profile-section-heading {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--primary);
+            font-weight: 800;
+            margin: 1.8rem 0 1rem 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            padding-bottom: 6px;
+        }
+        .grid-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 1rem;
+        }
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+        @media (max-width: 650px) {
+            .grid-3, .grid-2 {
+                grid-template-columns: 1fr;
+            }
+        }
+        .profile-card, .profile-card * {
+            color-scheme: dark !important;
+        }
+        /* Hide Microsoft Edge native password reveal icon */
+        input::-ms-reveal,
+        input::-ms-clear,
+        input[type="password"]::-ms-reveal,
+        input[type="password"]::-ms-clear {
+            display: none !important;
+            width: 0 !important;
+            height: 0 !important;
+            visibility: hidden !important;
+            pointer-events: none !important;
+        }
+        .profile-card .input-field,
+        .input-field,
+        input.input-field,
+        input,
+        select,
+        textarea {
+            background-color: rgba(0, 0, 0, 0.3) !important;
+            background: rgba(0, 0, 0, 0.3) !important;
+            border: 1px solid var(--glass-border) !important;
+            color: #ffffff !important;
+            color-scheme: dark !important;
+        }
+        .profile-card .input-field:focus,
+        .input-field:focus,
+        input:focus,
+        select:focus,
+        textarea:focus {
+            background-color: rgba(0, 0, 0, 0.45) !important;
+            background: rgba(0, 0, 0, 0.45) !important;
+            border-color: var(--primary) !important;
+            box-shadow: 0 0 12px rgba(0, 242, 254, 0.25) !important;
+            color: #ffffff !important;
+        }
+        /* Chrome / Edge / Safari Autofill Override */
+        input:-webkit-autofill,
+        textarea:-webkit-autofill,
+        select:-webkit-autofill {
+            -webkit-box-shadow: 0 0 0px 1000px #101726 inset !important;
+            box-shadow: 0 0 0px 1000px #101726 inset !important;
+            -webkit-text-fill-color: #ffffff !important;
+            caret-color: #ffffff !important;
+            color: #ffffff !important;
+            background-color: #101726 !important;
+            border: 1px solid var(--glass-border) !important;
+            transition: background-color 5000000s ease-in-out 0s, color 5000000s ease-in-out 0s !important;
+        }
+        input:-webkit-autofill:hover,
+        textarea:-webkit-autofill:hover,
+        select:-webkit-autofill:hover {
+            -webkit-box-shadow: 0 0 0px 1000px #101726 inset !important;
+            box-shadow: 0 0 0px 1000px #101726 inset !important;
+            -webkit-text-fill-color: #ffffff !important;
+            color: #ffffff !important;
+        }
+        input:-webkit-autofill:focus,
+        textarea:-webkit-autofill:focus,
+        select:-webkit-autofill:focus {
+            border-color: var(--primary) !important;
+            -webkit-box-shadow: 0 0 0px 1000px #101726 inset, 0 0 12px rgba(0, 242, 254, 0.25) !important;
+            box-shadow: 0 0 0px 1000px #101726 inset, 0 0 12px rgba(0, 242, 254, 0.25) !important;
+            -webkit-text-fill-color: #ffffff !important;
+            color: #ffffff !important;
+        }
+        /* Standard Autofill */
+        input:autofill,
+        textarea:autofill,
+        select:autofill {
+            box-shadow: 0 0 0px 1000px #101726 inset !important;
+            -webkit-text-fill-color: #ffffff !important;
+            caret-color: #ffffff !important;
+            color: #ffffff !important;
+            background-color: #101726 !important;
+            border: 1px solid var(--glass-border) !important;
+            transition: background-color 5000000s ease-in-out 0s, color 5000000s ease-in-out 0s !important;
+        }
+        input:autofill:focus,
+        textarea:autofill:focus,
+        select:autofill:focus {
+            border-color: var(--primary) !important;
+            box-shadow: 0 0 0px 1000px #101726 inset, 0 0 12px rgba(0, 242, 254, 0.25) !important;
+            -webkit-text-fill-color: #ffffff !important;
+            color: #ffffff !important;
+        }
+    </style>
+</head>
+<body>
+    <script>
+        if (localStorage.getItem('theme') === 'light') {
+            document.body.classList.add('light-mode');
+        }
+    </script>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div style="display: flex; align-items: center;">
+                <div class="hamburger" id="hamburger">☰</div>
+                <div class="logo">EV<span>ENTS</span></div>
+            </div>
+            <div class="nav-links" style="display: flex; align-items: center; gap: 15px;">
+                <a href="{{ url_for('dashboard') }}">Dashboard</a>
+                <button class="theme-toggle-btn" id="themeToggle" title="Toggle Light/Dark Mode" type="button" style="margin-right: 0;">🌓</button>
+                <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-logo">EV<span>ENTS</span></div>
+            <div class="close-btn" id="closeSidebar">&times;</div>
+        </div>
+        <ul class="sidebar-links">
+            <li><a href="{{ url_for('dashboard') }}">🏠 Dashboard</a></li>
+            <li><a href="{{ url_for('profile') }}" class="active">👤 My Profile</a></li>
+            <li><a href="{{ url_for('history') }}">📋 My Bookings</a></li>
+            {% if is_admin or session.get('username') in ['admin', 'Venu R'] %}
+            <li><a href="{{ url_for('admin_dashboard') }}" style="color:var(--admin-accent, #f59e0b); font-weight:700">⚡ Admin Panel</a></li>
+            {% endif %}
+            {% if is_host %}
+            <li><hr style="border: 0; border-top: 1px solid var(--glass-border); margin: 1rem 0;"></li>
+            <li style="padding: 0 1rem; color: var(--primary); font-size: 0.8rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">Host Management</li>
+            <li><a href="{{ url_for('scan_ticket') }}">📷 Live Ticket Scanner</a></li>
+            <li><a href="{{ url_for('checkin_history') }}">📅 Check-in History</a></li>
+            <li><a href="{{ url_for('add_event') }}">➕ Add New Event</a></li>
+            <li><a href="{{ url_for('host_analytics') }}">📈 Host Analytics</a></li>
+            {% endif %}
+            <li><hr style="border: 0; border-top: 1px solid var(--glass-border); margin: 1rem 0;"></li>
+            <li style="display: flex; align-items: center; font-size: 0.85rem; gap: 0.8rem; color: var(--text-muted); padding: 0.7rem 1.5rem; user-select: text;"><span style="font-size: 1.1rem;">📞</span> +91 9686837274</li>
+            <li><a href="https://mail.google.com/mail/?view=cm&fs=1&to=venu.rachakondaa@gmail.com" target="_blank" rel="noopener noreferrer" style="font-size: 0.85rem; gap: 0.8rem; color: var(--text-muted); word-break: break-all;"><span style="font-size: 1.1rem;">📧</span> venu.rachakondaa@gmail.com</a></li>
+            <li><hr style="border: 0; border-top: 1px solid var(--glass-border); margin: 1rem 0;"></li>
+            <li><a href="{{ url_for('logout') }}" style="color: var(--secondary);">🚪 Logout</a></li>
+        </ul>
+    </div>
+
+    <main class="container">
+        <div class="profile-card login-card" style="max-width: 820px; margin-top: 3.5rem;">
+            {% if msg %}
+            <div style="background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); padding: 12px; border-radius: 10px; margin-bottom: 1.5rem; text-align: center; font-weight: 600;">
+                {{ msg }}
+            </div>
+            {% endif %}
+
+            {% if error %}
+            <div style="background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); padding: 12px; border-radius: 10px; margin-bottom: 1.5rem; text-align: center; font-weight: 600;">
+                {{ error }}
+            </div>
+            {% endif %}
+
+            <form id="main-profile-form" action="{{ url_for('profile') }}" method="POST" enctype="multipart/form-data" onsubmit="return validateProfileForm()">
+                <div class="profile-header">
+                    <div class="profile-pic-wrapper">
+                        <img src="{{ url_for('static', filename=user.profile_photo) if not user.profile_photo.startswith('http') else user.profile_photo }}" alt="Profile" class="profile-pic" id="profilePreview">
+                        <label for="photoUpload" class="pic-edit-btn" title="Upload Photo">✎</label>
+                        <button type="button" class="pic-delete-btn" id="deletePicBtn" title="Delete Profile Photo" style="{% if user.profile_photo.startswith('http') %}display: none;{% endif %}">🗑</button>
+                        <input type="file" id="photoUpload" name="profile_photo" hidden accept="image/*" onchange="previewImage(this)">
+                        <input type="hidden" name="cropped_image_data" id="croppedImageData">
+                        <input type="hidden" name="delete_profile_photo" id="deleteProfilePhoto" value="false">
+                    </div>
+                    <h2 class="hero-title" style="font-size: 2.2rem; margin-bottom: 0.3rem;">{{ user.username }}</h2>
+                    <p style="color: var(--text-muted);">Manage your personal profile and contact information</p>
+                </div>
+
+                <!-- 1. Personal Names -->
+                <div class="profile-section-heading" style="margin-top: 1rem;">
+                    <span>👤</span> Personal Information
+                </div>
+                <div class="grid-3">
+                    <div class="input-group">
+                        <label>First Name</label>
+                        <input type="text" name="first_name" class="input-field" value="{{ user.first_name }}" placeholder="First name">
+                    </div>
+                    <div class="input-group">
+                        <label>Middle Name</label>
+                        <input type="text" name="middle_name" class="input-field" value="{{ user.middle_name }}" placeholder="Middle name">
+                    </div>
+                    <div class="input-group">
+                        <label>Last Name</label>
+                        <input type="text" name="last_name" class="input-field" value="{{ user.last_name }}" placeholder="Last name">
+                    </div>
+                </div>
+
+                <!-- 2. Contact Details with OTP on Change -->
+                <div class="profile-section-heading">
+                    <span>📱</span> Contact & Verification Details
+                </div>
+                
+                <div class="grid-2">
+                    <!-- Email Address with OTP -->
+                    <div class="otp-group-wrapper">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
+                            <label style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 0; font-weight: 600;">Email Address</label>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <span id="emailVerifiedBadge" class="otp-verified-badge" style="{% if not user.email %}display: none;{% endif %}">✓ Verified</span>
+                                <button type="button" id="changeEmailBtn" onclick="enableEditContact('email')" style="background: rgba(0, 242, 254, 0.12); border: 1px solid rgba(0, 242, 254, 0.35); color: var(--primary); font-size: 0.78rem; font-weight: 600; cursor: pointer; padding: 3px 10px; border-radius: 6px; transition: 0.2s; {% if not user.email %}display: none;{% endif %}">✏️ Change / Re-verify</button>
+                            </div>
+                        </div>
+                        <div class="otp-row" style="display: flex; gap: 8px; align-items: center;">
+                            <input type="email" name="email" id="profile_email" class="input-field" value="{{ user.email or '' }}" placeholder="yourname@example.com" data-original="{{ user.email or '' }}" oninput="handleContactInputChange('email')" onkeyup="handleContactInputChange('email')" onchange="handleContactInputChange('email')" onpaste="handleContactInputChange('email')" autocomplete="email" style="flex: 1;">
+                            <button type="button" class="otp-action-btn" id="sendEmailOtpBtn" onclick="handleSendProfileOtp('email')" style="{% if user.email %}display: none;{% else %}display: inline-flex;{% endif %}">
+                                ✉️ Send OTP
+                            </button>
+                        </div>
+                        <div id="emailOtpDrawer" class="otp-input-drawer" style="display: none; margin-top: 8px; gap: 8px; align-items: center;">
+                            <input type="text" id="emailOtpInput" class="input-field" placeholder="Enter 6-digit OTP" inputmode="numeric" pattern="[0-9]*" maxlength="6" style="width: 170px; letter-spacing: 3px; font-weight: 700; text-align: center;">
+                            <button type="button" class="otp-action-btn" onclick="handleVerifyProfileOtp('email')">Verify</button>
+                        </div>
+                        <span id="emailOtpStatus" class="otp-status-text" style="display: block; margin-top: 4px;"></span>
+                    </div>
+
+                    <!-- Mobile Number with OTP -->
+                    <div class="otp-group-wrapper">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
+                            <label style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 0; font-weight: 600;">Mobile Number</label>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <span id="phoneVerifiedBadge" class="otp-verified-badge" style="{% if not user.phone %}display: none;{% endif %}">✓ Verified</span>
+                                <button type="button" id="changePhoneBtn" onclick="enableEditContact('mobile')" style="background: rgba(0, 242, 254, 0.12); border: 1px solid rgba(0, 242, 254, 0.35); color: var(--primary); font-size: 0.78rem; font-weight: 600; cursor: pointer; padding: 3px 10px; border-radius: 6px; transition: 0.2s; {% if not user.phone %}display: none;{% endif %}">✏️ Change / Re-verify</button>
+                            </div>
+                        </div>
+                        <div class="otp-row" style="display: flex; gap: 8px; align-items: center;">
+                            <input type="tel" name="phone" id="profile_phone" class="input-field" value="{{ user.phone or '' }}" placeholder="9876543210" data-original="{{ user.phone or '' }}" oninput="handleContactInputChange('mobile')" onkeyup="handleContactInputChange('mobile')" onchange="handleContactInputChange('mobile')" onpaste="handleContactInputChange('mobile')" autocomplete="tel" style="flex: 1;">
+                            <button type="button" class="otp-action-btn" id="sendPhoneOtpBtn" onclick="handleSendProfileOtp('mobile')" style="{% if user.phone %}display: none;{% else %}display: inline-flex;{% endif %}">
+                                📱 Send OTP
+                            </button>
+                        </div>
+                        <div id="phoneOtpDrawer" class="otp-input-drawer" style="display: none; margin-top: 8px; gap: 8px; align-items: center;">
+                            <input type="text" id="phoneOtpInput" class="input-field" placeholder="Enter 6-digit OTP" inputmode="numeric" pattern="[0-9]*" maxlength="6" style="width: 170px; letter-spacing: 3px; font-weight: 700; text-align: center;">
+                            <button type="button" class="otp-action-btn" onclick="handleVerifyProfileOtp('mobile')">Verify</button>
+                        </div>
+                        <span id="phoneOtpStatus" class="otp-status-text" style="display: block; margin-top: 4px;"></span>
+                    </div>
+                </div>
+
+                <div class="input-group" style="margin-top: 0.2rem;">
+                    <label>College / Student ID</label>
+                    <input type="text" name="college_id" class="input-field" value="{{ user.college_id }}" placeholder="e.g. BCA-2024-001">
+                </div>
+
+                <!-- 3. Residential Address -->
+                <div class="profile-section-heading">
+                    <span>📍</span> Residential Address
+                </div>
+                <div class="input-group">
+                    <label>Street Address</label>
+                    <input type="text" name="address" class="input-field" value="{{ user.address }}" placeholder="Flat / House No., Street, Area">
+                </div>
+
+                <div class="grid-2">
+                    <div class="input-group">
+                        <label>Country</label>
+                        <input type="text" name="country" class="input-field" value="{{ user.country or 'India' }}" placeholder="Country">
+                    </div>
+                    <div class="input-group">
+                        <label>State</label>
+                        <input type="text" name="state" class="input-field" value="{{ user.state }}" placeholder="State / Province">
+                    </div>
+                </div>
+
+                <div class="grid-2">
+                    <div class="input-group">
+                        <label>City / Town / Village</label>
+                        <input type="text" name="city" class="input-field" value="{{ user.city }}" placeholder="City / Town / Village">
+                    </div>
+                    <div class="input-group">
+                        <label>PIN Code</label>
+                        <input type="text" name="pincode" class="input-field" value="{{ user.pincode }}" placeholder="Postal / Pin Code">
+                    </div>
+                </div>
+
+                <div style="margin-top: 1.5rem; text-align: center;">
+                    <button type="submit" class="unique-save-btn">Save Profile Changes</button>
+                </div>
+            </form>
+
+            <!-- Change Password Section with Eyeballs -->
+            <div style="margin-top: 2.5rem; border-top: 1px solid var(--glass-border); padding-top: 2rem;">
+                <div class="section-title">
+                    <span>🔒 Password & Security</span>
+                </div>
+                <form action="{{ url_for('change_password') }}" method="POST" style="margin-top: 1rem;">
+                    <div class="profile-grid">
+                        <div class="input-group">
+                            <label>Current Password</label>
+                            <div class="password-toggle-wrapper">
+                                <input type="password" id="current_password" name="current_password" class="input-field" required placeholder="••••••••">
+                                <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('current_password', this)" title="Show password" tabindex="-1" aria-label="Toggle password visibility">
+                                    <svg class="eye-icon eye-open" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
+                                        <circle cx="12" cy="12" r="3"/>
+                                    </svg>
+                                    <svg class="eye-icon eye-closed" style="display: none;" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/>
+                                        <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/>
+                                        <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/>
+                                        <line x1="2" x2="22" y1="2" y2="22"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <label>New Password</label>
+                            <div class="password-toggle-wrapper">
+                                <input type="password" id="new_password" name="new_password" class="input-field" required placeholder="••••••••">
+                                <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('new_password', this)" title="Show password" tabindex="-1" aria-label="Toggle password visibility">
+                                    <svg class="eye-icon eye-open" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
+                                        <circle cx="12" cy="12" r="3"/>
+                                    </svg>
+                                    <svg class="eye-icon eye-closed" style="display: none;" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/>
+                                        <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/>
+                                        <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/>
+                                        <line x1="2" x2="22" y1="2" y2="22"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <label>Confirm New Password</label>
+                            <div class="password-toggle-wrapper">
+                                <input type="password" id="confirm_password" name="confirm_password" class="input-field" required placeholder="••••••••">
+                                <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('confirm_password', this)" title="Show password" tabindex="-1" aria-label="Toggle password visibility">
+                                    <svg class="eye-icon eye-open" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
+                                        <circle cx="12" cy="12" r="3"/>
+                                    </svg>
+                                    <svg class="eye-icon eye-closed" style="display: none;" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/>
+                                        <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/>
+                                        <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/>
+                                        <line x1="2" x2="22" y1="2" y2="22"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-secondary" style="max-width: 250px; margin-left: 0; margin-top: 0.5rem;">Update Password</button>
+                </form>
+            </div>
+
+            <!-- Danger Zone: Account Deactivate & Delete -->
+            <div class="danger-zone-card">
+                <div class="danger-zone-title">
+                    <span>⚠️ Danger Zone</span>
+                </div>
+                <p style="color: var(--text-muted); font-size: 0.88rem; margin-bottom: 1.2rem;">
+                    Take control of your account lifecycle. You can temporarily deactivate your account or permanently erase your data.
+                </p>
+
+                <!-- Deactivate Option -->
+                <div class="danger-action-row">
+                    <div class="danger-action-info">
+                        <h4>Deactivate Account</h4>
+                        <p>Temporarily disable your profile. You can reactivate anytime simply by logging back in with your credentials.</p>
+                    </div>
+                    <button type="button" class="btn-warning-outline" onclick="openConfirmModal('deactivateModal')">
+                        Deactivate Account
+                    </button>
+                </div>
+
+                <!-- Delete Option -->
+                <div class="danger-action-row">
+                    <div class="danger-action-info">
+                        <h4>Delete Account Permanently</h4>
+                        <p>Permanently remove your account, profile details, and preferences from our database. This action cannot be undone.</p>
+                    </div>
+                    <button type="button" class="btn-danger-solid" onclick="openConfirmModal('deleteModal')">
+                        Delete Account
+                    </button>
+                </div>
+            </div>
+
+            <div style="text-align: center; margin-top: 2rem;">
+                <a href="{{ url_for('dashboard') }}" style="color: var(--text-muted); font-size: 0.9rem; text-decoration: none;">← Back to Dashboard</a>
+            </div>
+        </div>
+    </main>
+
+    <!-- Crop Modal -->
+    <div id="cropModal" class="modal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.8);">
+        <div class="modal-content" style="background-color: var(--bg-dark); margin: 5% auto; padding: 20px; border: 1px solid var(--glass-border); width: 90%; max-width: 600px; border-radius: 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h3 style="color: var(--text-main); margin: 0;">Crop Profile Picture</h3>
+                <span id="closeCropModal" style="color: var(--text-muted); font-size: 28px; font-weight: bold; cursor: pointer;">&times;</span>
+            </div>
+            <div style="max-height: 400px; overflow: hidden; display: flex; justify-content: center; align-items: center;">
+                <img id="imageToCrop" style="max-width: 100%; display: block;">
+            </div>
+            <div style="margin-top: 20px; text-align: center;">
+                <button type="button" id="cropAndSave" class="unique-save-btn" style="padding: 10px 20px; font-size: 1rem; width: auto; display: inline-block;">Crop & Apply</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Deactivate Account Modal -->
+    <div id="deactivateModal" class="modal" style="display: none; position: fixed; z-index: 1100; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.8);">
+        <div class="confirm-modal-box">
+            <h3 style="color: #f59e0b; margin-top: 0; display: flex; align-items: center; gap: 8px;">
+                <span>⚠️</span> Deactivate Account
+            </h3>
+            <p style="color: var(--text-muted); font-size: 0.92rem; line-height: 1.6; margin: 1rem 0;">
+                Are you sure you want to deactivate your account? Your account will become inactive, but you can reactivate it at any time by logging in again.
+            </p>
+            <form action="{{ url_for('deactivate_account') }}" method="POST">
+                <div class="input-group">
+                    <label>Confirm Your Password</label>
+                    <div class="password-toggle-wrapper">
+                        <input type="password" id="deactivate_pwd" name="confirm_password" class="input-field" required placeholder="Enter password to confirm">
+                        <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('deactivate_pwd', this)" title="Show password" tabindex="-1" aria-label="Toggle password visibility">
+                            <svg class="eye-icon eye-open" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
+                                <circle cx="12" cy="12" r="3"/>
+                            </svg>
+                            <svg class="eye-icon eye-closed" style="display: none;" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/>
+                                <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/>
+                                <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/>
+                                <line x1="2" x2="22" y1="2" y2="22"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 1.5rem;">
+                    <button type="button" class="btn-secondary" style="margin: 0; width: auto;" onclick="closeConfirmModal('deactivateModal')">Cancel</button>
+                    <button type="submit" class="btn-warning-outline" style="margin: 0;">Confirm Deactivation</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Delete Account Modal -->
+    <div id="deleteModal" class="modal" style="display: none; position: fixed; z-index: 1100; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.8);">
+        <div class="confirm-modal-box" style="border-color: rgba(239, 68, 68, 0.4);">
+            <h3 style="color: #ef4444; margin-top: 0; display: flex; align-items: center; gap: 8px;">
+                <span>🚨</span> Delete Account Permanently
+            </h3>
+            <p style="color: var(--text-muted); font-size: 0.92rem; line-height: 1.6; margin: 1rem 0;">
+                <strong style="color: #ef4444;">Warning:</strong> This action cannot be reversed. All your profile information and active account records will be permanently deleted from the database.
+            </p>
+            <form action="{{ url_for('delete_account') }}" method="POST">
+                <div class="input-group">
+                    <label>Confirm Your Password</label>
+                    <div class="password-toggle-wrapper">
+                        <input type="password" id="delete_pwd" name="confirm_password" class="input-field" required placeholder="Enter password to confirm">
+                        <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('delete_pwd', this)" title="Show password" tabindex="-1" aria-label="Toggle password visibility">
+                            <svg class="eye-icon eye-open" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
+                                <circle cx="12" cy="12" r="3"/>
+                            </svg>
+                            <svg class="eye-icon eye-closed" style="display: none;" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/>
+                                <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/>
+                                <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/>
+                                <line x1="2" x2="22" y1="2" y2="22"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 1.5rem;">
+                    <button type="button" class="btn-secondary" style="margin: 0; width: auto;" onclick="closeConfirmModal('deleteModal')">Cancel</button>
+                    <button type="submit" class="btn-danger-solid" style="margin: 0;">Permanently Delete Account</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
+    <script>
+        const hamburger = document.getElementById('hamburger');
+        const sidebar = document.getElementById('sidebar');
+        const closeSidebar = document.getElementById('closeSidebar');
+
+        if (hamburger) hamburger.onclick = () => sidebar.classList.add('active');
+        if (closeSidebar) closeSidebar.onclick = () => sidebar.classList.remove('active');
+
+        // Close sidebar when clicking outside
+        document.onclick = (e) => {
+            if (sidebar && !sidebar.contains(e.target) && hamburger && !hamburger.contains(e.target)) {
+                sidebar.classList.remove('active');
+            }
+        };
+
+        // Eyeball Password Toggle Helper with SVG icons
+        function togglePasswordVisibility(inputId, btn) {
+            const input = document.getElementById(inputId);
+            if (!input) return;
+            const isPassword = input.type === 'password';
+            input.type = isPassword ? 'text' : 'password';
+
+            const openIcon = btn.querySelector('.eye-open');
+            const closedIcon = btn.querySelector('.eye-closed');
+            if (openIcon && closedIcon) {
+                if (isPassword) {
+                    openIcon.style.display = 'none';
+                    closedIcon.style.display = 'block';
+                    btn.title = 'Hide password';
+                } else {
+                    openIcon.style.display = 'block';
+                    closedIcon.style.display = 'none';
+                    btn.title = 'Show password';
+                }
+            }
+        }
+
+        // Modal helpers
+        function openConfirmModal(modalId) {
+            const m = document.getElementById(modalId);
+            if (m) m.style.display = 'block';
+        }
+        function closeConfirmModal(modalId) {
+            const m = document.getElementById(modalId);
+            if (m) m.style.display = 'none';
+        }
+
+        let cropper;
+        const cropModal = document.getElementById('cropModal');
+        const imageToCrop = document.getElementById('imageToCrop');
+        const closeCropModal = document.getElementById('closeCropModal');
+        const cropAndSave = document.getElementById('cropAndSave');
+        const croppedImageData = document.getElementById('croppedImageData');
+        const profilePreview = document.getElementById('profilePreview');
+        const deletePicBtn = document.getElementById('deletePicBtn');
+        const deleteProfilePhoto = document.getElementById('deleteProfilePhoto');
+
+        deletePicBtn.onclick = () => {
+            deleteProfilePhoto.value = 'true';
+            profilePreview.src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent('{{ user.username }}');
+            document.getElementById('photoUpload').value = '';
+            croppedImageData.value = '';
+            deletePicBtn.style.display = 'none';
+        };
+
+        closeCropModal.onclick = () => {
+            cropModal.style.display = 'none';
+            if (cropper) {
+                cropper.destroy();
+                cropper = null;
+            }
+            document.getElementById('photoUpload').value = '';
+        }
+
+        function previewImage(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    imageToCrop.src = e.target.result;
+                    cropModal.style.display = 'block';
+                    
+                    if (cropper) {
+                        cropper.destroy();
+                    }
+                    
+                    cropper = new Cropper(imageToCrop, {
+                        aspectRatio: 1,
+                        viewMode: 1,
+                        background: false
+                    });
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        cropAndSave.onclick = () => {
+            if (cropper) {
+                const canvas = cropper.getCroppedCanvas({
+                    width: 400,
+                    height: 400
+                });
+                
+                const base64Image = canvas.toDataURL('image/jpeg');
+                
+                profilePreview.src = base64Image;
+                croppedImageData.value = base64Image;
+                
+                deleteProfilePhoto.value = 'false';
+                deletePicBtn.style.display = 'flex';
+                
+                cropModal.style.display = 'none';
+                cropper.destroy();
+                cropper = null;
+            }
+        }
+
+        // Theme Toggle Switch
+        const themeToggle = document.getElementById('themeToggle');
+        if (themeToggle) {
+            themeToggle.onclick = () => {
+                const isLight = document.body.classList.toggle('light-mode');
+                localStorage.setItem('theme', isLight ? 'light' : 'dark');
+            };
+        }
+
+        // OTP Verification Logic for Profile Edit
+        let isEmailVerified = {{ 'true' if user.email else 'false' }};
+        let isPhoneVerified = {{ 'true' if user.phone else 'false' }};
+        let isEditingEmail = false;
+        let isEditingPhone = false;
+        const otpResendTimers = { email: null, mobile: null };
+
+        function enableEditContact(type) {
+            const isEmail = type === 'email';
+            if (isEmail) {
+                isEditingEmail = true;
+                isEmailVerified = false;
+            } else {
+                isEditingPhone = true;
+                isPhoneVerified = false;
+            }
+
+            const input = document.getElementById(isEmail ? 'profile_email' : 'profile_phone');
+            const sendBtn = document.getElementById(isEmail ? 'sendEmailOtpBtn' : 'sendPhoneOtpBtn');
+            const badge = document.getElementById(isEmail ? 'emailVerifiedBadge' : 'phoneVerifiedBadge');
+            const changeBtn = document.getElementById(isEmail ? 'changeEmailBtn' : 'changePhoneBtn');
+            const statusEl = document.getElementById(isEmail ? 'emailOtpStatus' : 'phoneOtpStatus');
+
+            if (badge) badge.style.display = 'none';
+            if (changeBtn) changeBtn.style.display = 'none';
+            if (sendBtn) {
+                sendBtn.style.display = 'inline-flex';
+                sendBtn.disabled = false;
+                sendBtn.innerHTML = isEmail ? '✉️ Send OTP' : '📱 Send OTP';
+            }
+            if (statusEl) {
+                statusEl.className = 'otp-status-text info';
+                statusEl.innerHTML = `✏️ <strong>Edit Mode:</strong> Click "Send OTP" to verify this ${isEmail ? 'email address' : 'mobile number'}.`;
+            }
+            if (input) {
+                input.focus();
+                input.select();
+            }
+        }
+
+        function handleContactInputChange(type) {
+            const isEmail = type === 'email';
+            const input = document.getElementById(isEmail ? 'profile_email' : 'profile_phone');
+            const orig = (input.getAttribute('data-original') || '').trim();
+            const curr = input.value.trim();
+            const sendBtn = document.getElementById(isEmail ? 'sendEmailOtpBtn' : 'sendPhoneOtpBtn');
+            const badge = document.getElementById(isEmail ? 'emailVerifiedBadge' : 'phoneVerifiedBadge');
+            const changeBtn = document.getElementById(isEmail ? 'changeEmailBtn' : 'changePhoneBtn');
+            const drawer = document.getElementById(isEmail ? 'emailOtpDrawer' : 'phoneOtpDrawer');
+            const statusEl = document.getElementById(isEmail ? 'emailOtpStatus' : 'phoneOtpStatus');
+
+            // If input is cleared
+            if (!curr) {
+                if (isEmail) { isEmailVerified = true; isEditingEmail = false; }
+                else { isPhoneVerified = true; isEditingPhone = false; }
+                if (badge) badge.style.display = 'none';
+                if (changeBtn) changeBtn.style.display = 'none';
+                if (sendBtn) sendBtn.style.display = 'none';
+                if (drawer) { drawer.style.display = 'none'; drawer.classList.remove('active'); }
+                statusEl.textContent = '';
+                return;
+            }
+
+            const inEditMode = isEmail ? isEditingEmail : isEditingPhone;
+            
+            // If text matches original database value AND user didn't click Edit
+            if (!inEditMode && curr.toLowerCase() === orig.toLowerCase() && orig !== '') {
+                if (isEmail) isEmailVerified = true; else isPhoneVerified = true;
+                if (badge) {
+                    badge.style.display = 'inline-flex';
+                    badge.textContent = '✓ Verified';
+                }
+                if (changeBtn) changeBtn.style.display = 'inline-block';
+                if (sendBtn) sendBtn.style.display = 'none';
+                if (drawer) { drawer.style.display = 'none'; drawer.classList.remove('active'); }
+                statusEl.textContent = '';
+                return;
+            }
+
+            // Value modified or user clicked Change / Re-verify
+            if (isEmail) isEmailVerified = false; else isPhoneVerified = false;
+            if (badge) badge.style.display = 'none';
+            if (changeBtn) changeBtn.style.display = 'none';
+
+            const check = isEmail ? validateEmailAddress(curr) : validateMobileNumber(curr);
+            if (!check.valid) {
+                if (sendBtn) {
+                    sendBtn.style.display = 'inline-flex';
+                    sendBtn.disabled = true;
+                    sendBtn.innerHTML = isEmail ? '✉️ Send OTP' : '📱 Send OTP';
+                }
+                statusEl.className = 'otp-status-text error';
+                statusEl.textContent = '❌ ' + check.error;
+            } else {
+                if (sendBtn) {
+                    sendBtn.style.display = 'inline-flex';
+                    sendBtn.disabled = false;
+                    sendBtn.innerHTML = isEmail ? '✉️ Send OTP' : '📱 Send OTP';
+                }
+                statusEl.className = 'otp-status-text info';
+                statusEl.innerHTML = `✓ Valid format. Click <strong>"Send OTP"</strong> to verify <code>${curr}</code>.`;
+            }
+        }
+
+        async function handleSendProfileOtp(type) {
+            const isEmail = type === 'email';
+            const inputId = isEmail ? 'profile_email' : 'profile_phone';
+            const val = document.getElementById(inputId).value.trim();
+            const statusEl = document.getElementById(isEmail ? 'emailOtpStatus' : 'phoneOtpStatus');
+            const drawerEl = document.getElementById(isEmail ? 'emailOtpDrawer' : 'phoneOtpDrawer');
+            const btnEl = document.getElementById(isEmail ? 'sendEmailOtpBtn' : 'sendPhoneOtpBtn');
+
+            if (!val) {
+                statusEl.className = 'otp-status-text error';
+                statusEl.textContent = `Please enter a valid ${isEmail ? 'email address' : 'mobile number'} first.`;
+                return;
+            }
+
+            const check = isEmail ? validateEmailAddress(val) : validateMobileNumber(val);
+            if (!check.valid) {
+                statusEl.className = 'otp-status-text error';
+                statusEl.textContent = '❌ ' + check.error;
+                return;
+            }
+
+            btnEl.disabled = true;
+            btnEl.innerHTML = 'Sending...';
+            statusEl.className = 'otp-status-text info';
+            statusEl.textContent = `Dispatching 6-digit OTP to ${val}...`;
+
+            try {
+                const res = await fetch('/api/send_otp', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ type: isEmail ? 'email' : 'mobile', target: check.cleaned || val })
+                });
+                const data = await res.json();
+
+                if (data && data.ok) {
+                    drawerEl.style.display = 'flex';
+                    drawerEl.classList.add('active');
+                    statusEl.className = 'otp-status-text success';
+                    const icon = isEmail ? '✉️' : '📱';
+                    const channel = isEmail ? 'email inbox' : 'SMS inbox';
+                    statusEl.innerHTML = `${icon} 6-digit OTP sent to <strong>${val}</strong>! Please check your ${channel}.` + (data.demo_otp ? ` <br><span style="color:#f59e0b; font-weight: 600;">(Demo Mode OTP: <strong>${data.demo_otp}</strong>)</span>` : '');
+                    
+                    // Countdown timer
+                    let countdown = 30;
+                    btnEl.disabled = true;
+                    btnEl.textContent = `Resend in ${countdown}s`;
+                    if (otpResendTimers[type]) clearInterval(otpResendTimers[type]);
+                    otpResendTimers[type] = setInterval(() => {
+                        countdown--;
+                        if (countdown <= 0) {
+                            clearInterval(otpResendTimers[type]);
+                            btnEl.disabled = false;
+                            btnEl.innerHTML = isEmail ? '✉️ Resend OTP' : '📱 Resend OTP';
+                        } else {
+                            btnEl.textContent = `Resend in ${countdown}s`;
+                        }
+                    }, 1000);
+
+                    const otpInputId = isEmail ? 'emailOtpInput' : 'phoneOtpInput';
+                    const otpInput = document.getElementById(otpInputId);
+                    if (otpInput) {
+                        otpInput.value = '';
+                        setTimeout(() => otpInput.focus(), 100);
+                    }
+                } else {
+                    btnEl.disabled = false;
+                    btnEl.innerHTML = isEmail ? '✉️ Send OTP' : '📱 Send OTP';
+                    statusEl.className = 'otp-status-text error';
+                    statusEl.textContent = (data && data.error) ? data.error : 'Failed to send OTP.';
+                }
+            } catch (err) {
+                btnEl.disabled = false;
+                btnEl.innerHTML = isEmail ? '✉️ Send OTP' : '📱 Send OTP';
+                statusEl.className = 'otp-status-text error';
+                statusEl.textContent = 'Network error while contacting verification server.';
+            }
+        }
+
+        async function handleVerifyProfileOtp(type) {
+            const isEmail = type === 'email';
+            const targetInputId = isEmail ? 'profile_email' : 'profile_phone';
+            const otpInputId = isEmail ? 'emailOtpInput' : 'phoneOtpInput';
+            const targetInput = document.getElementById(targetInputId);
+            const target = targetInput.value.trim();
+            const otp = document.getElementById(otpInputId).value.trim();
+            const statusEl = document.getElementById(isEmail ? 'emailOtpStatus' : 'phoneOtpStatus');
+            const drawerEl = document.getElementById(isEmail ? 'emailOtpDrawer' : 'phoneOtpDrawer');
+            const badgeEl = document.getElementById(isEmail ? 'emailVerifiedBadge' : 'phoneVerifiedBadge');
+            const changeBtn = document.getElementById(isEmail ? 'changeEmailBtn' : 'changePhoneBtn');
+            const sendBtn = document.getElementById(isEmail ? 'sendEmailOtpBtn' : 'sendPhoneOtpBtn');
+
+            if (!otp || otp.length < 4) {
+                statusEl.className = 'otp-status-text error';
+                statusEl.textContent = 'Please enter the 6-digit OTP received.';
+                return;
+            }
+
+            try {
+                const res = await fetch('/api/verify_otp', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ type: isEmail ? 'email' : 'mobile', target: target, otp: otp })
+                });
+                const data = await res.json();
+
+                if (data && data.ok) {
+                    if (isEmail) {
+                        isEmailVerified = true;
+                        isEditingEmail = false;
+                    } else {
+                        isPhoneVerified = true;
+                        isEditingPhone = false;
+                    }
+
+                    if (otpResendTimers[type]) clearInterval(otpResendTimers[type]);
+
+                    drawerEl.style.display = 'none';
+                    drawerEl.classList.remove('active');
+                    if (sendBtn) sendBtn.style.display = 'none';
+                    
+                    targetInput.setAttribute('data-original', target);
+
+                    if (badgeEl) {
+                        badgeEl.style.display = 'inline-flex';
+                        badgeEl.textContent = '✓ Verified';
+                    }
+                    if (changeBtn) {
+                        changeBtn.style.display = 'inline-block';
+                    }
+                    statusEl.className = 'otp-status-text success';
+                    statusEl.innerHTML = `🎉 <strong>${isEmail ? 'Email address' : 'Mobile number'} successfully verified!</strong> Click <em>"Save Profile Changes"</em> to save.`;
+                } else {
+                    statusEl.className = 'otp-status-text error';
+                    statusEl.textContent = (data && data.error) ? data.error : 'Invalid OTP. Please check the code and try again.';
+                }
+            } catch (err) {
+                statusEl.className = 'otp-status-text error';
+                statusEl.textContent = 'Network error verifying OTP.';
+            }
+        }
+
+        // Auto-verify on 6-digit entry and Enter key
+        document.addEventListener('DOMContentLoaded', () => {
+            ['emailOtpInput', 'phoneOtpInput'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    const type = id.startsWith('email') ? 'email' : 'mobile';
+                    el.addEventListener('input', () => {
+                        const val = el.value.trim();
+                        if (val.length === 6 && /^\d{6}$/.test(val)) {
+                            handleVerifyProfileOtp(type);
+                        }
+                    });
+                    el.addEventListener('keydown', (e) => {
+                        if (e.key === 'Enter') {
+                            e.preventDefault();
+                            handleVerifyProfileOtp(type);
+                        }
+                    });
+                }
+            });
+        });
+
+        function validateProfileForm() {
+            const emailInput = document.getElementById('profile_email');
+            const phoneInput = document.getElementById('profile_phone');
+            const emailStatus = document.getElementById('emailOtpStatus');
+            const phoneStatus = document.getElementById('phoneOtpStatus');
+            
+            const origEmail = (emailInput.getAttribute('data-original') || '').trim();
+            const currEmail = emailInput.value.trim();
+            
+            const origPhone = (phoneInput.getAttribute('data-original') || '').trim();
+            const currPhone = phoneInput.value.trim();
+
+            if (currEmail) {
+                const emailCheck = validateEmailAddress(currEmail);
+                if (!emailCheck.valid) {
+                    if (emailStatus) {
+                        emailStatus.className = 'otp-status-text error';
+                        emailStatus.textContent = '❌ ' + emailCheck.error;
+                    }
+                    alert('⚠️ ' + emailCheck.error);
+                    emailInput.focus();
+                    return false;
+                }
+            }
+
+            if (currPhone) {
+                const phoneCheck = validateMobileNumber(currPhone);
+                if (!phoneCheck.valid) {
+                    if (phoneStatus) {
+                        phoneStatus.className = 'otp-status-text error';
+                        phoneStatus.textContent = '❌ ' + phoneCheck.error;
+                    }
+                    alert('⚠️ ' + phoneCheck.error);
+                    phoneInput.focus();
+                    return false;
+                }
+            }
+
+            if (currEmail && (currEmail.toLowerCase() !== origEmail.toLowerCase() || isEditingEmail) && !isEmailVerified) {
+                if (emailStatus) {
+                    emailStatus.className = 'otp-status-text error';
+                    emailStatus.innerHTML = `⚠️ <strong>Verification Required:</strong> Please verify <code>${currEmail}</code> with OTP before saving.`;
+                }
+                alert(`⚠️ Verification Required: Please verify your email (${currEmail}) with OTP before saving.`);
+                enableEditContact('email');
+                emailInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                return false;
+            }
+
+            if (currPhone && (currPhone !== origPhone || isEditingPhone) && !isPhoneVerified) {
+                if (phoneStatus) {
+                    phoneStatus.className = 'otp-status-text error';
+                    phoneStatus.innerHTML = `⚠️ <strong>Verification Required:</strong> Please verify your mobile number (${currPhone}) with OTP before saving.`;
+                }
+                alert(`⚠️ Verification Required: Please verify your mobile number (${currPhone}) with OTP before saving.`);
+                enableEditContact('mobile');
+                phoneInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                return false;
+            }
+
+            return true;
+        }
+    </script>
+</body>
+</html>

@@ -368,5 +368,87 @@ class EventManagementSystemTests(unittest.TestCase):
             sess['username'] = attendee_user
         self.client.post(f'/unregister/{ev_id}')
 
+    def test_08_profile_otp_verification_and_save(self):
+        """Test sending OTP, verifying OTP, and saving profile changes."""
+        test_user = 'otp_test_profile_user'
+        conn = sqlite3.connect('users.db', timeout=15)
+        c = conn.cursor()
+        c.execute("INSERT OR REPLACE INTO users (username, password, full_name, email, phone, is_admin) VALUES (?, ?, ?, ?, ?, ?)",
+                  (test_user, 'pass_hash', 'OTP Tester', 'initial@test.com', '9876543210', 0))
+        conn.commit()
+        conn.close()
+
+        with self.client.session_transaction() as sess:
+            sess['loggedin'] = True
+            sess['username'] = test_user
+
+        # 1. Access profile page
+        resp_profile = self.client.get('/profile')
+        self.assertEqual(resp_profile.status_code, 200)
+
+        # 2. Send email OTP
+        new_email = 'newverified@gmail.com'
+        resp_send_email = self.client.post('/api/send_otp',
+                                           data=json.dumps({'type': 'email', 'target': new_email}),
+                                           content_type='application/json')
+        self.assertEqual(resp_send_email.status_code, 200)
+        data_email = resp_send_email.get_json()
+        self.assertTrue(data_email['ok'])
+
+        # 3. Verify email OTP (123456 or generated demo code)
+        demo_otp = data_email.get('demo_otp') or '123456'
+        resp_v_email = self.client.post('/api/verify_otp',
+                                        data=json.dumps({'type': 'email', 'target': new_email, 'otp': demo_otp}),
+                                        content_type='application/json')
+        self.assertEqual(resp_v_email.status_code, 200)
+        self.assertTrue(resp_v_email.get_json()['ok'])
+
+        # 4. Send mobile OTP
+        new_phone = '9123456789'
+        resp_send_phone = self.client.post('/api/send_otp',
+                                           data=json.dumps({'type': 'mobile', 'target': new_phone}),
+                                           content_type='application/json')
+        self.assertEqual(resp_send_phone.status_code, 200)
+        data_phone = resp_send_phone.get_json()
+        self.assertTrue(data_phone['ok'])
+
+        # 5. Verify mobile OTP
+        demo_phone_otp = data_phone.get('demo_otp') or '123456'
+        resp_v_phone = self.client.post('/api/verify_otp',
+                                        data=json.dumps({'type': 'mobile', 'target': new_phone, 'otp': demo_phone_otp}),
+                                        content_type='application/json')
+        self.assertEqual(resp_v_phone.status_code, 200)
+        self.assertTrue(resp_v_phone.get_json()['ok'])
+
+        # 6. Save Profile with verified contact details
+        resp_save = self.client.post('/profile', data={
+            'first_name': 'Verified',
+            'last_name': 'User',
+            'email': new_email,
+            'phone': new_phone,
+            'college_id': 'COL-OTP-123',
+            'country': 'India',
+            'state': 'Karnataka',
+            'city': 'Bangalore',
+            'pincode': '560001'
+        }, follow_redirects=True)
+        self.assertEqual(resp_save.status_code, 200)
+
+        # 7. Confirm database update
+        conn = sqlite3.connect('users.db', timeout=15)
+        c = conn.cursor()
+        c.execute("SELECT email, phone, city, college_id FROM users WHERE username=?", (test_user,))
+        user_row = c.fetchone()
+        self.assertIsNotNone(user_row)
+        self.assertEqual(user_row[0], new_email)
+        self.assertEqual(user_row[1], new_phone)
+        self.assertEqual(user_row[2], 'Bangalore')
+        self.assertEqual(user_row[3], 'COL-OTP-123')
+        # Clean up
+        c.execute("DELETE FROM users WHERE username=?", (test_user,))
+        conn.commit()
+        conn.close()
+
 if __name__ == '__main__':
     unittest.main()
+
