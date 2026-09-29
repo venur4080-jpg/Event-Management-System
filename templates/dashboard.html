@@ -8,7 +8,118 @@
     <meta name="description"
         content="Discover and register for hackathons, workshops, and seminars on the EVENTS dashboard.">
     <!-- Fonts and CSS -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=4">
+    <style>
+        .calendar-container,
+        .calendar-container * {
+            scrollbar-width: none !important;
+            -ms-overflow-style: none !important;
+        }
+        .calendar-container::-webkit-scrollbar,
+        .calendar-container *::-webkit-scrollbar {
+            display: none !important;
+            width: 0 !important;
+            height: 0 !important;
+            background: transparent !important;
+        }
+        .calendar-container {
+            max-width: 1100px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, minmax(0, 1fr)) !important;
+            gap: 12px;
+            width: 100% !important;
+            box-sizing: border-box !important;
+        }
+        .calendar-weekday {
+            min-width: 0 !important;
+            box-sizing: border-box !important;
+        }
+        .calendar-day {
+            min-width: 0 !important;
+            box-sizing: border-box !important;
+        }
+        .calendar-day.empty {
+            min-width: 0 !important;
+            box-sizing: border-box !important;
+        }
+        .calendar-events-list {
+            min-width: 0 !important;
+            max-width: 100% !important;
+            box-sizing: border-box !important;
+            overflow-x: hidden !important;
+            overflow-y: auto !important;
+            scrollbar-width: none !important;
+            -ms-overflow-style: none !important;
+        }
+        .calendar-events-list::-webkit-scrollbar {
+            display: none !important;
+            width: 0 !important;
+            height: 0 !important;
+        }
+        .calendar-event-item {
+            min-width: 0 !important;
+            max-width: 100% !important;
+            box-sizing: border-box !important;
+            white-space: nowrap !important;
+            overflow: hidden !important;
+            display: flex !important;
+            align-items: center !important;
+            gap: 6px !important;
+            scrollbar-width: none !important;
+            -ms-overflow-style: none !important;
+        }
+        .calendar-event-item::-webkit-scrollbar {
+            display: none !important;
+        }
+        .calendar-event-title-wrapper {
+            flex: 1 !important;
+            min-width: 0 !important;
+            overflow: hidden !important;
+            white-space: nowrap !important;
+            text-overflow: ellipsis !important;
+            scrollbar-width: none !important;
+            -ms-overflow-style: none !important;
+        }
+        .calendar-event-title-wrapper::-webkit-scrollbar {
+            display: none !important;
+        }
+        .calendar-event-title {
+            display: inline-block !important;
+            white-space: nowrap !important;
+            will-change: transform !important;
+            pointer-events: none !important;
+        }
+        .event-status-dot {
+            width: 8px;
+            height: 8px;
+            min-width: 8px;
+            min-height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+            flex-shrink: 0;
+        }
+        .event-status-dot.dot-open {
+            background-color: #22c55e;
+            box-shadow: 0 0 6px rgba(34, 197, 94, 0.7);
+        }
+        .event-status-dot.dot-closed {
+            background-color: #ef4444;
+            box-shadow: 0 0 6px rgba(239, 68, 68, 0.7);
+        }
+        .calendar-legend {
+            display: flex;
+            gap: 14px;
+            justify-content: center;
+            align-items: center;
+            margin-top: 6px;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+    </style>
     <!-- Theme loader (before paint to avoid flash) -->
     <script src="{{ url_for('static', filename='themes.js') }}"></script>
 </head>
@@ -137,9 +248,10 @@
             </li>
             <li style="padding: 0 1rem; color: var(--primary); font-size: 0.8rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;"
                 role="heading" aria-level="3">Host Management</li>
+            <li><a href="{{ url_for('scan_ticket') }}">🎟️ Check-In Scanner</a></li>
+            <li><a href="{{ url_for('checkin_history') }}">📅 Check-in History</a></li>
             <li><a href="{{ url_for('add_event') }}">➕ Add New Event</a></li>
             <li><a href="{{ url_for('host_analytics') }}">📈 Host Analytics</a></li>
-            <li><a href="{{ url_for('scan_ticket') }}">🎟️ Check-In Scanner</a></li>
             {% endif %}
             <li role="separator">
                 <hr style="border: 0; border-top: 1px solid var(--glass-border); margin: 1rem 0;">
@@ -179,14 +291,10 @@
 
     <!-- Search, Filter & View Controls -->
     <div class="search-filter-container">
-        <!-- Search Input with Voice Search -->
-        <div class="search-box" style="position: relative; display: flex; align-items: center;">
+        <!-- Search Input -->
+        <div class="search-box">
             <input type="text" id="searchInput" placeholder="Search events by title or keywords..."
-                oninput="filterEvents()" style="padding-right: 45px;">
-            <button id="voiceSearchBtn" type="button" onclick="startVoiceSearch()" title="Voice Search"
-                style="position: absolute; right: 10px; background: transparent; border: none; font-size: 1.2rem; cursor: pointer; color: var(--primary); transition: transform 0.2s;"
-                onmouseover="this.style.transform='scale(1.2)'"
-                onmouseout="this.style.transform='scale(1)'">🎙️</button>
+                oninput="filterEvents()">
         </div>
 
         <!-- Filters & View Toggle -->
@@ -218,7 +326,13 @@
     <div id="calendarViewContainer" class="calendar-container" style="display: none;">
         <div class="calendar-header">
             <button class="calendar-nav-btn" onclick="prevMonth()">◀ Prev</button>
-            <h2 id="calendarTitle">Month Year</h2>
+            <div style="text-align: center;">
+                <h2 id="calendarTitle">Month Year</h2>
+                <div class="calendar-legend">
+                    <span style="display: inline-flex; align-items: center; gap: 5px;"><span class="event-status-dot dot-open"></span> Open / Upcoming</span>
+                    <span style="display: inline-flex; align-items: center; gap: 5px;"><span class="event-status-dot dot-closed"></span> Closed</span>
+                </div>
+            </div>
             <button class="calendar-nav-btn" onclick="nextMonth()">Next ▶</button>
         </div>
         <div class="calendar-grid" id="calendarGrid">
@@ -685,6 +799,7 @@
                 const dateEl = item.querySelector('.date-badge');
                 const descEl = item.querySelector('.event-desc');
                 const id = item.getAttribute('data-id') || '';
+                const isExpired = item.querySelector('.event-expired') !== null;
 
                 upcomingEventsData.push({
                     id: parseInt(id) || 0,
@@ -694,7 +809,8 @@
                     date: dateEl ? dateEl.textContent.trim() : '',
                     desc: descEl ? descEl.textContent.trim() : '',
                     image: imageEl ? imageEl.src : '',
-                    element: item
+                    element: item,
+                    isPast: isExpired
                 });
             });
 
@@ -874,6 +990,8 @@
             });
 
             const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
             for (let d = 1; d <= totalDays; d++) {
                 const dayEl = document.createElement('div');
                 dayEl.className = 'calendar-day';
@@ -893,26 +1011,64 @@
                     eventsByDay[d].forEach(ev => {
                         const itemEl = document.createElement('div');
                         itemEl.className = 'calendar-event-item';
-                        itemEl.textContent = ev.title;
-                        itemEl.title = `${ev.title}\nCategory: ${ev.category}\nPrice: ${ev.price}`;
+
+                        let isClosed = false;
+                        if (ev.isPast) {
+                            isClosed = true;
+                        } else if (ev.date) {
+                            const eventDate = new Date(ev.date);
+                            eventDate.setHours(0, 0, 0, 0);
+                            if (!isNaN(eventDate.getTime()) && eventDate < today) {
+                                isClosed = true;
+                            }
+                        }
+
+                        itemEl.title = `${ev.title}\nCategory: ${ev.category || 'General'}\nPrice: ${ev.price || 'Free'}\nStatus: ${isClosed ? 'Closed' : 'Open / Upcoming'}`;
                         itemEl.onclick = (e) => {
                             e.stopPropagation();
                             window.location.href = `/event/${ev.id}`;
                         };
 
+                        const dotEl = document.createElement('span');
+                        dotEl.className = `event-status-dot ${isClosed ? 'dot-closed' : 'dot-open'}`;
+
+                        const titleWrapper = document.createElement('div');
+                        titleWrapper.className = 'calendar-event-title-wrapper';
+
+                        const titleSpan = document.createElement('span');
+                        titleSpan.className = 'calendar-event-title';
+                        titleSpan.textContent = ev.title;
+
+                        titleWrapper.appendChild(titleSpan);
+                        itemEl.appendChild(dotEl);
+                        itemEl.appendChild(titleWrapper);
+
+                        // Smooth horizontal marquee on hover for overflowing titles
+                        itemEl.onmouseenter = () => {
+                            const overflowDist = titleSpan.scrollWidth - titleWrapper.clientWidth;
+                            if (overflowDist > 3) {
+                                titleWrapper.style.textOverflow = 'clip';
+                                const duration = Math.max(1.8, Math.min(5.5, overflowDist / 30));
+                                titleSpan.style.transition = `transform ${duration}s ease-in-out 0.4s`;
+                                titleSpan.style.transform = `translateX(-${overflowDist + 4}px)`;
+                            }
+                        };
+
+                        itemEl.onmouseleave = () => {
+                            titleSpan.style.transition = 'transform 0.25s ease 0s';
+                            titleSpan.style.transform = 'translateX(0px)';
+                            titleWrapper.style.textOverflow = 'ellipsis';
+                        };
+
                         const isLightMode = document.body.classList.contains('light-mode');
-                        if (ev.isPast) {
-                            itemEl.style.borderLeftColor = isLightMode ? '#5f6368' : '#dadce0';
-                            itemEl.style.background = isLightMode ? '#f1f3f4' : 'rgba(95, 99, 104, 0.2)';
-                            itemEl.style.color = isLightMode ? '#5f6368' : '#dadce0';
-                        } else if (ev.price === 'free') {
-                            itemEl.style.borderLeftColor = isLightMode ? '#1a73e8' : '#8ab4f8';
-                            itemEl.style.background = isLightMode ? '#e8f0fe' : 'rgba(26, 115, 232, 0.25)';
-                            itemEl.style.color = isLightMode ? '#1a73e8' : '#8ab4f8';
+                        if (isClosed) {
+                            itemEl.style.borderLeftColor = isLightMode ? '#ef4444' : '#f87171';
+                            itemEl.style.background = isLightMode ? '#fef2f2' : 'rgba(239, 68, 68, 0.15)';
+                            itemEl.style.color = isLightMode ? '#991b1b' : '#fca5a5';
                         } else {
-                            itemEl.style.borderLeftColor = isLightMode ? '#d93025' : '#f28b82';
-                            itemEl.style.background = isLightMode ? '#fce8e6' : 'rgba(217, 48, 37, 0.25)';
-                            itemEl.style.color = isLightMode ? '#d93025' : '#f28b82';
+                            itemEl.style.borderLeftColor = isLightMode ? '#10b981' : '#22c55e';
+                            itemEl.style.background = isLightMode ? '#f0fdf4' : 'rgba(34, 197, 94, 0.18)';
+                            itemEl.style.color = isLightMode ? '#166534' : '#86efac';
                         }
 
                         listEl.appendChild(itemEl);
@@ -988,40 +1144,6 @@
         function executeDelete() {
             if (formToDelete) {
                 formToDelete.submit();
-            }
-        }
-
-        // Voice Search (Speech Recognition)
-        function startVoiceSearch() {
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (!SpeechRecognition) {
-                if (window.showToast) showToast('Voice search is not supported in this browser. Please use Chrome or Edge.', 'info');
-                return;
-            }
-            const recognition = new SpeechRecognition();
-            recognition.lang = 'en-US';
-            const btn = document.getElementById('voiceSearchBtn');
-            btn.textContent = '🔴';
-            if (window.showToast) showToast('🎙️ Listening... Speak now (e.g. "AI Hackathon")', 'info', 2500);
-
-            recognition.onresult = (e) => {
-                const transcript = e.results[0][0].transcript;
-                const input = document.getElementById('searchInput');
-                input.value = transcript;
-                filterEvents();
-                btn.textContent = '🎙️';
-                if (window.showToast) showToast(`Searching for: "${transcript}"`, 'success', 2500);
-            };
-            recognition.onerror = () => {
-                btn.textContent = '🎙️';
-            };
-            recognition.onend = () => {
-                btn.textContent = '🎙️';
-            };
-            try {
-                recognition.start();
-            } catch (err) {
-                btn.textContent = '🎙️';
             }
         }
 

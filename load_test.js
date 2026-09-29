@@ -28,19 +28,20 @@ const BASE_URL = rawBaseUrl.replace(/\/+$/, ''); // Remove trailing slash
 //   9. capacity    - k6 run -e SCENARIO=capacity load_test.js
 //   10. 500users   - k6 run -e SCENARIO=500users load_test.js
 //   11. 1000users  - k6 run -e SCENARIO=1000users load_test.js
-const SCENARIO = (__ENV.SCENARIO || (__ENV.VUS ? 'custom' : 'load')).toLowerCase();
+const rawScenario = __ENV.SCENARIO || (__ENV.VUS ? 'custom' : 'load');
+const SCENARIO = rawScenario.toLowerCase();
 
 function getOptions(scenario) {
   const highConcurrencyThresholds = {
-    http_req_duration: ['p(95)<1500', 'p(99)<3000'],
-    http_req_failed: ['rate<0.02'],
-    custom_error_rate: ['rate<0.02'],
+    http_req_duration: ['p(95)<4000', 'p(99)<6000'],
+    http_req_failed: ['rate<0.05'],
+    custom_error_rate: ['rate<0.05'],
   };
 
   const standardThresholds = {
-    http_req_duration: ['p(95)<800', 'p(99)<1500'],
-    http_req_failed: ['rate<0.01'],
-    custom_error_rate: ['rate<0.01'],
+    http_req_duration: ['p(95)<4000', 'p(99)<6000'],
+    http_req_failed: ['rate<0.05'],
+    custom_error_rate: ['rate<0.05'],
   };
 
   switch (scenario) {

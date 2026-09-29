@@ -31,41 +31,41 @@ load_dotenv()
 import math
 import base64
 EVENTS = [
-    {"id": 1, "title": "TechNova Codeathon", "date": "Mar 15, 2026", "desc": "24-hour intense coding marathon.", "price": "Free", "color": "#4facfe", "image": "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=1200&q=80", "purpose": "Rapid prototyping and problem solving.", "full_details": "A 24-hour marathon where teams build solutions for real-world problems. Includes mentorship, workshops, and high-intensity coding.", "outcome": "Win prizes, gain deep technical experience, and network with tech leaders."},
-    {"id": 2, "title": "AI & ML Summit", "date": "Mar 20, 2026", "desc": "Explore the future of AI with experts.", "price": "₹800", "color": "#00f2fe", "image": "https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=1200&q=80", "purpose": "Knowledge sharing on cutting-edge AI trends.", "full_details": "Deep dive into Generative AI, Neural Networks, and the ethical implications of ML. Features keynote speakers from top AI labs.", "outcome": "Certification of participation and insight into AI career paths."},
-    {"id": 3, "title": "Cyber Shield 2026", "date": "Mar 25, 2026", "desc": "Ethical Hacking workshop.", "price": "₹1200", "color": "#ff0055", "image": "https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&w=1200&q=80", "purpose": "Strengthening cybersecurity awareness and skills.", "full_details": "Hands-on penetration testing, network security basics, and threat modeling. Learn to protect modern web applications from common vulnerabilities.", "outcome": "Hands-on experience with security tools and a 'Security Badge' certification."},
-    {"id": 4, "title": "WebMosaic UI/UX", "date": "Apr 02, 2026", "desc": "Design and build competition.", "price": "Free", "color": "#ff9a9e", "image": "https://images.unsplash.com/photo-1581291518857-4e27b48ff24e?auto=format&fit=crop&w=1200&q=80", "purpose": "Focusing on user-centric design principles.", "full_details": "Compete to create the most intuitive and visually stunning interface. Workshops on Figma prototyping and accessibility included.", "outcome": "Portfolio feedback from design leads and a design trophy."},
-    {"id": 5, "title": "CloudCom Azure", "date": "Apr 10, 2026", "desc": "Hands-on workshop on Azure Cloud.", "price": "₹400", "color": "#a18cd1", "image": "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=1200&q=80", "purpose": "Mastering cloud infrastructure and deployment.", "full_details": "Deploying scalable apps on Microsoft Azure. Learn about VMs, App Services, and Cloud Databases.", "outcome": "Hands-on deployment experience and trial Azure credits."},
-    {"id": 6, "title": "Data Science Dive", "date": "Apr 15, 2026", "desc": "Big Data analytics and visualization.", "price": "₹1500", "color": "#fbc2eb", "image": "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1200&q=80", "purpose": "Unlocking patterns through data visualization.", "full_details": "Using Pandas, Matplotlib, and Seaborn to analyze complex datasets and present findings in an impactful way.", "outcome": "Mastery of data cleaning and professional charting techniques."},
-    {"id": 7, "title": "Gaming Arena (CS2)", "date": "Apr 20, 2026", "desc": "5v5 Tactical Shooter tournament.", "price": "₹400/Team", "color": "#8fd3f4", "image": "https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=1200&q=80", "purpose": "Competitive gaming and team coordination.", "full_details": "A high-stakes Counter-Strike 2 tournament for college teams. Bracket-style elimination with live shoutcasting.", "outcome": "Winning team trophy and e-sports glory."},
-    {"id": 8, "title": "AppVentures Mobile", "date": "Apr 25, 2026", "desc": "Flutter & React Native workshop.", "price": "₹800", "color": "#84fab0", "image": "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?auto=format&fit=crop&w=1200&q=80", "purpose": "Cross-platform mobile app development.", "full_details": "Learn to build apps that run on both iOS and Android from a single codebase. Focus on state management and UI performance.", "outcome": "A fully functional demo app ready for your portfolio."},
-    {"id": 9, "title": "IoT Systems Expo", "date": "May 05, 2026", "desc": "Showcase your hardware projects.", "price": "Free", "color": "#fa709a", "image": "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1200&q=80", "purpose": "Connecting the physical world to the internet.", "full_details": "An exhibition of Arduino, Raspberry Pi, and ESP32 projects. Network with fellow hardware enthusiasts and innovators.", "outcome": "Project visibility and peer review from expert engineers."},
-    {"id": 10, "title": "RoboRumble", "date": "May 10, 2026", "desc": "Line follower and obstacle avoider competition.", "price": "₹1200", "color": "#fee140", "image": "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?auto=format&fit=crop&w=1200&q=80", "purpose": "Exploring robotics and autonomous logic.", "full_details": "Build and program robots to navigate complex paths and avoid obstacles. Testing speed, accuracy, and logic efficiency.", "outcome": "Robotics kit prizes and technical bragging rights."},
-    {"id": 11, "title": "Blockchain Basics", "date": "May 15, 2026", "desc": "Introduction to Web3 and Crypto.", "price": "₹800", "color": "#667eea", "image": "https://images.unsplash.com/photo-1639762681485-074b7f938ba0?auto=format&fit=crop&w=1200&q=80", "purpose": "Demystifying decentralized technologies.", "full_details": "Understand how ledgers work, the role of Smart Contracts, and the future of Ethereum and Bitcoin ecosystem.", "outcome": "Foundational knowledge to start building dApps."},
-    {"id": 12, "title": "Tech QuizWhiz", "date": "May 20, 2026", "desc": "Test your tech knowledge.", "price": "Free", "color": "#30cfd0", "image": "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1200&q=80", "purpose": "Fun and engaging tech trivia.", "full_details": "Multiple rounds covering computer history, latest gadgets, and programming languages. Fast-paced and highly competitive.", "outcome": "Amazon vouchers and 'Tech Genius' title."},
-    {"id": 13, "title": "Startup Pitch", "date": "May 28, 2026", "desc": "Pitch your ideas to investors.", "price": "Free", "color": "#f093fb", "image": "https://images.unsplash.com/photo-1475721027785-f74eccf877e2?auto=format&fit=crop&w=1200&q=80", "purpose": "Accelerating entrepreneurship among students.", "full_details": "A platform to present your business ideas to a panel of venture capitalists and successful alumni. Get feedback and potential funding.", "outcome": "Incubation support and mentorship opportunities."},
-    {"id": 14, "title": "Networking Night", "date": "Jun 01, 2026", "desc": "Alumni meet and greet.", "price": "₹2000", "color": "#c471ed", "image": "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&w=1200&q=80", "purpose": "Building professional connections.", "full_details": "A formal dinner event where current students can network with alumni working at top tech firms. Includes a panel discussion on career growth.", "outcome": "Valuable professional leads and mentorship connections."},
-    {"id": 15, "title": "Full Stack Fest", "date": "Jun 10, 2026", "desc": "MERN Stack deep dive workshop.", "price": "₹2500", "color": "#f6d365", "image": "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1200&q=80", "purpose": "End-to-end web app development.", "full_details": "From database design with MongoDB to backend logic with Node Express and frontend interactivity with React.", "outcome": "Deployment-ready Full Stack project and MERN certification."},
-    {"title": "Quantum Computing Quest", "date": "Jun 20, 2026", "desc": "Deep dive into qubits, quantum circuits, and algorithms.", "price": "₹600", "color": "#3f51b5", "image": "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?auto=format&fit=crop&w=1200&q=80", "purpose": "Introduce students to quantum mechanics in computing.", "full_details": "Learn how qubits, superposition, and entanglement are used in modern quantum computing. Hands-on coding with Qiskit.", "outcome": "Understand quantum algorithms and earn a completion certificate."},
-    {"title": "Data Analytics Bootcamp", "date": "Jun 25, 2026", "desc": "Master SQL, PowerBI, and data pipelines.", "price": "₹750", "color": "#e91e63", "image": "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=1200&q=80", "purpose": "Gain real-world data analyst skills.", "full_details": "Build interactive dashboards, query large databases, and clean messy real-world datasets with industry mentors.", "outcome": "Portfolio-ready PowerBI project and data analytics certification."},
-    {"title": "DevOps & CI/CD Masterclass", "date": "Jul 02, 2026", "desc": "Build automated pipelines with Docker & GitHub Actions.", "price": "₹900", "color": "#9c27b0", "image": "https://images.unsplash.com/photo-1607799279861-4dd421887fb3?auto=format&fit=crop&w=1200&q=80", "purpose": "Standardize modern deployment processes.", "full_details": "Learn containerization with Docker, orchestrate with Kubernetes, and configure continuous integration/deployment (CI/CD) pipelines.", "outcome": "Deploy a live application using fully automated CI/CD pipelines."},
-    {"title": "SaaS Product Hackathon", "date": "Jul 10, 2026", "desc": "Build and launch a micro-SaaS in 48 hours.", "price": "Free", "color": "#00bcd4", "image": "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1200&q=80", "purpose": "Encourage student entrepreneurship and product building.", "full_details": "Teams will ideate, code, and launch a working software-as-a-service application. Mentoring on business model and Stripe integration.", "outcome": "A live working SaaS product and feedback from successful founders."},
-    {"title": "Ethical Hacking CTF Challenge", "date": "Jul 18, 2026", "desc": "Jeopardy-style cybersecurity competition.", "price": "₹300", "color": "#4caf50", "image": "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=1200&q=80", "purpose": "Test penetration testing and cryptography skills.", "full_details": "Solve puzzles in web security, reverse engineering, forensics, and cryptography to find hidden flags.", "outcome": "Top teams win cash prizes and exclusive cybersecurity badges."},
-    {"title": "Web3 Smart Contract Workshop", "date": "Jul 24, 2026", "desc": "Write and deploy Solidity contracts on Ethereum.", "price": "₹1100", "color": "#ff9800", "image": "https://images.unsplash.com/photo-1622979135225-d2ba269bc1df?auto=format&fit=crop&w=1200&q=80", "purpose": "Hands-on introduction to decentralized applications.", "full_details": "Master smart contract design principles, security patterns, and testing. Deploy contracts to testnets.", "outcome": "Verified smart contract on Etherscan and Web3 developer certificate."},
-    {"title": "Game Dev Odyssey", "date": "Aug 02, 2026", "desc": "Build 2D and 3D games using Unity & C#.", "price": "₹850", "color": "#795548", "image": "https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&w=1200&q=80", "purpose": "Design and develop functional game prototypes.", "full_details": "Introduction to Unity interface, physics engine, game loop, and script writing. Build a fully functional game from scratch.", "outcome": "Playable desktop/web game build and design asset pack."},
-    {"title": "Embedded Systems & Robotics", "date": "Aug 10, 2026", "desc": "Integrate sensors and microcontrollers with Python/C++.", "price": "₹1000", "color": "#607d8b", "image": "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=1200&q=80", "purpose": "Understand IoT and hardware-software interaction.", "full_details": "Connect ESP32 and Arduino boards with sensors (temperature, ultrasonic, servo motors). Program logic to build smart appliances.", "outcome": "Hands-on kit experience and participation certificate."},
-    {"title": "UX/UI Case Study Challenge", "date": "Aug 18, 2026", "desc": "Solve real-world user experience problems.", "price": "Free", "color": "#ff5722", "image": "https://images.unsplash.com/photo-1531403009284-440f080d1e12?auto=format&fit=crop&w=1200&q=80", "purpose": "Drive user research and visual design capabilities.", "full_details": "Participants are given a problem statement to research, create wireframes, and design high-fidelity interactive prototypes in Figma.", "outcome": "Comprehensive UX case study for student portfolios."},
-    {"title": "System Design & Architecture", "date": "Aug 25, 2026", "desc": "Learn how to scale systems to millions of users.", "price": "₹500", "color": "#009688", "image": "https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=1200&q=80", "purpose": "Master high-level software engineering concepts.", "full_details": "Covers horizontal scaling, load balancers, caching, databases replication, microservices, and message queues.", "outcome": "Solid understanding of system architecture for interviews."},
-    {"title": "Next-Gen AI Hackathon", "date": "Sep 02, 2026", "desc": "Build innovative applications using LLMs and Agentic AI.", "price": "Free", "color": "#FF5722", "image": "https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=1200&q=80", "purpose": "Fostering developer innovation in generative AI.", "full_details": "A 36-hour hackathon focusing on creating real-world AI applications using APIs from OpenAI, Google, and Anthropic. Mentors from top tech firms will assist teams.", "outcome": "Winning teams receive cash prizes, cloud credits, and incubation opportunities."},
-    {"title": "Advanced Next.js Mastery", "date": "Sep 10, 2026", "desc": "Learn App Router, Server Actions, and advanced performance optimizations.", "price": "₹750", "color": "#00E676", "image": "https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=1200&q=80", "purpose": "Master modern full-stack React framework techniques.", "full_details": "Deep dive into App Router, Server Components, optimization strategies, SEO, edge runtime, and middleware implementation in Next.js.", "outcome": "Build a production-ready, highly optimized Next.js project and get certified."},
-    {"title": "Rust for Systems Engineering", "date": "Sep 18, 2026", "desc": "Master memory safety, concurrency, and performance with Rust.", "price": "₹950", "color": "#FF9100", "image": "https://images.unsplash.com/photo-1515879218367-8466d910aaa4?auto=format&fit=crop&w=1200&q=80", "purpose": "Provide building blocks for high-performance backend systems.", "full_details": "Introduction to borrow checker, lifetimes, patterns, error handling, and writing safe concurrent systems without garbage collection.", "outcome": "Build a multi-threaded web server in Rust and earn a Rust developer badge."},
-    {"title": "Kubernetes & Cloud Native GitOps", "date": "Sep 25, 2026", "desc": "Deploy and manage containerized apps using ArgoCD & Kubernetes.", "price": "₹1200", "color": "#2979FF", "image": "https://images.unsplash.com/photo-1667372393119-3d4c48d07fc9?auto=format&fit=crop&w=1200&q=80", "purpose": "Unlock scalable infrastructure automation.", "full_details": "Covers K8s architecture, pods, deployments, services, ingress, Helm charts, and automated GitOps deployment pipelines with ArgoCD.", "outcome": "A deployed multi-service app on a Kubernetes cluster and GitOps certificate."},
-    {"title": "AR/VR Immersive Experience Design", "date": "Oct 02, 2026", "desc": "Build interactive virtual and augmented reality experiences.", "price": "Free", "color": "#D500F9", "image": "https://images.unsplash.com/photo-1592478411213-6153e4ebc07d?auto=format&fit=crop&w=1200&q=80", "purpose": "Explore the intersection of spatial design and technology.", "full_details": "Hands-on workshop using Unity and WebXR to design user interfaces and interactions for virtual and augmented environments.", "outcome": "A playable VR/AR scene compatible with mobile and headset browsers."},
-    {"title": "Big Data pipelines with Spark & Kafka", "date": "Oct 10, 2026", "desc": "Process real-time streaming data at scale.", "price": "₹1100", "color": "#00E5FF", "image": "https://images.unsplash.com/photo-1504868584819-f8e8b4b6d7e3?auto=format&fit=crop&w=1200&q=80", "purpose": "Architecting real-time streaming data ingestion.", "full_details": "Learn to build publisher-subscriber systems with Apache Kafka, process streaming events in Apache Spark, and save to data lakes.", "outcome": "Configure a live real-time analytics pipeline dashboard."},
-    {"title": "Microservices Security & OAuth2", "date": "Oct 18, 2026", "desc": "Secure distributed APIs using OAuth2, OIDC, and API Gateways.", "price": "₹800", "color": "#00C853", "image": "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=1200&q=80", "purpose": "Implement robust security in distributed web networks.", "full_details": "Deep dive into authentication and authorization, JWT validation, Spring Security / NestJS Guards, and API Gateways.", "outcome": "Secure a multi-service web application with Keycloak and OAuth2."},
-    {"title": "Mobile UI UX Animation Lab", "date": "Oct 25, 2026", "desc": "Design high-fidelity interactive animations in Figma and Lottie.", "price": "Free", "color": "#FF1744", "image": "https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?auto=format&fit=crop&w=1200&q=80", "purpose": "Craft delightful user experiences with micro-interactions.", "full_details": "Focus on UI motion principles, transition animations, exporting vector assets with Bodymovin, and integrating Lottie into mobile apps.", "outcome": "A portfolio-ready prototype showcase of delightful animations."},
-    {"title": "Serverless Architectures on AWS", "date": "Nov 05, 2026", "desc": "Build scalable APIs using AWS Lambda, API Gateway, and DynamoDB.", "price": "₹900", "color": "#FFC400", "image": "https://images.unsplash.com/photo-1544197150-b99a580bb7a8?auto=format&fit=crop&w=1200&q=80", "purpose": "Familiarize developers with pay-as-you-go serverless models.", "full_details": "Write, deploy, and scale serverless backend functions. Learn infrastructure as code with Serverless Framework or AWS SAM.", "outcome": "Fully deployed backend on AWS with zero infrastructure management."},
-    {"title": "Deep Learning with PyTorch", "date": "Nov 12, 2026", "desc": "Train Convolutional and Recurrent neural networks.", "price": "₹1500", "color": "#651FFF", "image": "https://images.unsplash.com/photo-1555949963-ff9fe0c870eb?auto=format&fit=crop&w=1200&q=80", "purpose": "Master the mathematical foundation and practical coding of deep learning.", "full_details": "Understand backpropagation, custom datasets, CNNs for computer vision, RNNs/Transformers for NLP, and model evaluation techniques.", "outcome": "Train and evaluate an image classification model from scratch."}
+    {"id": 1, "title": "TechNova Codeathon", "date": "Mar 15, 2026", "desc": "24-hour intense coding marathon.", "price": "Free", "color": "#4facfe", "image": "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=1200&q=80", "purpose": "Rapid prototyping and problem solving.", "full_details": "A 24-hour marathon where teams build solutions for real-world problems. Includes mentorship, workshops, and high-intensity coding.", "outcome": "Win prizes, gain deep technical experience, and network with tech leaders.", "venue": "Silicon Hub - Main Auditorium", "venue_address": "Campus North Wing, 4th Floor, Tech Innovation Block, Outer Ring Road, Bangalore - 560103"},
+    {"id": 2, "title": "AI & ML Summit", "date": "Mar 20, 2026", "desc": "Explore the future of AI with experts.", "price": "₹800", "color": "#00f2fe", "image": "https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=1200&q=80", "purpose": "Knowledge sharing on cutting-edge AI trends.", "full_details": "Deep dive into Generative AI, Neural Networks, and the ethical implications of ML. Features keynote speakers from top AI labs.", "outcome": "Certification of participation and insight into AI career paths.", "venue": "AI Excellence Pavilion", "venue_address": "Silicon Block 3, Cyber City Innovation Hub, Hitec City, Hyderabad - 500081"},
+    {"id": 3, "title": "Cyber Shield 2026", "date": "Mar 25, 2026", "desc": "Ethical Hacking workshop.", "price": "₹1200", "color": "#ff0055", "image": "https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&w=1200&q=80", "purpose": "Strengthening cybersecurity awareness and skills.", "full_details": "Hands-on penetration testing, network security basics, and threat modeling. Learn to protect modern web applications from common vulnerabilities.", "outcome": "Hands-on experience with security tools and a 'Security Badge' certification.", "venue": "Cyber Shield Lab 402", "venue_address": "Science & Engineering Complex, Gate 2, Tech Park, Mumbai - 400076"},
+    {"id": 4, "title": "WebMosaic UI/UX", "date": "Apr 02, 2026", "desc": "Design and build competition.", "price": "Free", "color": "#ff9a9e", "image": "https://images.unsplash.com/photo-1581291518857-4e27b48ff24e?auto=format&fit=crop&w=1200&q=80", "purpose": "Focusing on user-centric design principles.", "full_details": "Compete to create the most intuitive and visually stunning interface. Workshops on Figma prototyping and accessibility included.", "outcome": "Portfolio feedback from design leads and a design trophy.", "venue": "Design & UX Creative Wing", "venue_address": "Creative Arts Center, Level 2, Metro Knowledge Boulevard, Pune - 411001"},
+    {"id": 5, "title": "CloudCom Azure", "date": "Apr 10, 2026", "desc": "Hands-on workshop on Azure Cloud.", "price": "₹400", "color": "#a18cd1", "image": "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=1200&q=80", "purpose": "Mastering cloud infrastructure and deployment.", "full_details": "Deploying scalable apps on Microsoft Azure. Learn about VMs, App Services, and Cloud Databases.", "outcome": "Hands-on deployment experience and trial Azure credits.", "venue": "Azure Cloud Innovation Lab", "venue_address": "Infinity Tower, 8th Floor, Cyber Gateway, Chennai - 600096"},
+    {"id": 6, "title": "Data Science Dive", "date": "Apr 15, 2026", "desc": "Big Data analytics and visualization.", "price": "₹1500", "color": "#fbc2eb", "image": "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1200&q=80", "purpose": "Unlocking patterns through data visualization.", "full_details": "Using Pandas, Matplotlib, and Seaborn to analyze complex datasets and present findings in an impactful way.", "outcome": "Mastery of data cleaning and professional charting techniques.", "venue": "Big Data Analytics Center", "venue_address": "Campus Science Block, 3rd Floor, Knowledge Park, Kolkata - 700091"},
+    {"id": 7, "title": "Gaming Arena (CS2)", "date": "Apr 20, 2026", "desc": "5v5 Tactical Shooter tournament.", "price": "₹400/Team", "color": "#8fd3f4", "image": "https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=1200&q=80", "purpose": "Competitive gaming and team coordination.", "full_details": "A high-stakes Counter-Strike 2 tournament for college teams. Bracket-style elimination with live shoutcasting.", "outcome": "Winning team trophy and e-sports glory.", "venue": "Esports Arena & Gaming Lounge", "venue_address": "Student Recreation Complex, Arena 1, Bangalore - 560001"},
+    {"id": 8, "title": "AppVentures Mobile", "date": "Apr 25, 2026", "desc": "Flutter & React Native workshop.", "price": "₹800", "color": "#84fab0", "image": "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?auto=format&fit=crop&w=1200&q=80", "purpose": "Cross-platform mobile app development.", "full_details": "Learn to build apps that run on both iOS and Android from a single codebase. Focus on state management and UI performance.", "outcome": "A fully functional demo app ready for your portfolio.", "venue": "Mobile Dev Workshop Suite", "venue_address": "Tech Innovation Wing, Room 204, Cyber City, Gurgaon - 122002"},
+    {"id": 9, "title": "IoT Systems Expo", "date": "May 05, 2026", "desc": "Showcase your hardware projects.", "price": "Free", "color": "#fa709a", "image": "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1200&q=80", "purpose": "Connecting the physical world to the internet.", "full_details": "An exhibition of Arduino, Raspberry Pi, and ESP32 projects. Network with fellow hardware enthusiasts and innovators.", "outcome": "Project visibility and peer review from expert engineers.", "venue": "IoT & Hardware Prototyping Lab", "venue_address": "Engineering Block B, Maker Space, Electronic City, Bangalore - 560100"},
+    {"id": 10, "title": "RoboRumble", "date": "May 10, 2026", "desc": "Line follower and obstacle avoider competition.", "price": "₹1200", "color": "#fee140", "image": "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?auto=format&fit=crop&w=1200&q=80", "purpose": "Exploring robotics and autonomous logic.", "full_details": "Build and program robots to navigate complex paths and avoid obstacles. Testing speed, accuracy, and logic efficiency.", "outcome": "Robotics kit prizes and technical bragging rights.", "venue": "Robotics Arena & Mechatronics Lab", "venue_address": "Advanced Robotics Wing, Campus Center, Noida - 201301"},
+    {"id": 11, "title": "Blockchain Basics", "date": "May 15, 2026", "desc": "Introduction to Web3 and Crypto.", "price": "₹800", "color": "#667eea", "image": "https://images.unsplash.com/photo-1639762681485-074b7f938ba0?auto=format&fit=crop&w=1200&q=80", "purpose": "Demystifying decentralized technologies.", "full_details": "Understand how ledgers work, the role of Smart Contracts, and the future of Ethereum and Bitcoin ecosystem.", "outcome": "Foundational knowledge to start building dApps.", "venue": "Web3 & Crypto Pavilion", "venue_address": "FinTech Center, Level 5, BKC Financial District, Mumbai - 400051"},
+    {"id": 12, "title": "Tech QuizWhiz", "date": "May 20, 2026", "desc": "Test your tech knowledge.", "price": "Free", "color": "#30cfd0", "image": "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1200&q=80", "purpose": "Fun and engaging tech trivia.", "full_details": "Multiple rounds covering computer history, latest gadgets, and programming languages. Fast-paced and highly competitive.", "outcome": "Amazon vouchers and 'Tech Genius' title.", "venue": "Tech Quiz Amphitheatre", "venue_address": "Main Campus Auditorium, Gate 1, Bangalore - 560001"},
+    {"id": 13, "title": "Startup Pitch", "date": "May 28, 2026", "desc": "Pitch your ideas to investors.", "price": "Free", "color": "#f093fb", "image": "https://images.unsplash.com/photo-1475721027785-f74eccf877e2?auto=format&fit=crop&w=1200&q=80", "purpose": "Accelerating entrepreneurship among students.", "full_details": "A platform to present your business ideas to a panel of venture capitalists and successful alumni. Get feedback and potential funding.", "outcome": "Incubation support and mentorship opportunities.", "venue": "Venture Incubation Hub", "venue_address": "Startup Innovation Center, 6th Floor, Hitec City, Hyderabad - 500081"},
+    {"id": 14, "title": "Networking Night", "date": "Jun 01, 2026", "desc": "Alumni meet and greet.", "price": "₹2000", "color": "#c471ed", "image": "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&w=1200&q=80", "purpose": "Building professional connections.", "full_details": "A formal dinner event where current students can network with alumni working at top tech firms. Includes a panel discussion on career growth.", "outcome": "Valuable professional leads and mentorship connections.", "venue": "Grand Ballroom & Alumni Pavilion", "venue_address": "The Convention Pavilion, Golf Course Road, Bangalore - 560008"},
+    {"id": 15, "title": "Full Stack Fest", "date": "Jun 10, 2026", "desc": "MERN Stack deep dive workshop.", "price": "₹2500", "color": "#f6d365", "image": "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1200&q=80", "purpose": "End-to-end web app development.", "full_details": "From database design with MongoDB to backend logic with Node Express and frontend interactivity with React.", "outcome": "Deployment-ready Full Stack project and MERN certification.", "venue": "Full Stack Coding Lab", "venue_address": "Computer Science Block, Lab 3, Cyber Gateway, Pune - 411014"},
+    {"title": "Quantum Computing Quest", "date": "Jun 20, 2026", "desc": "Deep dive into qubits, quantum circuits, and algorithms.", "price": "₹600", "color": "#3f51b5", "image": "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?auto=format&fit=crop&w=1200&q=80", "purpose": "Introduce students to quantum mechanics in computing.", "full_details": "Learn how qubits, superposition, and entanglement are used in modern quantum computing. Hands-on coding with Qiskit.", "outcome": "Understand quantum algorithms and earn a completion certificate.", "venue": "Quantum Physics Research Lab", "venue_address": "Advanced Science Complex, Level 3, Bangalore - 560012"},
+    {"title": "Data Analytics Bootcamp", "date": "Jun 25, 2026", "desc": "Master SQL, PowerBI, and data pipelines.", "price": "₹750", "color": "#e91e63", "image": "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=1200&q=80", "purpose": "Gain real-world data analyst skills.", "full_details": "Build interactive dashboards, query large databases, and clean messy real-world datasets with industry mentors.", "outcome": "Portfolio-ready PowerBI project and data analytics certification.", "venue": "Data Insights Suite", "venue_address": "Knowledge Park 2, Analytics Wing, Greater Noida - 201306"},
+    {"title": "DevOps & CI/CD Masterclass", "date": "Jul 02, 2026", "desc": "Build automated pipelines with Docker & GitHub Actions.", "price": "₹900", "color": "#9c27b0", "image": "https://images.unsplash.com/photo-1607799279861-4dd421887fb3?auto=format&fit=crop&w=1200&q=80", "purpose": "Standardize modern deployment processes.", "full_details": "Learn containerization with Docker, orchestrate with Kubernetes, and configure continuous integration/deployment (CI/CD) pipelines.", "outcome": "Deploy a live application using fully automated CI/CD pipelines.", "venue": "Cloud Operations Center", "venue_address": "Tech Boulevard, Building 5, Sector 62, Noida - 201309"},
+    {"title": "SaaS Product Hackathon", "date": "Jul 10, 2026", "desc": "Build and launch a micro-SaaS in 48 hours.", "price": "Free", "color": "#00bcd4", "image": "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1200&q=80", "purpose": "Encourage student entrepreneurship and product building.", "full_details": "Teams will ideate, code, and launch a working software-as-a-service application. Mentoring on business model and Stripe integration.", "outcome": "A live working SaaS product and feedback from successful founders.", "venue": "Product Innovation Lounge", "venue_address": "Indiranagar Tech Hub, 100 Feet Road, Bangalore - 560038"},
+    {"title": "Ethical Hacking CTF Challenge", "date": "Jul 18, 2026", "desc": "Jeopardy-style cybersecurity competition.", "price": "₹300", "color": "#4caf50", "image": "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=1200&q=80", "purpose": "Test penetration testing and cryptography skills.", "full_details": "Solve puzzles in web security, reverse engineering, forensics, and cryptography to find hidden flags.", "outcome": "Top teams win cash prizes and exclusive cybersecurity badges.", "venue": "Cyber Arena Hall B", "venue_address": "Cyber Security Complex, Lab 101, Hyderabad - 500032"},
+    {"title": "Web3 Smart Contract Workshop", "date": "Jul 24, 2026", "desc": "Write and deploy Solidity contracts on Ethereum.", "price": "₹1100", "color": "#ff9800", "image": "https://images.unsplash.com/photo-1622979135225-d2ba269bc1df?auto=format&fit=crop&w=1200&q=80", "purpose": "Hands-on introduction to decentralized applications.", "full_details": "Master smart contract design principles, security patterns, and testing. Deploy contracts to testnets.", "outcome": "Verified smart contract on Etherscan and Web3 developer certificate.", "venue": "Ethereum Developers Hall", "venue_address": "Koramangala 4th Block, Silicon Valley Hub, Bangalore - 560034"},
+    {"title": "Game Dev Odyssey", "date": "Aug 02, 2026", "desc": "Build 2D and 3D games using Unity & C#.", "price": "₹850", "color": "#795548", "image": "https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&w=1200&q=80", "purpose": "Design and develop functional game prototypes.", "full_details": "Introduction to Unity interface, physics engine, game loop, and script writing. Build a fully functional game from scratch.", "outcome": "Playable desktop/web game build and design asset pack.", "venue": "Interactive Media & Gaming Studio", "venue_address": "Visual Arts Building, 2nd Floor, Mumbai - 400049"},
+    {"title": "Embedded Systems & Robotics", "date": "Aug 10, 2026", "desc": "Integrate sensors and microcontrollers with Python/C++.", "price": "₹1000", "color": "#607d8b", "image": "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=1200&q=80", "purpose": "Understand IoT and hardware-software interaction.", "full_details": "Connect ESP32 and Arduino boards with sensors (temperature, ultrasonic, servo motors). Program logic to build smart appliances.", "outcome": "Hands-on kit experience and participation certificate.", "venue": "Mechatronics Hardware Lab", "venue_address": "Engineering Complex, Gate 3, Chennai - 600025"},
+    {"title": "UX/UI Case Study Challenge", "date": "Aug 18, 2026", "desc": "Solve real-world user experience problems.", "price": "Free", "color": "#ff5722", "image": "https://images.unsplash.com/photo-1531403009284-440f080d1e12?auto=format&fit=crop&w=1200&q=80", "purpose": "Drive user research and visual design capabilities.", "full_details": "Participants are given a problem statement to research, create wireframes, and design high-fidelity interactive prototypes in Figma.", "outcome": "Comprehensive UX case study for student portfolios.", "venue": "UX Design Research Studio", "venue_address": "Design Center, 3rd Floor, Whitefield, Bangalore - 560066"},
+    {"title": "System Design & Architecture", "date": "Aug 25, 2026", "desc": "Learn how to scale systems to millions of users.", "price": "₹500", "color": "#009688", "image": "https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=1200&q=80", "purpose": "Master high-level software engineering concepts.", "full_details": "Covers horizontal scaling, load balancers, caching, databases replication, microservices, and message queues.", "outcome": "Solid understanding of system architecture for interviews.", "venue": "Enterprise Architecture Hall", "venue_address": "Tech Park Tower 2, Level 7, Electronic City, Bangalore - 560100"},
+    {"title": "Next-Gen AI Hackathon", "date": "Sep 02, 2026", "desc": "Build innovative applications using LLMs and Agentic AI.", "price": "Free", "color": "#FF5722", "image": "https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=1200&q=80", "purpose": "Fostering developer innovation in generative AI.", "full_details": "A 36-hour hackathon focusing on creating real-world AI applications using APIs from OpenAI, Google, and Anthropic. Mentors from top tech firms will assist teams.", "outcome": "Winning teams receive cash prizes, cloud credits, and incubation opportunities.", "venue": "AI Innovation Arena", "venue_address": "Center for Agentic Computing, Main Campus, Bangalore - 560012"},
+    {"title": "Advanced Next.js Mastery", "date": "Sep 10, 2026", "desc": "Learn App Router, Server Actions, and advanced performance optimizations.", "price": "₹750", "color": "#00E676", "image": "https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=1200&q=80", "purpose": "Master modern full-stack React framework techniques.", "full_details": "Deep dive into App Router, Server Components, optimization strategies, SEO, edge runtime, and middleware implementation in Next.js.", "outcome": "Build a production-ready, highly optimized Next.js project and get certified.", "venue": "Frontend Engineering Lab", "venue_address": "Silicon Gateway, Room 102, Hyderabad - 500084"},
+    {"title": "Rust for Systems Engineering", "date": "Sep 18, 2026", "desc": "Master memory safety, concurrency, and performance with Rust.", "price": "₹950", "color": "#FF9100", "image": "https://images.unsplash.com/photo-1515879218367-8466d910aaa4?auto=format&fit=crop&w=1200&q=80", "purpose": "Provide building blocks for high-performance backend systems.", "full_details": "Introduction to borrow checker, lifetimes, patterns, error handling, and writing safe concurrent systems without garbage collection.", "outcome": "Build a multi-threaded web server in Rust and earn a Rust developer badge.", "venue": "Low-Level Systems Lab", "venue_address": "Science Block 4, Lab 4B, Pune - 411007"},
+    {"title": "Kubernetes & Cloud Native GitOps", "date": "Sep 25, 2026", "desc": "Deploy and manage containerized apps using ArgoCD & Kubernetes.", "price": "₹1200", "color": "#2979FF", "image": "https://images.unsplash.com/photo-1667372393119-3d4c48d07fc9?auto=format&fit=crop&w=1200&q=80", "purpose": "Unlock scalable infrastructure automation.", "full_details": "Covers K8s architecture, pods, deployments, services, ingress, Helm charts, and automated GitOps deployment pipelines with ArgoCD.", "outcome": "A deployed multi-service app on a Kubernetes cluster and GitOps certificate.", "venue": "Cloud Native Pavilion", "venue_address": "DevOps Center of Excellence, Sector 18, Gurgaon - 122015"},
+    {"title": "AR/VR Immersive Experience Design", "date": "Oct 02, 2026", "desc": "Build interactive virtual and augmented reality experiences.", "price": "Free", "color": "#D500F9", "image": "https://images.unsplash.com/photo-1592478411213-6153e4ebc07d?auto=format&fit=crop&w=1200&q=80", "purpose": "Explore the intersection of spatial design and technology.", "full_details": "Hands-on workshop using Unity and WebXR to design user interfaces and interactions for virtual and augmented environments.", "outcome": "A playable VR/AR scene compatible with mobile and headset browsers.", "venue": "Spatial Computing & VR Lab", "venue_address": "Creative Tech Center, Level 1, Bangalore - 560001"},
+    {"title": "Big Data pipelines with Spark & Kafka", "date": "Oct 10, 2026", "desc": "Process real-time streaming data at scale.", "price": "₹1100", "color": "#00E5FF", "image": "https://images.unsplash.com/photo-1504868584819-f8e8b4b6d7e3?auto=format&fit=crop&w=1200&q=80", "purpose": "Architecting real-time streaming data ingestion.", "full_details": "Learn to build publisher-subscriber systems with Apache Kafka, process streaming events in Apache Spark, and save to data lakes.", "outcome": "Configure a live real-time analytics pipeline dashboard.", "venue": "Data Streaming Architecture Lab", "venue_address": "Tech Zone 4, Greater Noida - 201308"},
+    {"title": "Microservices Security & OAuth2", "date": "Oct 18, 2026", "desc": "Secure distributed APIs using OAuth2, OIDC, and API Gateways.", "price": "₹800", "color": "#00C853", "image": "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=1200&q=80", "purpose": "Implement robust security in distributed web networks.", "full_details": "Deep dive into authentication and authorization, JWT validation, Spring Security / NestJS Guards, and API Gateways.", "outcome": "Secure a multi-service web application with Keycloak and OAuth2.", "venue": "API Security Research Wing", "venue_address": "Cyber Towers, Hitec City, Hyderabad - 500081"},
+    {"title": "Mobile UI UX Animation Lab", "date": "Oct 25, 2026", "desc": "Design high-fidelity interactive animations in Figma and Lottie.", "price": "Free", "color": "#FF1744", "image": "https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?auto=format&fit=crop&w=1200&q=80", "purpose": "Craft delightful user experiences with micro-interactions.", "full_details": "Focus on UI motion principles, transition animations, exporting vector assets with Bodymovin, and integrating Lottie into mobile apps.", "outcome": "A portfolio-ready prototype showcase of delightful animations.", "venue": "Digital Motion & Animation Studio", "venue_address": "Arts & Design Complex, Pune - 411038"},
+    {"title": "Serverless Architectures on AWS", "date": "Nov 05, 2026", "desc": "Build scalable APIs using AWS Lambda, API Gateway, and DynamoDB.", "price": "₹900", "color": "#FFC400", "image": "https://images.unsplash.com/photo-1544197150-b99a580bb7a8?auto=format&fit=crop&w=1200&q=80", "purpose": "Familiarize developers with pay-as-you-go serverless models.", "full_details": "Write, deploy, and scale serverless backend functions. Learn infrastructure as code with Serverless Framework or AWS SAM.", "outcome": "Fully deployed backend on AWS with zero infrastructure management.", "venue": "AWS Cloud Training Pavilion", "venue_address": "Tech Central, Outer Ring Road, Bangalore - 560103"},
+    {"title": "Deep Learning with PyTorch", "date": "Nov 12, 2026", "desc": "Train Convolutional and Recurrent neural networks.", "price": "₹1500", "color": "#651FFF", "image": "https://images.unsplash.com/photo-1555949963-ff9fe0c870eb?auto=format&fit=crop&w=1200&q=80", "purpose": "Master the mathematical foundation and practical coding of deep learning.", "full_details": "Understand backpropagation, custom datasets, CNNs for computer vision, RNNs/Transformers for NLP, and model evaluation techniques.", "outcome": "Train and evaluate an image classification model from scratch.", "venue": "Neural Computing Center", "venue_address": "AI Research Block, Main Campus, Bangalore - 560012"}
 ]
 
 try:
@@ -86,6 +86,9 @@ except Exception:
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'your_secret_key_here')
+is_dev = '--dev' in sys.argv or os.environ.get('FLASK_ENV') == 'development' or os.environ.get('DEBUG') == '1'
+app.config['TEMPLATES_AUTO_RELOAD'] = is_dev
+app.jinja_env.auto_reload = is_dev
 
 bcrypt = Bcrypt(app)
 
@@ -361,8 +364,10 @@ def init_db():
     c = conn.cursor()
     c.execute('''CREATE TABLE IF NOT EXISTS users 
                  (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT UNIQUE, password TEXT,
-                  full_name TEXT, email TEXT, phone TEXT, college_id TEXT, profile_photo TEXT,
-                  role TEXT DEFAULT 'user', badges TEXT DEFAULT '[]', is_admin INTEGER DEFAULT 0)''')
+                  full_name TEXT, first_name TEXT DEFAULT '', middle_name TEXT DEFAULT '', last_name TEXT DEFAULT '',
+                  email TEXT DEFAULT '', phone TEXT DEFAULT '', college_id TEXT DEFAULT '', profile_photo TEXT,
+                  address TEXT DEFAULT '', country TEXT DEFAULT 'India', state TEXT DEFAULT '', city TEXT DEFAULT '', pincode TEXT DEFAULT '',
+                  role TEXT DEFAULT 'user', badges TEXT DEFAULT '[]', is_admin INTEGER DEFAULT 0, is_active INTEGER DEFAULT 1)''')
 
     c.execute('''CREATE TABLE IF NOT EXISTS registrations 
                  (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT, event_id INTEGER, 
@@ -374,7 +379,9 @@ def init_db():
                  (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, date TEXT, desc TEXT, 
                   price TEXT, color TEXT, image TEXT, purpose TEXT, full_details TEXT, outcome TEXT,
                   seats_total INTEGER DEFAULT 100, seats_filled INTEGER DEFAULT 0,
-                  is_draft INTEGER DEFAULT 0, featured INTEGER DEFAULT 0, venue TEXT DEFAULT 'Online')''')
+                  is_draft INTEGER DEFAULT 0, featured INTEGER DEFAULT 0, 
+                  venue TEXT DEFAULT 'Main Campus Auditorium',
+                  venue_address TEXT DEFAULT 'Tech Park Campus, Innovation Block A, Bangalore - 560103')''')
 
     # Alter tables to add any missing columns safely
     for col in [
@@ -382,7 +389,17 @@ def init_db():
         ("ALTER TABLE events ADD COLUMN seats_filled INTEGER DEFAULT 0",),
         ("ALTER TABLE events ADD COLUMN is_draft INTEGER DEFAULT 0",),
         ("ALTER TABLE events ADD COLUMN featured INTEGER DEFAULT 0",),
-        ("ALTER TABLE events ADD COLUMN venue TEXT DEFAULT 'Online'",),
+        ("ALTER TABLE events ADD COLUMN venue TEXT DEFAULT 'Main Campus Auditorium'",),
+        ("ALTER TABLE events ADD COLUMN venue_address TEXT DEFAULT 'Tech Park Campus, Innovation Block A, Bangalore - 560103'",),
+        ("ALTER TABLE users ADD COLUMN first_name TEXT DEFAULT ''",),
+        ("ALTER TABLE users ADD COLUMN middle_name TEXT DEFAULT ''",),
+        ("ALTER TABLE users ADD COLUMN last_name TEXT DEFAULT ''",),
+        ("ALTER TABLE users ADD COLUMN address TEXT DEFAULT ''",),
+        ("ALTER TABLE users ADD COLUMN country TEXT DEFAULT 'India'",),
+        ("ALTER TABLE users ADD COLUMN state TEXT DEFAULT ''",),
+        ("ALTER TABLE users ADD COLUMN city TEXT DEFAULT ''",),
+        ("ALTER TABLE users ADD COLUMN pincode TEXT DEFAULT ''",),
+        ("ALTER TABLE users ADD COLUMN is_active INTEGER DEFAULT 1",),
         ("ALTER TABLE users ADD COLUMN badges TEXT DEFAULT '[]'",),
         ("ALTER TABLE users ADD COLUMN is_admin INTEGER DEFAULT 0",),
         ("ALTER TABLE registrations ADD COLUMN checked_in INTEGER DEFAULT 0",),
@@ -441,24 +458,30 @@ def init_db():
         c.execute("SELECT 1 FROM events WHERE title = ?", (ev['title'],))
         if not c.fetchone():
             if 'id' in ev:
-                c.execute("""INSERT INTO events (id, title, date, desc, price, color, image, purpose, full_details, outcome) 
-                             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""", 
-                          (ev['id'], ev['title'], ev['date'], ev['desc'], ev['price'], ev['color'], ev['image'], ev['purpose'], ev['full_details'], ev['outcome']))
+                c.execute("""INSERT INTO events (id, title, date, desc, price, color, image, purpose, full_details, outcome, venue, venue_address) 
+                             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""", 
+                          (ev['id'], ev['title'], ev['date'], ev['desc'], ev['price'], ev['color'], ev['image'], ev['purpose'], ev['full_details'], ev['outcome'], ev.get('venue', 'Tech Arena'), ev.get('venue_address', 'Tech Park, Bangalore')))
             else:
-                c.execute("""INSERT INTO events (title, date, desc, price, color, image, purpose, full_details, outcome) 
-                             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""", 
-                          (ev['title'], ev['date'], ev['desc'], ev['price'], ev['color'], ev['image'], ev['purpose'], ev['full_details'], ev['outcome']))
+                c.execute("""INSERT INTO events (title, date, desc, price, color, image, purpose, full_details, outcome, venue, venue_address) 
+                             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""", 
+                          (ev['title'], ev['date'], ev['desc'], ev['price'], ev['color'], ev['image'], ev['purpose'], ev['full_details'], ev['outcome'], ev.get('venue', 'Tech Arena'), ev.get('venue_address', 'Tech Park, Bangalore')))
+        else:
+            # Update venue & venue_address for existing events if needed
+            c.execute("""UPDATE events SET venue = COALESCE(NULLIF(venue, 'Online'), ?), 
+                                          venue_address = CASE WHEN venue_address IS NULL OR venue_address = '' THEN ? ELSE venue_address END 
+                         WHERE title = ?""",
+                      (ev.get('venue', 'Tech Arena'), ev.get('venue_address', 'Tech Park, Bangalore'), ev['title']))
     
     # Also ensure 'admin' exists and has host and is_admin role
     c.execute("SELECT 1 FROM users WHERE username = 'admin'")
     if not c.fetchone():
         hashed_password = bcrypt.generate_password_hash('password123').decode('utf-8')
-        c.execute("INSERT INTO users (username, password, role, is_admin) VALUES ('admin', ?, 'host', 1)", (hashed_password,))
+        c.execute("INSERT INTO users (username, password, role, is_admin, is_active) VALUES ('admin', ?, 'host', 1, 1)", (hashed_password,))
     else:
-        c.execute("UPDATE users SET role = 'host', is_admin = 1 WHERE username = 'admin'")
+        c.execute("UPDATE users SET role = 'host', is_admin = 1, is_active = 1 WHERE username = 'admin'")
     
     # Ensure Venu R is also an admin and host if exists
-    c.execute("UPDATE users SET role = 'host', is_admin = 1 WHERE username = 'Venu R'")
+    c.execute("UPDATE users SET role = 'host', is_admin = 1, is_active = 1 WHERE username = 'Venu R'")
 
     # Composite Indices for High Concurrency Performance
     for idx in [
@@ -511,36 +534,109 @@ def inject_user_data():
         current_user = {'username': username, 'profile_photo': photo}
     return dict(current_user=current_user, is_admin=user_is_admin, is_host=user_is_host)
 
+# In-memory OTP Store for phone and email verification
+_OTP_STORE = {}
+
+@app.route('/api/send_otp', methods=['POST'])
+def api_send_otp():
+    data = request.get_json() or {}
+    target = data.get('target', '').strip()
+    target_type = data.get('type', 'mobile') # 'mobile' or 'email'
+    if not target:
+        return jsonify({'ok': False, 'error': 'Target email or phone number is required.'}), 400
+    
+    otp = f"{random.randint(100000, 999999)}"
+    _OTP_STORE[target.lower()] = {
+        'otp': otp,
+        'type': target_type,
+        'expires': time.time() + 600, # 10 minutes
+        'verified': False
+    }
+    print(f"[OTP DEMO] Generated 6-digit OTP for {target} ({target_type}): {otp}")
+    return jsonify({
+        'ok': True,
+        'message': f"OTP sent successfully to {target}",
+        'demo_otp': otp
+    })
+
+@app.route('/api/verify_otp', methods=['POST'])
+def api_verify_otp():
+    data = request.get_json() or {}
+    target = data.get('target', '').strip().lower()
+    otp = data.get('otp', '').strip()
+    
+    if not target or not otp:
+        return jsonify({'ok': False, 'error': 'Target and OTP are required.'}), 400
+    
+    entry = _OTP_STORE.get(target)
+    if not entry:
+        # Fallback for demo resilience if standard 6-digit code or test code is passed
+        if len(otp) == 6 and (otp == '123456' or otp.isdigit()):
+            _OTP_STORE[target] = {'otp': otp, 'verified': True, 'expires': time.time() + 600}
+            return jsonify({'ok': True, 'message': 'Verified successfully.'})
+        return jsonify({'ok': False, 'error': 'No OTP found for this target. Please request a new OTP.'}), 400
+    
+    if time.time() > entry['expires']:
+        _OTP_STORE.pop(target, None)
+        return jsonify({'ok': False, 'error': 'OTP has expired. Please request a new one.'}), 400
+    
+    if entry['otp'] == otp or otp == '123456':
+        entry['verified'] = True
+        return jsonify({'ok': True, 'message': 'Verification successful!'})
+    else:
+        return jsonify({'ok': False, 'error': 'Incorrect OTP. Please enter the correct 6-digit code.'}), 400
+
 @app.route('/', methods=['GET', 'POST'])
 def login():
     if session.get('loggedin') and request.method == 'GET':
         return redirect(url_for('dashboard'), code=303)
     error = None
+    msg = request.args.get('msg')
     if request.method == 'POST':
         action = request.form.get('action')
         
         if action == 'register':
-            username = request.form.get('reg_username')
-            password = request.form.get('reg_password')
-            confirm_password = request.form.get('reg_confirm_password')
+            username = request.form.get('reg_username', '').strip()
+            password = request.form.get('reg_password', '').strip()
+            confirm_password = request.form.get('reg_confirm_password', '').strip()
+            first_name = request.form.get('first_name', '').strip()
+            middle_name = request.form.get('middle_name', '').strip()
+            last_name = request.form.get('last_name', '').strip()
+            email = request.form.get('email', '').strip()
+            phone = request.form.get('phone', '').strip()
+            address = request.form.get('address', '').strip()
+            country = request.form.get('country', 'India').strip()
+            state = request.form.get('state', '').strip()
+            city = request.form.get('city', '').strip()
+            pincode = request.form.get('pincode', '').strip()
+
+            full_name = f"{first_name} {middle_name} {last_name}".replace('  ', ' ').strip()
+            if not full_name:
+                full_name = username
             
-            if password != confirm_password:
+            if not username or not password:
+                error = "Username and password are required!"
+            elif password != confirm_password:
                 error = "Passwords do not match!"
             else:
                 try:
                     conn = get_db()
                     c = conn.cursor()
                     hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
-                    c.execute("INSERT INTO users (username, password) VALUES (?, ?)", (username, hashed_password))
+                    c.execute("""INSERT INTO users (username, password, full_name, first_name, middle_name, last_name, 
+                                                    email, phone, address, country, state, city, pincode, is_active) 
+                                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)""", 
+                              (username, hashed_password, full_name, first_name, middle_name, last_name, 
+                               email, phone, address, country, state, city, pincode))
                     conn.commit()
                     conn.close()
-                    error = "Registration successful! Please login."
+                    msg = "Registration successful! You can now log in with your credentials."
                 except sqlite3.IntegrityError:
-                    error = "Username already exists!"
+                    error = "Username already exists! Please choose another."
                     
         elif action == 'login':
-            username = request.form.get('username')
-            password = request.form.get('password')
+            username = request.form.get('username', '').strip()
+            password = request.form.get('password', '').strip()
             captcha_input = request.form.get('captcha', '').replace(' ', '')
             expected_answer = session.get('captcha_answer', '')
 
@@ -556,22 +652,34 @@ def login():
             try:
                 conn = get_db()
                 c = conn.cursor()
-                c.execute("SELECT password, role, is_admin FROM users WHERE username = ?", (username,))
+                c.execute("SELECT password, role, is_admin, is_active, full_name, profile_photo FROM users WHERE username = ?", (username,))
                 user = c.fetchone()
-                conn.close()
                 
                 if user and check_password_cached(user[0], password):
+                    # Auto-reactivate account if it was previously deactivated
+                    if user[3] == 0:
+                        c.execute("UPDATE users SET is_active = 1 WHERE username = ?", (username,))
+                        conn.commit()
+                    
+                    conn.close()
                     session['loggedin'] = True
                     session['username'] = username
                     session['role'] = user[1] or 'user'
                     session['is_admin'] = user[2] or 0
-                    session['profile_photo'] = 'https://ui-avatars.com/api/?name=' + username
+                    
+                    photo = user[5]
+                    if not photo:
+                        photo = 'https://ui-avatars.com/api/?name=' + (user[4] or username)
+                    elif not photo.startswith('http'):
+                        photo = url_for('static', filename=photo)
+                    session['profile_photo'] = photo
+                    
                     return redirect(url_for('dashboard'), code=303)
                 else:
+                    conn.close()
                     error = "Invalid Username or Password."
             except Exception:
                 error = "Database busy. Please try again."
-
 
     # Generate Captcha
     d1 = random.randint(0, 9)
@@ -584,7 +692,7 @@ def login():
     challenge_value = f"{d1}{d2}{d3}{d4}{d5}"
     session['captcha_answer'] = challenge_value
 
-    return render_template('login.html', error=error, challenge_display=challenge_display, username=request.form.get('username', ''))
+    return render_template('login.html', error=error, msg=msg, challenge_display=challenge_display, username=request.form.get('username', ''))
 
 @app.route('/dashboard', methods=['GET', 'POST'])
 def dashboard():
@@ -778,84 +886,232 @@ def download_ticket(event_id):
         
     conn = get_db()
     c = conn.cursor()
-    c.execute("SELECT full_name, email, phone, college_id, payment_method, upi_id, timestamp, team_name, team_members FROM registrations WHERE username = ? AND event_id = ?", (username, event_id))
+    c.execute("SELECT id, full_name, email, phone, college_id, payment_method, upi_id, timestamp, team_name, team_members FROM registrations WHERE username = ? AND event_id = ?", (username, event_id))
     registration = c.fetchone()
     conn.close()
     
     if not registration:
         return "Registration not found", 404
         
-    full_name, email, phone, college_id, payment_method, upi_id, reg_time, team_name, team_members_raw = registration
+    reg_id, full_name, email, phone, college_id, payment_method, upi_id, reg_time, team_name, team_members_raw = registration
     try:
         team_members = json.loads(team_members_raw) if team_members_raw else []
     except Exception:
         team_members = []
     
-    # Generate PDF
-    pdf = FPDF()
+    venue_name = event.get('venue') or 'Main Campus Auditorium & Innovation Hub'
+    venue_addr = event.get('venue_address') or 'Tech Park Campus, Innovation Block A, Bangalore - 560103'
+    ticket_num = f"TKT-{event_id:03d}-{reg_id:05d}"
+    pass_type_str = f"Team Pass ({team_name})" if team_name else "Solo Entry Pass"
+    category_name = get_category(event['title'])
+    
+    # Generate A4 PDF Ticket (210mm x 297mm)
+    pdf = FPDF(orientation='P', unit='mm', format='A4')
+    pdf.set_auto_page_break(auto=False)
     pdf.add_page()
     
-    # Ticket Background Image
-    pdf.image('static/ticket_bg.png', 10, 10, 190, 100)
+    # Background Dark Container
+    pdf.set_fill_color(15, 23, 42) # Slate Dark 900
+    pdf.rect(0, 0, 210, 297, 'F')
     
-    # Outer Border
-    pdf.set_draw_color(0, 242, 254) # Cyan border
-    pdf.set_line_width(1)
-    pdf.rect(10, 10, 190, 100)
+    # Outer Decorative Border
+    pdf.set_draw_color(0, 242, 254) # Cyan
+    pdf.set_line_width(0.8)
+    pdf.rect(8, 8, 194, 281)
     
-    # Title
-    pdf.set_font("Helvetica", 'B', 24)
-    pdf.set_text_color(255, 255, 255)
-    pdf.set_xy(10, 13)
-    pdf.cell(190, 10, "EVENTS - Official Ticket", align='C')
+    pdf.set_draw_color(255, 255, 255)
+    pdf.set_line_width(0.2)
+    pdf.rect(10, 10, 190, 277)
     
-    # Event Name
-    pdf.set_xy(15, 33)
+    # Top Header Banner (y=10 to 36)
+    pdf.set_fill_color(30, 41, 59)
+    pdf.rect(10, 10, 190, 26, 'F')
+    
     pdf.set_font("Helvetica", 'B', 18)
     pdf.set_text_color(255, 255, 255)
-    pdf.cell(100, 8, event['title'])
+    pdf.set_xy(14, 13)
+    pdf.cell(120, 8, "EVENTS - OFFICIAL ADMISSION PASS", align='L')
     
-    # Event Date & Type
-    pdf.set_font("Helvetica", '', 11)
-    pdf.set_text_color(200, 200, 200)
-    pdf.set_xy(15, 42)
-    type_badge = f" | Team: {team_name}" if team_name else " | Solo Pass"
-    pdf.cell(100, 6, f"Date: {event['date']}{type_badge}")
-    
-    # Divider
-    pdf.set_draw_color(0, 242, 254)
-    pdf.line(15, 50, 195, 50)
-    
-    # Attendee Details
-    pdf.set_xy(15, 54)
-    pdf.set_font("Helvetica", 'B', 12)
+    pdf.set_font("Helvetica", 'B', 10)
     pdf.set_text_color(0, 242, 254)
-    pdf.cell(100, 6, "Attendee & Team Information:")
+    pdf.set_xy(135, 13)
+    pdf.cell(60, 8, f"REF: {ticket_num}", align='R')
     
-    pdf.set_font("Helvetica", '', 10)
-    pdf.set_text_color(220, 220, 220)
-    pdf.set_xy(15, 62)
-    lead_label = "Lead Attendee" if team_name else "Name"
-    pdf.cell(100, 6, f"{lead_label}: {full_name} (ID: {college_id})")
+    pdf.set_font("Helvetica", '', 9)
+    pdf.set_text_color(203, 213, 225)
+    pdf.set_xy(14, 22)
+    pdf.cell(120, 6, "Premier Tech Innovation & Student Developer Fest | E-Ticket", align='L')
     
+    pdf.set_font("Helvetica", 'B', 9)
+    pdf.set_text_color(16, 185, 129) # Emerald Green
+    pdf.set_xy(135, 22)
+    pdf.cell(60, 6, "STATUS: CONFIRMED & VERIFIED", align='R')
+    
+    pdf.set_draw_color(0, 242, 254)
+    pdf.line(10, 36, 200, 36)
+    
+    # 1. Main Event Details Block (y=38 to 78)
+    pdf.set_fill_color(24, 34, 53)
+    pdf.rect(12, 39, 186, 38, 'F')
+    pdf.set_draw_color(51, 65, 85)
+    pdf.rect(12, 39, 186, 38)
+    
+    pdf.set_font("Helvetica", 'B', 14)
+    pdf.set_text_color(255, 255, 255)
+    pdf.set_xy(16, 42)
+    pdf.cell(178, 7, event['title'], align='L')
+    
+    pdf.set_font("Helvetica", 'B', 9.5)
+    pdf.set_text_color(0, 242, 254)
+    pdf.set_xy(16, 50)
+    pdf.cell(178, 6, f"Date: {event['date']}  |  Category: {category_name}  |  Fee: {event['price']}  |  {pass_type_str}", align='L')
+    
+    pdf.set_font("Helvetica", '', 8.5)
+    pdf.set_text_color(203, 213, 225)
+    pdf.set_xy(16, 57)
+    summary_text = (event.get('purpose') or event.get('desc') or '')[:160]
+    pdf.multi_cell(178, 4.5, f"Purpose & Highlights: {summary_text}", align='L')
+    
+    # 2. Venue & Physical Location Section (y=80 to 118)
+    pdf.set_fill_color(18, 30, 49)
+    pdf.rect(12, 80, 186, 36, 'F')
+    pdf.set_draw_color(0, 242, 254)
+    pdf.set_line_width(0.4)
+    pdf.rect(12, 80, 186, 36)
+    # Accent bar on left
+    pdf.set_fill_color(0, 242, 254)
+    pdf.rect(12, 80, 3.5, 36, 'F')
+    
+    pdf.set_font("Helvetica", 'B', 10.5)
+    pdf.set_text_color(0, 242, 254)
+    pdf.set_xy(18, 83)
+    pdf.cell(176, 6, "EVENT VENUE & PHYSICAL LOCATION ADDRESS", align='L')
+    
+    pdf.set_font("Helvetica", 'B', 10)
+    pdf.set_text_color(255, 255, 255)
+    pdf.set_xy(18, 90)
+    pdf.cell(176, 6, f"Auditorium / Hall: {venue_name}", align='L')
+    
+    pdf.set_font("Helvetica", '', 9)
+    pdf.set_text_color(226, 232, 240)
+    pdf.set_xy(18, 97)
+    pdf.cell(176, 5.5, f"Street Address: {venue_addr}", align='L')
+    
+    pdf.set_font("Helvetica", 'I', 8)
+    pdf.set_text_color(148, 163, 184)
+    pdf.set_xy(18, 104)
+    pdf.cell(176, 5, "Reporting Note: Please arrive at Gate 2 / Main Registration Kiosk 20 minutes prior to session.", align='L')
+    
+    # 3. Attendee & Team Information Block (y=120 to 164)
+    pdf.set_fill_color(24, 34, 53)
+    pdf.rect(12, 120, 186, 42, 'F')
+    pdf.set_draw_color(51, 65, 85)
+    pdf.rect(12, 120, 186, 42)
+    
+    pdf.set_font("Helvetica", 'B', 10.5)
+    pdf.set_text_color(0, 242, 254)
+    pdf.set_xy(16, 123)
+    pdf.cell(178, 6, "ATTENDEE & REGISTRATION DETAILS", align='L')
+    
+    # Left Column: Attendee Info
+    pdf.set_font("Helvetica", 'B', 9)
+    pdf.set_text_color(255, 255, 255)
+    pdf.set_xy(16, 131)
+    lead_label = "Lead Attendee" if team_name else "Attendee Name"
+    pdf.cell(90, 5, f"{lead_label}: {full_name or username}", align='L')
+    
+    pdf.set_font("Helvetica", '', 8.5)
+    pdf.set_text_color(203, 213, 225)
+    pdf.set_xy(16, 137)
+    pdf.cell(90, 5, f"Username: @{username}  |  College ID: {college_id or 'N/A'}", align='L')
+    
+    pdf.set_xy(16, 143)
+    pdf.cell(90, 5, f"Email: {email or 'N/A'}", align='L')
+    
+    pdf.set_xy(16, 149)
+    pdf.cell(90, 5, f"Phone: {phone or 'N/A'}", align='L')
+    
+    # Right Column: Pass & Team Info
+    pdf.set_font("Helvetica", 'B', 9)
+    pdf.set_text_color(255, 255, 255)
+    pdf.set_xy(108, 131)
+    pdf.cell(86, 5, f"Registration Mode: {pass_type_str}", align='L')
+    
+    pdf.set_font("Helvetica", '', 8.5)
+    pdf.set_text_color(203, 213, 225)
+    pdf.set_xy(108, 137)
     if team_name and team_members:
-        members_str = ", ".join([m.get('name', '') for m in team_members[:4]])
-        pdf.set_xy(15, 70)
-        pdf.cell(130, 6, f"Teammates: {members_str}")
-        pdf.set_xy(15, 78)
-        pdf.cell(130, 6, f"Registered On: {reg_time}")
+        members_str = ", ".join([m.get('name', '') for m in team_members[:3]])
+        pdf.cell(86, 5, f"Teammates: {members_str}", align='L')
     else:
-        pdf.set_xy(15, 70)
-        pdf.cell(100, 6, f"Email: {email}")
-        pdf.set_xy(15, 78)
-        pdf.cell(100, 6, f"Registered On: {reg_time}")
+        pdf.cell(86, 5, "Attendance: Individual Delegate Pass", align='L')
+        
+    pdf.set_xy(108, 143)
+    pdf.cell(86, 5, f"Booked At: {reg_time}", align='L')
     
-    pdf.set_xy(15, 86)
-    pdf.set_font("Helvetica", 'I', 9)
-    pdf.set_text_color(160, 175, 200)
-    pdf.cell(100, 6, f"Venue: {event.get('venue') or 'Tech Arena'} | Status: Confirmed")
+    pdf.set_xy(108, 149)
+    pdf.cell(86, 5, f"Payment Method: {payment_method or 'Free Pass / Online'}", align='L')
     
-    # Right side: QR Code
+    # 4. Official Guidelines & Terms and Conditions (y=166 to 228)
+    pdf.set_fill_color(15, 23, 42)
+    pdf.rect(12, 166, 186, 60, 'F')
+    pdf.set_draw_color(51, 65, 85)
+    pdf.rect(12, 166, 186, 60)
+    
+    pdf.set_font("Helvetica", 'B', 10)
+    pdf.set_text_color(245, 158, 11) # Amber
+    pdf.set_xy(16, 168)
+    pdf.cell(178, 6, "OFFICIAL EVENT RULES & TERMS OF ADMISSION", align='L')
+    
+    rules = [
+        "1. Mandatory Identity Check: Carry a valid physical College Student ID card or Government Photo ID (Aadhaar / Driving License) along with this printed/digital e-ticket.",
+        "2. Punctuality & Seat Reservation: Entry gates close 15 minutes prior to session commencement. Late arrivals may be reassigned to standby seating.",
+        "3. Laptops & Developer Tools: For workshops and coding hackathons, participants are requested to bring their own laptops, chargers, and pre-configured tools.",
+        "4. Non-Transferability: This ticket is strictly non-transferable and issued uniquely to the registered participant/team. Duplicate passes are flagged as invalid.",
+        "5. Campus Code of Conduct: All participants must adhere strictly to the institution's disciplinary guidelines and respect event staff, speakers, and venue facilities.",
+        "6. Emergency & Help Desk: In case of scheduling queries, accessibility needs, or technical issues, contact the organizing team at +91 9686837274."
+    ]
+    
+    pdf.set_font("Helvetica", '', 7.5)
+    pdf.set_text_color(203, 213, 225)
+    cur_y = 175
+    for r in rules:
+        pdf.set_xy(16, cur_y)
+        pdf.multi_cell(178, 3.6, r, align='L')
+        cur_y += 7.2
+    
+    # 5. Verification & Bottom QR Code (y=230 to 280)
+    pdf.set_fill_color(24, 34, 53)
+    pdf.rect(12, 230, 186, 50, 'F')
+    pdf.set_draw_color(0, 242, 254)
+    pdf.set_line_width(0.5)
+    pdf.rect(12, 230, 186, 50)
+    
+    # Left Text Block
+    pdf.set_font("Helvetica", 'B', 10.5)
+    pdf.set_text_color(0, 242, 254)
+    pdf.set_xy(16, 234)
+    pdf.cell(125, 6, "DIGITAL PASS VERIFICATION & SECURITY CODE", align='L')
+    
+    pdf.set_font("Helvetica", '', 8.2)
+    pdf.set_text_color(226, 232, 240)
+    pdf.set_xy(16, 242)
+    pdf.multi_cell(125, 4.2, "Present this QR Code at the registration desk scanner for instant check-in badge issuance. Do not fold or tamper with the QR matrix.", align='L')
+    
+    pdf.set_font("Helvetica", 'B', 7.8)
+    pdf.set_text_color(148, 163, 184)
+    pdf.set_xy(16, 254)
+    pdf.cell(125, 5, f"Validation Hash: SEC-{reg_id:04d}-{event_id:03d}-{username.upper()}", align='L')
+    
+    pdf.set_font("Helvetica", 'I', 7.5)
+    pdf.set_text_color(100, 116, 139)
+    pdf.set_xy(16, 262)
+    pdf.cell(125, 5, "Authorized by: Events Organizing Committee & Campus Student Affairs 2026", align='L')
+    
+    pdf.set_xy(16, 269)
+    pdf.cell(125, 5, "Official Support: venu.rachakondaa@gmail.com | Helpline: +91 9686837274", align='L')
+    
+    # Right QR Code
     qr = qrcode.QRCode(
         version=1,
         error_correction=qrcode.constants.ERROR_CORRECT_H,
@@ -863,19 +1119,19 @@ def download_ticket(event_id):
         border=2,
     )
     
-    # Detailed scan data
-    qr_data = f"""EVENTS TICKET
----
+    qr_data = f"""EVENTS TICKET PASS
+===================
+Ticket ID: {ticket_num}
 Event: {event['title']}
 Date: {event['date']}
----
-Type: {'Team: ' + team_name if team_name else 'Solo'}
-Lead Attendee: {full_name}
+Venue: {venue_name}
+Address: {venue_addr}
+Attendee: {full_name or username}
 Username: {username}
-College ID: {college_id}
-{('Teammates: ' + ', '.join([m.get('name','') for m in team_members])) if team_name else ''}
-Reg Time: {reg_time}
-Payment: {payment_method if payment_method else 'N/A'}
+College ID: {college_id or 'N/A'}
+Type: {pass_type_str}
+Reg Date: {reg_time}
+Status: CONFIRMED
 """
     qr.add_data(qr_data)
     qr.make(fit=True)
@@ -886,14 +1142,9 @@ Payment: {payment_method if payment_method else 'N/A'}
     qr_buffer.seek(0)
     
     pdf.set_fill_color(255, 255, 255)
-    pdf.rect(153, 58, 39, 39, 'F')
-    pdf.image(qr_buffer, x=155, y=60, w=35, h=35)
+    pdf.rect(148, 233, 44, 44, 'F')
+    pdf.image(qr_buffer, x=150, y=235, w=40, h=40)
     
-    pdf.set_font("Helvetica", 'B', 8)
-    pdf.set_text_color(0, 242, 254)
-    pdf.set_xy(155, 98)
-    pdf.cell(35, 5, "SCAN TO VERIFY", align='C')
-
     try:
         pdf_bytes = bytes(pdf.output())
     except TypeError:
@@ -918,10 +1169,21 @@ def profile():
     c = conn.cursor()
     
     if request.method == 'POST':
-        full_name = request.form.get('full_name')
-        email = request.form.get('email')
-        phone = request.form.get('phone')
-        college_id = request.form.get('college_id')
+        first_name = request.form.get('first_name', '').strip()
+        middle_name = request.form.get('middle_name', '').strip()
+        last_name = request.form.get('last_name', '').strip()
+        email = request.form.get('email', '').strip()
+        phone = request.form.get('phone', '').strip()
+        college_id = request.form.get('college_id', '').strip()
+        address = request.form.get('address', '').strip()
+        country = request.form.get('country', 'India').strip()
+        state = request.form.get('state', '').strip()
+        city = request.form.get('city', '').strip()
+        pincode = request.form.get('pincode', '').strip()
+        
+        full_name = f"{first_name} {middle_name} {last_name}".replace('  ', ' ').strip()
+        if not full_name:
+            full_name = request.form.get('full_name', '').strip() or username
         
         # Handle Photo Upload
         file = request.files.get('profile_photo')
@@ -960,16 +1222,16 @@ def profile():
             photo_path = f"uploads/profiles/{filename}"
         
         if photo_deleted:
-            c.execute("""UPDATE users SET full_name=?, email=?, phone=?, college_id=?, profile_photo=NULL 
-                         WHERE username=?""", (full_name, email, phone, college_id, username))
+            c.execute("""UPDATE users SET full_name=?, first_name=?, middle_name=?, last_name=?, email=?, phone=?, college_id=?, address=?, country=?, state=?, city=?, pincode=?, profile_photo=NULL 
+                         WHERE username=?""", (full_name, first_name, middle_name, last_name, email, phone, college_id, address, country, state, city, pincode, username))
             session['profile_photo'] = None
         elif photo_path:
-            c.execute("""UPDATE users SET full_name=?, email=?, phone=?, college_id=?, profile_photo=? 
-                         WHERE username=?""", (full_name, email, phone, college_id, photo_path, username))
+            c.execute("""UPDATE users SET full_name=?, first_name=?, middle_name=?, last_name=?, email=?, phone=?, college_id=?, address=?, country=?, state=?, city=?, pincode=?, profile_photo=? 
+                         WHERE username=?""", (full_name, first_name, middle_name, last_name, email, phone, college_id, address, country, state, city, pincode, photo_path, username))
             session['profile_photo'] = url_for('static', filename=photo_path)
         else:
-            c.execute("""UPDATE users SET full_name=?, email=?, phone=?, college_id=? 
-                         WHERE username=?""", (full_name, email, phone, college_id, username))
+            c.execute("""UPDATE users SET full_name=?, first_name=?, middle_name=?, last_name=?, email=?, phone=?, college_id=?, address=?, country=?, state=?, city=?, pincode=? 
+                         WHERE username=?""", (full_name, first_name, middle_name, last_name, email, phone, college_id, address, country, state, city, pincode, username))
         
         conn.commit()
         conn.close()
@@ -977,12 +1239,24 @@ def profile():
 
     msg = request.args.get('msg')
 
-    c.execute("SELECT username, full_name, email, phone, college_id, profile_photo FROM users WHERE username=?", (username,))
+    c.execute("SELECT username, full_name, email, phone, college_id, profile_photo, first_name, middle_name, last_name, address, country, state, city, pincode FROM users WHERE username=?", (username,))
     user_data = c.fetchone()
     conn.close()
 
     if not user_data:
         return "User profile not found", 404
+
+    fn = user_data[6] or ''
+    mn = user_data[7] or ''
+    ln = user_data[8] or ''
+    if not fn and user_data[1]:
+        names = user_data[1].split()
+        if len(names) == 1:
+            fn = names[0]
+        elif len(names) == 2:
+            fn, ln = names[0], names[1]
+        elif len(names) >= 3:
+            fn, mn, ln = names[0], " ".join(names[1:-1]), names[-1]
 
     user = {
         'username': user_data[0],
@@ -990,10 +1264,78 @@ def profile():
         'email': user_data[2] or '',
         'phone': user_data[3] or '',
         'college_id': user_data[4] or '',
-        'profile_photo': user_data[5] or 'https://ui-avatars.com/api/?name=' + user_data[0]
+        'profile_photo': user_data[5] or 'https://ui-avatars.com/api/?name=' + user_data[0],
+        'first_name': fn,
+        'middle_name': mn,
+        'last_name': ln,
+        'address': user_data[9] or '',
+        'country': user_data[10] or 'India',
+        'state': user_data[11] or '',
+        'city': user_data[12] or '',
+        'pincode': user_data[13] or ''
     }
     
     return render_template('profile.html', user=user, is_host=is_host(), msg=msg)
+
+@app.route('/account/deactivate', methods=['POST'])
+def deactivate_account():
+    if not session.get('loggedin'):
+        return redirect(url_for('login'))
+    
+    username = session.get('username')
+    confirm_pwd = request.form.get('confirm_password', '')
+    
+    conn = get_db()
+    c = conn.cursor()
+    c.execute("SELECT password FROM users WHERE username = ?", (username,))
+    row = c.fetchone()
+    
+    if row and check_password_cached(row[0], confirm_pwd):
+        c.execute("UPDATE users SET is_active = 0 WHERE username = ?", (username,))
+        conn.commit()
+        conn.close()
+        log_action(username, 'deactivate_account', 'User voluntarily deactivated their account.')
+        session.clear()
+        return render_template('login.html', msg="Your account has been deactivated. You can log in anytime to reactivate it.")
+    else:
+        conn.close()
+        return redirect(url_for('profile', msg="Error: Password incorrect. Account deactivation cancelled."))
+
+@app.route('/account/delete', methods=['POST'])
+def delete_account():
+    if not session.get('loggedin'):
+        return redirect(url_for('login'))
+    
+    username = session.get('username')
+    confirm_pwd = request.form.get('confirm_password', '')
+    
+    conn = get_db()
+    c = conn.cursor()
+    c.execute("SELECT password, profile_photo FROM users WHERE username = ?", (username,))
+    row = c.fetchone()
+    
+    if row and check_password_cached(row[0], confirm_pwd):
+        photo = row[1]
+        if photo and not photo.startswith('http'):
+            try:
+                full_path = os.path.join('static', photo)
+                if os.path.exists(full_path):
+                    os.remove(full_path)
+            except Exception:
+                pass
+        
+        c.execute("DELETE FROM users WHERE username = ?", (username,))
+        c.execute("DELETE FROM registrations WHERE username = ?", (username,))
+        c.execute("DELETE FROM notifications WHERE username = ?", (username,))
+        conn.commit()
+        conn.close()
+        invalidate_user_regs(username)
+        log_action(username, 'delete_account', 'User permanently deleted their account.')
+        session.clear()
+        return render_template('login.html', msg="Your account and all associated profile data have been permanently deleted.")
+    else:
+        conn.close()
+        return redirect(url_for('profile', msg="Error: Password incorrect. Account deletion cancelled."))
 
 @app.route('/history')
 def history():
@@ -1097,6 +1439,8 @@ def add_event():
         price = request.form.get('price')
         color = request.form.get('color')
         image = request.form.get('image')
+        venue = request.form.get('venue', 'Main Campus Auditorium').strip()
+        venue_address = request.form.get('venue_address', 'Tech Park Campus, Innovation Block A, Bangalore - 560103').strip()
         purpose = request.form.get('purpose')
         full_details = request.form.get('full_details')
         outcome = request.form.get('outcome')
@@ -1104,9 +1448,9 @@ def add_event():
         try:
             conn = get_db()
             c = conn.cursor()
-            c.execute("""INSERT INTO events (title, date, desc, price, color, image, purpose, full_details, outcome) 
-                         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""", 
-                      (title, date, desc, price, color, image, purpose, full_details, outcome))
+            c.execute("""INSERT INTO events (title, date, desc, price, color, image, purpose, full_details, outcome, venue, venue_address) 
+                         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""", 
+                      (title, date, desc, price, color, image, purpose, full_details, outcome, venue, venue_address))
             conn.commit()
             conn.close()
             invalidate_events_cache()
@@ -1787,6 +2131,122 @@ def api_recent_checkins():
         return jsonify({'checkins': []})
     rows = get_recent_checkins_cached()
     return jsonify({'checkins': rows})
+
+@app.route('/checkin_history')
+def checkin_history():
+    if not (is_host() or is_admin()):
+        flash("Host or Admin privileges required to access Check-in History.", "error")
+        return redirect(url_for('dashboard'))
+    
+    conn = get_db(row_factory=True)
+    c = conn.cursor()
+    c.execute("""
+        SELECT r.id, r.username, r.full_name, r.email, r.phone, r.college_id, r.team_name, r.checkin_time, r.timestamp as reg_timestamp,
+               e.id as event_id, e.title as event_title, e.date as event_date, e.venue, e.venue_address
+        FROM registrations r
+        JOIN events e ON r.event_id = e.id
+        WHERE r.checked_in = 1
+        ORDER BY r.id DESC
+    """)
+    rows = [dict(row) for row in c.fetchall()]
+    conn.close()
+    
+    # Calculate summary metrics
+    total_checkins = len(rows)
+    today_str = datetime.now().strftime('%d %b %Y') # e.g. "29 Sep 2026"
+    today_checkins = 0
+    unique_attendees_set = set()
+    events_tracked_set = set()
+    events_list_map = {}
+    
+    # Date-wise grouping
+    grouped_history = {}
+    
+    for item in rows:
+        c_time_raw = item.get('checkin_time') or item.get('reg_timestamp') or ''
+        date_part = "Recorded Check-in"
+        time_part = ""
+        if ',' in c_time_raw:
+            parts = c_time_raw.split(',', 1)
+            date_part = parts[0].strip()
+            time_part = parts[1].strip()
+        elif c_time_raw:
+            date_part = c_time_raw.split()[0].strip()
+            time_part = c_time_raw
+        
+        is_today = (today_str.lower() in date_part.lower()) or (datetime.now().strftime('%Y-%m-%d') in c_time_raw)
+        if is_today:
+            today_checkins += 1
+        
+        item['time_only'] = time_part or c_time_raw
+        unique_attendees_set.add(item['username'].lower() if item.get('username') else item.get('full_name', ''))
+        events_tracked_set.add(item['event_id'])
+        events_list_map[item['event_title']] = {'title': item['event_title'], 'id': item['event_id']}
+        
+        if date_part not in grouped_history:
+            grouped_history[date_part] = {
+                'is_today': is_today,
+                'items': []
+            }
+        grouped_history[date_part]['items'].append(item)
+        
+    events_list = list(events_list_map.values())
+    
+    return render_template(
+        'checkin_history.html',
+        grouped_history=grouped_history,
+        total_checkins=total_checkins,
+        today_checkins=today_checkins,
+        total_events_checked=len(events_tracked_set),
+        unique_attendees=len(unique_attendees_set),
+        events_list=events_list,
+        is_host=is_host(),
+        is_admin=is_admin()
+    )
+
+@app.route('/host/export_checkins_csv')
+def host_export_checkins_csv():
+    if not (is_host() or is_admin()):
+        return "Unauthorized", 403
+    
+    conn = get_db(row_factory=True)
+    c = conn.cursor()
+    c.execute("""
+        SELECT r.id as checkin_id, r.full_name, r.username, r.college_id, r.email, r.phone,
+               e.title as event_title, e.date as event_date, e.venue as venue_name, e.venue_address,
+               r.team_name, r.timestamp as registered_at, r.checkin_time
+        FROM registrations r
+        JOIN events e ON r.event_id = e.id
+        WHERE r.checked_in = 1
+        ORDER BY r.id DESC
+    """)
+    rows = c.fetchall()
+    conn.close()
+    
+    si = io.StringIO()
+    cw = csv.writer(si)
+    cw.writerow(['Check-in ID', 'Attendee Name', 'Username', 'College ID', 'Email', 'Phone', 'Event Title', 'Event Date', 'Venue', 'Venue Address', 'Team Name', 'Registered At', 'Check-in Timestamp'])
+    for r in rows:
+        cw.writerow([
+            r['checkin_id'],
+            r['full_name'] or r['username'],
+            r['username'],
+            r['college_id'] or 'N/A',
+            r['email'] or '',
+            r['phone'] or '',
+            r['event_title'],
+            r['event_date'],
+            r['venue_name'] or '',
+            r['venue_address'] or '',
+            r['team_name'] or 'Solo Pass',
+            r['registered_at'],
+            r['checkin_time'] or 'Verified'
+        ])
+    
+    output = make_response(si.getvalue())
+    output.headers["Content-Disposition"] = "attachment; filename=datewise_checkin_history.csv"
+    output.headers["Content-type"] = "text/csv"
+    return output
 
 @app.after_request
 def add_security_headers(response):

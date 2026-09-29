@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Check-in History (Date-Wise) | EVENTS</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@700;800&display=swap" rel="stylesheet">
+    <style>
+        .filter-toolbar {
+            background: rgba(30, 41, 59, 0.6);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 1.2rem;
+            margin-bottom: 2rem;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .filter-inputs {
+            display: flex;
+            gap: 10px;
+            flex: 1;
+            flex-wrap: wrap;
+            min-width: 280px;
+        }
+        .filter-select, .filter-input {
+            padding: 0.65rem 1rem;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--glass-border);
+            border-radius: 10px;
+            color: #ffffff;
+            font-size: 0.88rem;
+            outline: none;
+            transition: all 0.2s;
+        }
+        .filter-select:focus, .filter-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 10px rgba(0, 242, 254, 0.2);
+        }
+        .filter-select option {
+            background: #0f172a;
+            color: #ffffff;
+        }
+        body.light-mode .filter-toolbar {
+            background: rgba(255, 255, 255, 0.9);
+            border-color: rgba(0, 0, 0, 0.08);
+        }
+        body.light-mode .filter-select, body.light-mode .filter-input {
+            background: #ffffff;
+            color: #0f172a;
+            border-color: #cbd5e1;
+        }
+        body.light-mode .filter-select option {
+            background: #ffffff;
+            color: #0f172a;
+        }
+        .user-avatar-cell {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .user-avatar-sm {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 1.5px solid var(--primary);
+        }
+    </style>
+</head>
+<body>
+    <script>
+        if (localStorage.getItem('theme') === 'light') {
+            document.body.classList.add('light-mode');
+        }
+    </script>
+
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="nav-container" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <div class="hamburger" id="hamburger">☰</div>
+                <div class="logo">EV<span>ENTS</span></div>
+                <span style="background: rgba(0,242,254,0.15); color: var(--primary); font-size: 0.75rem; font-weight: 800; padding: 4px 10px; border-radius: 50px; border: 1px solid var(--primary); text-transform: uppercase;">Check-in History</span>
+            </div>
+            <div class="nav-links" style="display: flex; align-items: center; gap: 12px;">
+                <button class="theme-toggle-btn" id="themeToggle" title="Toggle Light/Dark Mode" type="button" style="margin-right: 0;">🌓</button>
+                <a href="{{ url_for('scan_ticket') }}" class="register-btn-sm" style="background: rgba(0, 242, 254, 0.15); color: var(--primary); border: 1px solid var(--primary); text-decoration: none; padding: 0.5rem 1rem; border-radius: 8px; font-weight: 700;">📷 Live Scanner</a>
+                <a href="{{ url_for('dashboard') }}" class="logout-btn" style="text-decoration:none;">🏠 Dashboard</a>
+                <a href="{{ url_for('logout') }}" class="logout-btn" style="background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3);">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-logo">EV<span>ENTS</span></div>
+            <div class="close-btn" id="closeSidebar">&times;</div>
+        </div>
+        <ul class="sidebar-links">
+            <li><a href="{{ url_for('dashboard') }}">🏠 Dashboard</a></li>
+            <li><a href="{{ url_for('profile') }}">👤 My Profile</a></li>
+            <li><a href="{{ url_for('history') }}">📋 My Bookings</a></li>
+            {% if is_admin or session.get('username') in ['admin', 'Venu R'] %}
+            <li><a href="{{ url_for('admin_dashboard') }}" style="color:var(--admin-accent, #f59e0b); font-weight:700">⚡ Admin Panel</a></li>
+            {% endif %}
+            {% if is_host or is_admin %}
+            <li><hr style="border: 0; border-top: 1px solid var(--glass-border); margin: 1rem 0;"></li>
+            <li style="padding: 0 1rem; color: var(--primary); font-size: 0.8rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">Host & Check-in</li>
+            <li><a href="{{ url_for('scan_ticket') }}">📷 Live Ticket Scanner</a></li>
+            <li><a href="{{ url_for('checkin_history') }}" class="active">📅 Check-in History (Date-Wise)</a></li>
+            <li><a href="{{ url_for('add_event') }}">➕ Add New Event</a></li>
+            <li><a href="{{ url_for('host_analytics') }}">📈 Host Analytics</a></li>
+            {% endif %}
+            <li><hr style="border: 0; border-top: 1px solid var(--glass-border); margin: 1rem 0;"></li>
+            <li><a href="{{ url_for('logout') }}" style="color: var(--secondary);">🚪 Logout</a></li>
+        </ul>
+    </div>
+
+    <div class="checkin-history-container">
+        <!-- Header Banner -->
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 2rem;">
+            <div>
+                <h1 style="font-family: var(--font-heading); color: #ffffff; font-size: 2.2rem; margin: 0;">📅 Check-in History</h1>
+                <p style="color: var(--text-muted); font-size: 1rem; margin-top: 4px;">Complete chronological date-wise record of all verified attendee ticket check-ins.</p>
+            </div>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <a href="{{ url_for('host_export_checkins_csv') }}" class="register-btn-sm" style="background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid #10b981; text-decoration: none; padding: 0.6rem 1.2rem; border-radius: 10px; font-weight: 700; display: flex; align-items: center; gap: 6px;">
+                    📥 Export Check-ins CSV
+                </a>
+                <a href="{{ url_for('scan_ticket') }}" class="register-btn-sm" style="background: var(--primary); color: #0f172a; text-decoration: none; padding: 0.6rem 1.2rem; border-radius: 10px; font-weight: 700; display: flex; align-items: center; gap: 6px;">
+                    📷 Open Scanner
+                </a>
+            </div>
+        </div>
+
+        <!-- Metric Summary Cards -->
+        <div class="history-stats-grid">
+            <div class="history-stat-card">
+                <div class="stat-icon-wrapper">🎟️</div>
+                <div>
+                    <div class="stat-val">{{ total_checkins }}</div>
+                    <div class="stat-lbl">Total Check-ins</div>
+                </div>
+            </div>
+            <div class="history-stat-card">
+                <div class="stat-icon-wrapper" style="background: rgba(16, 185, 129, 0.12); border-color: rgba(16, 185, 129, 0.3);">⚡</div>
+                <div>
+                    <div class="stat-val" style="color: #10b981;">{{ today_checkins }}</div>
+                    <div class="stat-lbl">Checked In Today</div>
+                </div>
+            </div>
+            <div class="history-stat-card">
+                <div class="stat-icon-wrapper" style="background: rgba(245, 158, 11, 0.12); border-color: rgba(245, 158, 11, 0.3);">🎪</div>
+                <div>
+                    <div class="stat-val" style="color: #f59e0b;">{{ total_events_checked }}</div>
+                    <div class="stat-lbl">Active Events Tracked</div>
+                </div>
+            </div>
+            <div class="history-stat-card">
+                <div class="stat-icon-wrapper" style="background: rgba(236, 72, 153, 0.12); border-color: rgba(236, 72, 153, 0.3);">👥</div>
+                <div>
+                    <div class="stat-val" style="color: #ec4899;">{{ unique_attendees }}</div>
+                    <div class="stat-lbl">Unique Attendees</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter and Search Toolbar -->
+        <div class="filter-toolbar">
+            <div class="filter-inputs">
+                <input type="text" id="searchInput" class="filter-input" placeholder="🔍 Search attendee, student ID, username..." style="flex: 1.5;" oninput="applyFilters()">
+                <select id="eventFilter" class="filter-select" onchange="applyFilters()">
+                    <option value="">All Events ({{ events_list|length }})</option>
+                    {% for ev in events_list %}
+                    <option value="{{ ev.title }}">{{ ev.title }}</option>
+                    {% endfor %}
+                </select>
+                <select id="dateFilter" class="filter-select" onchange="applyFilters()">
+                    <option value="">All Dates</option>
+                    {% for date_key, group in grouped_history.items() %}
+                    <option value="{{ date_key }}">{{ date_key }} ({{ group.items|length }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <button onclick="resetFilters()" class="btn-secondary" style="margin: 0; padding: 0.6rem 1rem; font-size: 0.82rem;">Reset Filters</button>
+            </div>
+        </div>
+
+        <!-- Date-Wise Grouped Check-In List -->
+        <div id="dateGroupsContainer">
+            {% if grouped_history %}
+                {% for date_key, group in grouped_history.items() %}
+                <div class="date-group-card" data-date-group="{{ date_key }}">
+                    <div class="date-group-header">
+                        <div class="date-title">
+                            <span>📅</span>
+                            <span>{{ date_key }}</span>
+                            {% if group.is_today %}
+                            <span style="background: rgba(16, 185, 129, 0.2); color: #10b981; font-size: 0.72rem; font-weight: 800; padding: 2px 8px; border-radius: 4px; text-transform: uppercase;">Today</span>
+                            {% endif %}
+                        </div>
+                        <div class="date-count-badge">
+                            {{ group.items|length }} Verified Attendees
+                        </div>
+                    </div>
+                    <div style="overflow-x: auto;">
+                        <table class="checkin-table">
+                            <thead>
+                                <tr>
+                                    <th>Attendee Name</th>
+                                    <th>User ID & Student ID</th>
+                                    <th>Event Title</th>
+                                    <th>Team / Pass</th>
+                                    <th>Check-in Time</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in group.items %}
+                                <tr class="checkin-row" data-name="{{ item.full_name|lower }}" data-username="{{ item.username|lower }}" data-college="{{ item.college_id|lower }}" data-event="{{ item.event_title }}">
+                                    <td>
+                                        <div class="user-avatar-cell">
+                                            <img src="https://ui-avatars.com/api/?name={{ item.full_name or item.username }}&background=00f2fe&color=0f172a&bold=true" class="user-avatar-sm" alt="avatar">
+                                            <div>
+                                                <strong style="color: #ffffff; font-size: 0.95rem;">{{ item.full_name or item.username }}</strong>
+                                                {% if item.email %}
+                                                <div style="font-size: 0.76rem; color: var(--text-muted);">{{ item.email }}</div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div style="font-weight: 600; color: var(--primary);">@{{ item.username }}</div>
+                                        <div style="font-size: 0.8rem; color: var(--text-muted);">ID: {{ item.college_id or 'N/A' }}</div>
+                                    </td>
+                                    <td>
+                                        <strong style="color: #ffffff;">{{ item.event_title }}</strong>
+                                        <div style="font-size: 0.76rem; color: var(--text-muted);">Event Date: {{ item.event_date }}</div>
+                                    </td>
+                                    <td>
+                                        {% if item.team_name %}
+                                        <span style="background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); padding: 3px 8px; border-radius: 6px; font-size: 0.78rem; font-weight: 700;">👥 {{ item.team_name }}</span>
+                                        {% else %}
+                                        <span style="background: rgba(255, 255, 255, 0.05); color: var(--text-muted); padding: 3px 8px; border-radius: 6px; font-size: 0.78rem;">👤 Solo</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div style="font-weight: 600; color: #ffffff;">{{ item.checkin_time_only or item.checkin_time }}</div>
+                                        <div style="font-size: 0.75rem; color: var(--text-muted);">Ref: #{{ item.id }}</div>
+                                    </td>
+                                    <td>
+                                        <span class="status-verified-chip">✓ Verified</span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="date-group-card" style="text-align: center; padding: 4rem 2rem;">
+                    <div style="font-size: 3.5rem; margin-bottom: 1rem;">📋</div>
+                    <h3 style="color: #ffffff; margin-bottom: 0.5rem;">No Check-in History Recorded Yet</h3>
+                    <p style="color: var(--text-muted); max-width: 500px; margin: 0 auto 1.5rem;">When attendees arrive at the venue and their QR tickets are scanned, their complete entry logs will appear here categorized by date.</p>
+                    <a href="{{ url_for('scan_ticket') }}" class="btn-primary" style="display: inline-block; width: auto; padding: 0.8rem 1.8rem; text-decoration: none;">Launch QR Scanner</a>
+                </div>
+            {% endif %}
+        </div>
+
+        <div id="noFilterResults" style="display: none; text-align: center; padding: 3rem; background: rgba(30, 41, 59, 0.4); border-radius: 16px; border: 1px dashed var(--glass-border); margin-top: 1rem;">
+            <p style="color: var(--text-muted); font-size: 1.1rem; margin: 0;">No check-in records matched your search filter.</p>
+            <button onclick="resetFilters()" class="btn-secondary" style="margin-top: 1rem; width: auto; display: inline-block;">Clear Filters</button>
+        </div>
+    </div>
+
+    <script>
+        const hamburger = document.getElementById('hamburger');
+        const sidebar = document.getElementById('sidebar');
+        const closeSidebar = document.getElementById('closeSidebar');
+
+        if (hamburger) hamburger.onclick = () => sidebar.classList.add('active');
+        if (closeSidebar) closeSidebar.onclick = () => sidebar.classList.remove('active');
+
+        document.onclick = (e) => {
+            if (sidebar && !sidebar.contains(e.target) && hamburger && !hamburger.contains(e.target)) {
+                sidebar.classList.remove('active');
+            }
+        };
+
+        const themeToggle = document.getElementById('themeToggle');
+        if (themeToggle) {
+            themeToggle.onclick = () => {
+                const isLight = document.body.classList.toggle('light-mode');
+                localStorage.setItem('theme', isLight ? 'light' : 'dark');
+            };
+        }
+
+        function applyFilters() {
+            const query = document.getElementById('searchInput').value.toLowerCase().trim();
+            const eventVal = document.getElementById('eventFilter').value;
+            const dateVal = document.getElementById('dateFilter').value;
+
+            const dateGroups = document.querySelectorAll('.date-group-card');
+            let totalVisibleRows = 0;
+
+            dateGroups.forEach(group => {
+                const groupDate = group.getAttribute('data-date-group');
+                let dateMatch = !dateVal || groupDate === dateVal;
+
+                if (!dateMatch) {
+                    group.style.display = 'none';
+                    return;
+                }
+
+                const rows = group.querySelectorAll('.checkin-row');
+                let visibleRowsInGroup = 0;
+
+                rows.forEach(row => {
+                    const name = row.getAttribute('data-name') || '';
+                    const username = row.getAttribute('data-username') || '';
+                    const college = row.getAttribute('data-college') || '';
+                    const eventTitle = row.getAttribute('data-event') || '';
+
+                    const matchesQuery = !query || name.includes(query) || username.includes(query) || college.includes(query) || eventTitle.toLowerCase().includes(query);
+                    const matchesEvent = !eventVal || eventTitle === eventVal;
+
+                    if (matchesQuery && matchesEvent) {
+                        row.style.display = '';
+                        visibleRowsInGroup++;
+                        totalVisibleRows++;
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+
+                if (visibleRowsInGroup > 0) {
+                    group.style.display = 'block';
+                } else {
+                    group.style.display = 'none';
+                }
+            });
+
+            const noResults = document.getElementById('noFilterResults');
+            if (noResults) {
+                noResults.style.display = totalVisibleRows === 0 ? 'block' : 'none';
+            }
+        }
+
+        function resetFilters() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('eventFilter').value = '';
+            document.getElementById('dateFilter').value = '';
+            applyFilters();
+        }
+    </script>
+</body>
+</html>

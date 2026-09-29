@@ -79,6 +79,7 @@
                 <span style="background: rgba(0,242,254,0.15); color: var(--primary); font-size: 0.75rem; font-weight: 800; padding: 4px 10px; border-radius: 50px; border: 1px solid var(--primary); text-transform: uppercase;">Check-in Portal</span>
             </div>
             <div class="nav-links">
+                <a href="{{ url_for('checkin_history') }}" class="register-btn-sm" style="background: rgba(0, 242, 254, 0.15); color: var(--primary); border: 1px solid var(--primary); text-decoration:none; margin-right: 10px; padding: 0.4rem 0.8rem; font-weight: 700;">📅 Date-Wise History</a>
                 <a href="{{ url_for('dashboard') }}" class="logout-btn" style="text-decoration:none; margin-right: 10px;">🏠 Dashboard</a>
                 {% if is_admin %}
                 <a href="{{ url_for('admin_dashboard') }}" style="color:var(--admin-accent,#f59e0b); font-weight:700; margin-right:15px; text-decoration:none;">⚡ Admin</a>
@@ -94,9 +95,14 @@
                 <h1 style="font-family: var(--font-heading); color: white; font-size: 2rem; margin: 0;">🎟️ Ticket QR Scanner</h1>
                 <p style="color: var(--text-muted); font-size: 0.95rem; margin-top: 4px;">Scan attendee PDF tickets or enter registration ID to check-in students in real time.</p>
             </div>
-            <div style="background: rgba(0, 242, 254, 0.1); border: 1px solid var(--primary); padding: 0.7rem 1.4rem; border-radius: 14px; text-align: center;">
-                <div style="font-size: 0.75rem; color: var(--primary); text-transform: uppercase; font-weight: 800; letter-spacing: 1px;">Live Check-in Count</div>
-                <div id="checkinCounter" style="font-size: 1.8rem; font-weight: 800; color: white;">0</div>
+            <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+                <a href="{{ url_for('checkin_history') }}" class="register-btn-sm" style="background: rgba(0, 242, 254, 0.15); color: var(--primary); border: 1px solid var(--primary); text-decoration: none; padding: 0.6rem 1.2rem; border-radius: 12px; font-weight: 700; display: flex; align-items: center; gap: 6px;">
+                    📅 View Full Date-Wise History
+                </a>
+                <div style="background: rgba(0, 242, 254, 0.1); border: 1px solid var(--primary); padding: 0.7rem 1.4rem; border-radius: 14px; text-align: center;">
+                    <div style="font-size: 0.75rem; color: var(--primary); text-transform: uppercase; font-weight: 800; letter-spacing: 1px;">Live Check-in Count</div>
+                    <div id="checkinCounter" style="font-size: 1.8rem; font-weight: 800; color: white;">0</div>
+                </div>
             </div>
         </div>
 
@@ -137,11 +143,19 @@
 
             <!-- Right: Recent Check-in Stream -->
             <div class="scanner-card">
-                <h3 style="color: white; margin: 0 0 1rem; font-size: 1.2rem;">📋 Recent Check-in Feed</h3>
-                <div id="checkinFeed" style="max-height: 440px; overflow-y: auto;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <h3 style="color: white; margin: 0; font-size: 1.2rem;">📋 Recent Check-in Feed</h3>
+                    <a href="{{ url_for('checkin_history') }}" style="color: var(--primary); font-size: 0.82rem; font-weight: 700; text-decoration: none;">View All History →</a>
+                </div>
+                <div id="checkinFeed" style="max-height: 380px; overflow-y: auto;">
                     <div style="text-align: center; color: var(--text-muted); padding: 2rem; font-size: 0.9rem;">
                         No check-ins recorded yet in this session.
                     </div>
+                </div>
+                <div style="margin-top: 1rem; padding-top: 0.8rem; border-top: 1px solid var(--glass-border); text-align: center;">
+                    <a href="{{ url_for('checkin_history') }}" class="btn-secondary" style="display: block; width: 100%; text-decoration: none; padding: 0.65rem 1rem; font-size: 0.88rem;">
+                        📅 Open Full Date-Wise History Portal
+                    </a>
                 </div>
             </div>
         </div>
