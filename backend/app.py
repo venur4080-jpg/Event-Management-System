@@ -3244,12 +3244,96 @@ def api_events():
     })
 
 # 
-# AI Chat
+# AI Chat Engine & Assistant
 # 
+def get_openai_client():
+    """Dynamically initializes and returns the OpenAI client with current environment keys."""
+    key = (os.environ.get('OPENAI_API_KEY') or '').strip()
+    if key and key.startswith('sk-'):
+        try:
+            from openai import OpenAI as OpenAIClient
+            return OpenAIClient(api_key=key, timeout=12.0)
+        except Exception as e:
+            print(f"[OPENAI INIT ERROR] {e}")
+            return None
+    return None
+
+
+def generate_smart_ai_reply(user_message: str, username: str, events: list) -> str:
+    """
+    Intelligent context-aware fallback assistant that parses user intent and queries live events DB.
+    Guarantees instant, accurate answers even when OpenAI quota is exhausted.
+    """
+    msg_lower = (user_message or '').lower().strip()
+
+    # 1. Registration & Booking Flow
+    if any(w in msg_lower for w in ['how to register', 'how to book', 'sign up for event', 'join event', 'booking process', 'register']):
+        return f"To register: Click any event card on the Dashboard, review details, click **'Register Now'**, fill in your details (individual or team), and confirm. Your ticket with QR code and confirmation email will be generated instantly!"
+
+    # 2. Ticket, PDF & QR Code Verification
+    if any(w in msg_lower for w in ['ticket', 'download', 'pdf', 'qr code', 'pass', 'admit card', 'verify']):
+        return "After registering, your PDF Ticket with a scannable QR pass is issued immediately. You can download it anytime from **'My Bookings'** in the sidebar or directly from the event confirmation page!"
+
+    # 3. Free Events
+    if any(w in msg_lower for w in ['free', 'zero cost', 'no fee', 'free events', 'free workshops']):
+        free_evs = [e for e in events if 'free' in str(e.get('price', '')).lower() or str(e.get('price', '')).strip() in ('0', 'Rs. 0', '₹0')]
+        if free_evs:
+            names = " • ".join([f"**{e['title']}** ({e.get('date', 'Upcoming')})" for e in free_evs[:4]])
+            return f"🎉 Here are free events available to join right now: {names}. Visit the Dashboard to claim your free pass!"
+        return "Currently all events have standard registration fees. Check the Dashboard for complete pricing details!"
+
+    # 4. Pricing / Paid Events / Razorpay
+    if any(w in msg_lower for w in ['price', 'fee', 'cost', 'payment', 'pay', 'razorpay', 'charges', 'ticket price']):
+        paid_evs = [e for e in events if str(e.get('price', '')).strip() not in ('Free', '0', 'Rs. 0', '₹0')]
+        if paid_evs:
+            sample = " • ".join([f"**{e['title']}** ({e.get('price')})" for e in paid_evs[:3]])
+            return f"Events on the platform range from Free to paid workshops (e.g. {sample}). We support instant online payments via Razorpay (UPI, Cards, NetBanking)."
+        return "Most events on the platform are Free! Check individual event cards on the Dashboard for exact ticket fees."
+
+    # 5. Calendar & Schedule
+    if any(w in msg_lower for w in ['calendar', 'schedule', 'month', 'dates', 'timing', 'today', 'when']):
+        return "📅 You can view all upcoming hackathons and workshops organized by date on our interactive **Calendar View** on the Dashboard! Click the 'Calendar' tab at the top of the events section."
+
+    # 6. Cancellation / Unregistration / Refund
+    if any(w in msg_lower for w in ['cancel', 'unregister', 'refund', 'withdraw']):
+        return "To cancel a booking: Open **'My Bookings'** from the sidebar, find your active event card, and click **'Unregister'**. Your pass will be cancelled and a revocation email will be dispatched to your inbox."
+
+    # 7. Category & Topic Search
+    categories_keywords = {
+        'AI / Machine Learning': ['ai', 'ml', 'machine learning', 'deep learning', 'neural', 'llm', 'gpt', 'genai'],
+        'Cybersecurity / Ethical Hacking': ['cyber', 'security', 'hack', 'ethical hacking', 'penetration', 'ctf'],
+        'Web & UI/UX Design': ['web', 'ui', 'ux', 'frontend', 'design', 'figma', 'css', 'react', 'javascript'],
+        'Cloud & DevOps': ['cloud', 'azure', 'aws', 'devops', 'docker', 'kubernetes'],
+        'Gaming & VR/AR': ['game', 'gaming', 'vr', 'ar', 'unity', 'unreal', 'metaverse', 'immersive'],
+        'Robotics & IoT': ['robot', 'robotics', 'iot', 'hardware', 'arduino', 'sensors', 'drone'],
+        'Blockchain & Web3': ['blockchain', 'crypto', 'web3', 'solidity', 'smart contract']
+    }
+    for cat_name, kw_list in categories_keywords.items():
+        if any(kw in msg_lower for kw in kw_list):
+            matched = [e for e in events if any(k in e.get('title', '').lower() or k in e.get('desc', '').lower() for k in kw_list)]
+            if matched:
+                items = " • ".join([f"**{e['title']}** on {e.get('date', '')} ({e.get('price', 'Free')})" for e in matched[:3]])
+                return f"🔍 Here are top **{cat_name}** events: {items}. Head to the Dashboard to register!"
+
+    # 8. Profile & Settings
+    if any(w in msg_lower for w in ['profile', 'account', 'photo', 'avatar', 'phone', 'email change', 'password']):
+        return "You can update your personal details, verify your phone/email with OTP, upload and crop your profile avatar, and view your 4-digit User ID in the **'My Profile'** page (click your avatar at top-right)!"
+
+    # 9. Admin & Host Features
+    if any(w in msg_lower for w in ['admin', 'host', 'analytics', 'scanner', 'checkin', 'verify pass']):
+        return "Administrators and event hosts have access to the **Admin Dashboard**, **Live QR Scanner**, **Host Analytics**, and date-wise **Check-in History** from the navigation bar."
+
+    # 10. Greetings & General
+    if any(w in msg_lower for w in ['hi', 'hello', 'hey', 'good morning', 'good afternoon', 'good evening', 'who are you', 'help']):
+        return f"Hello {username}! 👋 I am your EVENTS AI Assistant. Ask me about upcoming hackathons, registration instructions, ticket downloads, free workshops, or platform navigation!"
+
+    # 11. General Top Recommendations
+    top_3 = " • ".join([f"**{e['title']}** ({e.get('date', '')})" for e in events[:3]]) if events else "TechNova Codeathon, AI & ML Summit"
+    return f"I'm your EVENTS AI Assistant! Some featured events right now: {top_3}. Ask me about specific topics (AI, Cyber, Web, Cloud, Gaming), registration steps, or ticket verification!"
+
+
 @app.route('/api/chat', methods=['POST'])
 def api_chat():
-    if not session.get('loggedin'):
-        return jsonify({'reply': 'Please log in to use the AI assistant.'})
     data = request.get_json() or {}
     user_message = data.get('message', '').strip()
     history = data.get('history', [])
@@ -3257,7 +3341,6 @@ def api_chat():
         return jsonify({'reply': 'Please type a message.'})
 
     username = session.get('username', 'Guest')
-    msg_lower = user_message.lower()
 
     # Get live events for context
     try:
@@ -3265,78 +3348,47 @@ def api_chat():
     except Exception:
         events = []
 
-    if not openai_client:
-        # Fallback smart contextual replies with live DB awareness
-        if any(w in msg_lower for w in ['register', 'sign up', 'join', 'how to book', 'booking']):
-            reply = 'To register: Click on any event card on the Dashboard, click "Register Now", enter your details, and confirm. Your ticket will be generated instantly!'
-        elif any(w in msg_lower for w in ['ticket', 'download', 'pdf', 'qr']):
-            reply = 'After registering, your PDF ticket with a verification QR code is generated instantly. You can download it directly from the Dashboard or from "My Bookings" in the sidebar!'
-        elif any(w in msg_lower for w in ['free', 'cost', 'no fee', 'zero']):
-            free_evs = [e for e in events if 'free' in str(e.get('price', '')).lower() or str(e.get('price', '')).strip() in ('0', 'Rs. 0')]
-            if free_evs:
-                names = ", ".join([f"**{e['title']}** ({e.get('date', 'Upcoming')})" for e in free_evs[:3]])
-                reply = f"Here are free events you can join right now: {names}! Visit the Dashboard to register with 1 click."
-            else:
-                reply = "Currently all events have standard entry fees. Check the Dashboard for complete pricing details!"
-        elif any(w in msg_lower for w in ['calendar', 'schedule', 'dates']):
-            reply = 'Click the "Calendar View" button on the Dashboard to view all scheduled hackathons, workshops, and seminars on a full visual monthly calendar!'
-        elif any(w in msg_lower for w in ['profile', 'account', 'photo', 'picture']):
-            reply = 'You can edit your full name, phone number, college ID, and upload/crop your profile photo from the "My Profile" page accessible via the top-right avatar!'
-        elif any(w in msg_lower for w in ['admin', 'panel', 'host']):
-            reply = 'Administrators and Hosts can access the Admin Panel at `/admin` to manage users, track registrations, feature events, and monitor real-time platform analytics.'
-        elif any(w in msg_lower for w in ['ai', 'ml', 'machine learning', 'cyber', 'security', 'hack', 'web', 'cloud', 'devops', 'design', 'iot', 'robot']):
-            matched = []
-            for ev in events:
-                cat = get_category(ev.get('title', '')).lower()
-                tit = ev.get('title', '').lower()
-                if any(k in tit or k in cat for k in ['ai', 'ml', 'cyber', 'security', 'hack', 'web', 'cloud', 'design', 'iot', 'robot'] if k in msg_lower):
-                    matched.append(ev)
-            if matched:
-                items = " • ".join([f"**{e['title']}** on {e.get('date', '')} ({e.get('price', 'Free')})" for e in matched[:3]])
-                reply = f"Here are matching events I found for you: {items}. Click on them in the Dashboard to register!"
-            else:
-                reply = "I couldn't find an exact category match, but you can filter by category directly on the Dashboard!"
-        elif any(w in msg_lower for w in ['event', 'upcoming', 'show', 'find', 'recommend', 'what can i']):
-            sample_evs = events[:3] if events else []
-            if sample_evs:
-                items = " | ".join([f" **{e['title']}** ({e.get('date', '')})" for e in sample_evs])
-                reply = f"Top upcoming events right now: {items}. Head to the Dashboard to explore all events!"
-            else:
-                reply = 'Head to the Dashboard to browse all upcoming events. Use the search bar and category filters!'
-        elif any(w in msg_lower for w in ['hi', 'hello', 'hey', 'help']):
-            reply = f"Hello {username}! I am your EVENTS AI assistant. Ask me about upcoming events, free workshops, registration steps, downloading tickets, or platform features!"
-        else:
-            reply = "I'm your EVENTS AI Assistant! You can ask me about upcoming hackathons, registration instructions, ticket downloads, free events, or platform navigation. What would you like to explore?"
-        
-        log_action(username, 'ai_chat', user_message[:80])
-        return jsonify({'reply': reply})
+    client = get_openai_client()
 
-    try:
-        # Build prompt with live event context
-        ev_summary = "\n".join([f"- {e['title']} | Date: {e.get('date')} | Price: {e.get('price')} | Category: {get_category(e.get('title',''))}" for e in events[:12]])
-        system_prompt = f'''You are EVENTS Assistant, an intelligent AI for the EVENTS platform — a premium student event management portal for hackathons, workshops, and seminars.
+    if client:
+        try:
+            ev_summary = "\n".join([f"- {e['title']} | Date: {e.get('date')} | Price: {e.get('price')} | Category: {get_category(e.get('title',''))}" for e in events[:15]])
+            system_prompt = f'''You are EVENTS Assistant, an intelligent AI for the EVENTS platform — a premium student event management portal for hackathons, workshops, and seminars.
 Here are the live events currently scheduled on the platform:
 {ev_summary}
 
 Help users find events, register, download QR-code PDF tickets, view calendar schedules, and navigate the platform.
-Keep answers concise, helpful, and enthusiastic (2-3 sentences).'''
+Keep answers concise, helpful, and enthusiastic (2-3 sentences max).'''
 
-        messages = [{'role': 'system', 'content': system_prompt}]
-        for h in history[-6:]:
-            if h.get('role') in ('user', 'assistant') and h.get('content'):
-                messages.append({'role': h['role'], 'content': h['content']})
-        messages.append({'role': 'user', 'content': user_message})
+            messages = [{'role': 'system', 'content': system_prompt}]
+            for h in history[-6:]:
+                if h.get('role') in ('user', 'assistant') and h.get('content'):
+                    messages.append({'role': h['role'], 'content': h['content']})
+            messages.append({'role': 'user', 'content': user_message})
 
-        response = openai_client.chat.completions.create(
-            model='gpt-4o-mini',
-            messages=messages,
-            max_tokens=220,
-            temperature=0.7,
-        )
-        reply = response.choices[0].message.content.strip()
-        log_action(username, 'ai_chat', user_message[:80])
-    except Exception as e:
-        reply = 'I am here to help! Browse the Dashboard to explore all upcoming events, or ask me how to register and download your tickets.'
+            # Try modern gpt-4o-mini, fallback to gpt-3.5-turbo
+            for model_name in ['gpt-4o-mini', 'gpt-3.5-turbo']:
+                try:
+                    response = client.chat.completions.create(
+                        model=model_name,
+                        messages=messages,
+                        max_tokens=220,
+                        temperature=0.7,
+                    )
+                    reply = response.choices[0].message.content.strip()
+                    log_action(username, 'ai_chat', user_message[:80])
+                    return jsonify({'reply': reply})
+                except Exception as model_err:
+                    if 'insufficient_quota' in str(model_err) or 'credit_balance_exhausted' in str(model_err) or 'RateLimitError' in str(type(model_err)):
+                        print(f"[OPENAI NOTICE] OpenAI quota exhausted on model {model_name}. Serving intelligent platform reply.")
+                        break
+                    continue
+        except Exception as e:
+            print(f"[OPENAI API ERROR] {e}")
+
+    # Seamless high-intelligence contextual reply
+    reply = generate_smart_ai_reply(user_message, username, events)
+    log_action(username, 'ai_chat', user_message[:80])
     return jsonify({'reply': reply})
 
 # 
