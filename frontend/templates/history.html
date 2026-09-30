@@ -4,10 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Bookings | EVENTS</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=5.0">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@700;800&display=swap" rel="stylesheet">
     <script src="{{ url_for('static', filename='themes.js') }}"></script>
     <style>
+        .container {
+            width: 100% !important;
+            max-width: 1360px !important;
+            margin-left: auto !important;
+            margin-right: auto !important;
+            box-sizing: border-box !important;
+        }
+
         .bookings-summary-bar {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
@@ -85,17 +93,149 @@
             color: #000000;
             font-weight: 700;
         }
+
+        /* Booking Cards & Grid Layout */
         .bookings-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
-            gap: 1.8rem;
-            width: 100%;
-            box-sizing: border-box;
+            display: grid !important;
+            grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)) !important;
+            gap: 1.8rem !important;
+            width: 100% !important;
+            box-sizing: border-box !important;
+            margin-top: 1.5rem;
         }
         @media (max-width: 800px) {
             .bookings-grid {
-                grid-template-columns: 1fr;
+                grid-template-columns: 1fr !important;
             }
+        }
+
+        .booking-card {
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            border-radius: 18px;
+            overflow: hidden !important;
+            display: flex !important;
+            flex-direction: column !important;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            width: 100% !important;
+            max-width: 100% !important;
+            box-sizing: border-box !important;
+        }
+        .booking-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(0, 242, 254, 0.4);
+            box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45), 0 0 20px rgba(0, 242, 254, 0.15);
+        }
+        body.light-mode .booking-card {
+            background: #ffffff;
+            border-color: rgba(0, 0, 0, 0.08);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.06);
+        }
+
+        .booking-image-wrap {
+            position: relative !important;
+            height: 190px !important;
+            width: 100% !important;
+            overflow: hidden !important;
+            background: #1e293b;
+        }
+        .booking-image {
+            width: 100% !important;
+            height: 100% !important;
+            max-width: 100% !important;
+            max-height: 100% !important;
+            object-fit: cover !important;
+            display: block !important;
+            transition: transform 0.5s ease;
+        }
+        .booking-card:hover .booking-image {
+            transform: scale(1.05);
+        }
+
+        .booking-body {
+            padding: 1.4rem !important;
+            display: flex !important;
+            flex-direction: column !important;
+            flex-grow: 1 !important;
+            box-sizing: border-box !important;
+        }
+        .booking-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: auto;
+            padding-top: 1.2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+        }
+        body.light-mode .booking-actions {
+            border-top-color: rgba(0, 0, 0, 0.06);
+        }
+
+        /* Unregister / Cancellation Modal */
+        .unreg-modal-overlay {
+            display: none;
+            position: fixed !important;
+            inset: 0 !important;
+            background: rgba(0, 0, 0, 0.82) !important;
+            backdrop-filter: blur(10px) !important;
+            -webkit-backdrop-filter: blur(10px) !important;
+            z-index: 100000 !important;
+            justify-content: center !important;
+            align-items: center !important;
+            padding: 1.5rem !important;
+            box-sizing: border-box !important;
+        }
+        .unreg-modal-content {
+            background: #0f172a !important;
+            border: 1px solid rgba(0, 242, 254, 0.25) !important;
+            border-radius: 20px !important;
+            max-width: 580px !important;
+            width: 100% !important;
+            max-height: 90vh !important;
+            overflow-y: auto !important;
+            padding: 2.2rem !important;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7) !important;
+            box-sizing: border-box !important;
+        }
+        body.light-mode .unreg-modal-content {
+            background: #ffffff !important;
+            border-color: rgba(0, 0, 0, 0.12) !important;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.2) !important;
+        }
+        .unreg-reason-option {
+            display: flex !important;
+            align-items: center !important;
+            gap: 12px !important;
+            padding: 10px 14px !important;
+            border-radius: 10px !important;
+            background: rgba(255, 255, 255, 0.04) !important;
+            border: 1px solid rgba(255, 255, 255, 0.08) !important;
+            cursor: pointer !important;
+            transition: all 0.2s ease !important;
+            font-size: 0.9rem !important;
+            color: #e2e8f0 !important;
+            margin-bottom: 8px !important;
+        }
+        .unreg-reason-option:hover {
+            background: rgba(0, 242, 254, 0.08) !important;
+            border-color: rgba(0, 242, 254, 0.35) !important;
+        }
+        body.light-mode .unreg-reason-option {
+            background: #f8fafc !important;
+            border-color: #e2e8f0 !important;
+            color: #1e293b !important;
+        }
+        body.light-mode .unreg-reason-option:hover {
+            background: #f1f5f9 !important;
+            border-color: #cbd5e1 !important;
+        }
+        .unreg-reason-option input[type="radio"] {
+            accent-color: #00f2fe !important;
+            cursor: pointer !important;
+            width: 16px !important;
+            height: 16px !important;
         }
     </style>
 </head>
