@@ -42,20 +42,22 @@ if os.path.exists(_root_env):
     load_dotenv(_root_env)
 
 
-def _connect_smtp_server(smtp_server: str, smtp_port: int, smtp_email: str, smtp_password: str, timeout: int = 15):
+def _connect_smtp_server(smtp_server: str, smtp_port: int, smtp_email: str, smtp_password: str, timeout: int = 8):
     """
     Establishes an authenticated SMTP connection supporting both port 465 (SSL)
     and port 587 (STARTTLS) with automatic cross-port fallback for cloud deployments.
+    Prioritizes port 465 SSL for cloud environments like Render to bypass port 587 firewall restrictions.
     """
     clean_email = (smtp_email or '').strip()
     clean_pass = (smtp_password or '').strip().replace(' ', '').replace('"', '').replace("'", "")
     clean_server = (smtp_server or 'smtp.gmail.com').strip()
 
-    ports_to_try = [smtp_port]
-    if smtp_port == 587 and 465 not in ports_to_try:
-        ports_to_try.append(465)
-    elif smtp_port == 465 and 587 not in ports_to_try:
-        ports_to_try.append(587)
+    # In cloud platforms (Render, Railway, AWS), outbound port 587 is frequently filtered,
+    # whereas Port 465 (direct SSL) is open. Prioritize 465 for Gmail.
+    if clean_server == 'smtp.gmail.com' or smtp_port == 465:
+        ports_to_try = [465, 587]
+    else:
+        ports_to_try = [smtp_port, 465] if smtp_port != 465 else [465, 587]
 
     last_err = None
     for port in ports_to_try:
