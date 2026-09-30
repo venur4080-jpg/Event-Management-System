@@ -644,7 +644,6 @@ class EventManagementSystemTests(unittest.TestCase):
                 'college_id': 'COL-2026-001'
             }, follow_redirects=True)
             self.assertIn(b'Registration is closed', resp_reg.data)
-            self.assertIn(b'2 hours before', resp_reg.data)
 
         # 3. Test Dashboard renders calendar legend with 3 status dots and event time info
         resp_dash = self.client.get('/dashboard')

@@ -3229,6 +3229,74 @@ def generate_smart_ai_reply(user_message: str, username: str, events: list) -> s
     return f"I'm your EVENTS AI Assistant! Some featured events right now: {top_3}. Ask me about specific topics (AI, Cyber, Web, Cloud, Gaming), registration steps, or ticket verification!"
 
 
+def generate_gemini_reply(user_message: str, history: list, events: list, username: str) -> str:
+    """
+    Generates intelligent contextual responses using Google Gemini API.
+    Uses Gemini 3.5 Flash Lite / 3.1 Flash Lite for ultra-fast, live responses.
+    """
+    gemini_key = (os.environ.get('GEMINI_API_KEY') or '').strip()
+    if not gemini_key:
+        return None
+
+    try:
+        ev_summary = "\n".join([f"- {e['title']} | Date: {e.get('date')} | Price: {e.get('price')} | Category: {get_category(e.get('title',''))}" for e in events[:15]])
+        system_text = f"""You are EVENTS Assistant, an intelligent AI for the EVENTS platform — a premium student event management portal for hackathons, workshops, and seminars.
+Here are the live events currently scheduled on the platform:
+{ev_summary}
+
+User: {username}
+Help users find events, register, download QR-code PDF tickets, view calendar schedules, and navigate the platform.
+Keep answers concise, helpful, and enthusiastic (2-3 sentences max)."""
+
+        contents = []
+        for h in (history or [])[-6:]:
+            role = 'user' if h.get('role') == 'user' else 'model'
+            if h.get('content'):
+                contents.append({
+                    "role": role,
+                    "parts": [{"text": str(h.get('content'))}]
+                })
+        contents.append({
+            "role": "user",
+            "parts": [{"text": str(user_message)}]
+        })
+
+        payload = {
+            "systemInstruction": {
+                "parts": [{"text": system_text}]
+            },
+            "contents": contents,
+            "generationConfig": {
+                "maxOutputTokens": 250,
+                "temperature": 0.7
+            }
+        }
+
+        # List of high-performance modern Gemini models
+        candidate_models = ['gemini-3.5-flash-lite', 'gemini-3.1-flash-lite', 'gemini-3.8-flash', 'gemini-3.5-flash']
+        for model_name in candidate_models:
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={gemini_key}"
+            try:
+                res = requests.post(url, json=payload, headers={'Content-Type': 'application/json'}, timeout=9)
+                if res.status_code == 200:
+                    data = res.json()
+                    candidates = data.get('candidates', [])
+                    if candidates and 'content' in candidates[0] and 'parts' in candidates[0]['content']:
+                        reply_text = candidates[0]['content']['parts'][0].get('text', '').strip()
+                        if reply_text:
+                            return reply_text
+                elif res.status_code in (429, 503):
+                    print(f"[GEMINI NOTICE] Model {model_name} busy (status {res.status_code}). Trying next candidate model...")
+                    continue
+            except Exception as e:
+                print(f"[GEMINI API WARNING] Model {model_name} attempt failed: {e}")
+                continue
+    except Exception as e:
+        print(f"[GEMINI ENGINE ERROR] {e}")
+
+    return None
+
+
 @app.route('/api/chat', methods=['POST'])
 def api_chat():
     data = request.get_json() or {}
@@ -3245,8 +3313,14 @@ def api_chat():
     except Exception:
         events = []
 
-    client = get_openai_client()
+    # 1. Primary Engine: Google Gemini AI
+    gemini_reply = generate_gemini_reply(user_message, history, events, username)
+    if gemini_reply:
+        log_action(username, 'ai_chat', user_message[:80])
+        return jsonify({'reply': gemini_reply})
 
+    # 2. Secondary Engine: OpenAI (if configured and quota available)
+    client = get_openai_client()
     if client:
         try:
             ev_summary = "\n".join([f"- {e['title']} | Date: {e.get('date')} | Price: {e.get('price')} | Category: {get_category(e.get('title',''))}" for e in events[:15]])
@@ -3283,7 +3357,7 @@ Keep answers concise, helpful, and enthusiastic (2-3 sentences max).'''
         except Exception as e:
             print(f"[OPENAI API ERROR] {e}")
 
-    # Seamless high-intelligence contextual reply
+    # 3. Tertiary Engine: Seamless high-intelligence contextual reply
     reply = generate_smart_ai_reply(user_message, username, events)
     log_action(username, 'ai_chat', user_message[:80])
     return jsonify({'reply': reply})
