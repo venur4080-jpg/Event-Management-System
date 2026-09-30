@@ -1006,122 +1006,31 @@ def send_email_otp(recipient_email: str, otp_code: str):
         return True, f"OTP generated (Dev Mode: {otp_code})", False
 
 
-def send_sms_otp(phone_number: str, otp_code: str):
-    """
-    Dispatches a real SMS OTP to the phone number using Fast2SMS or Twilio.
-    Returns (success: bool, status_msg: str, is_real_delivery: bool)
-    """
-    # Clean phone number to 10 digits for Indian gateways
-    clean_phone = re.sub(r'^\+91[\s-]*', '', str(phone_number).strip())
-    if len(clean_phone) == 11 and clean_phone.startswith('0'):
-        clean_phone = clean_phone[1:]
-    clean_phone = re.sub(r'[\s-]', '', clean_phone)
-
-    # Guard: Never dispatch real SMS during test execution or for dummy test numbers
-    is_testing = app.config.get('TESTING') or os.environ.get('TESTING') == '1' or os.environ.get('FLASK_ENV') == 'testing'
-    test_numbers = ('9123456789', '9876543210', '9999999999', '1234567890', '0000000000', '1111111111')
-    if is_testing or clean_phone in test_numbers:
-        print(f"[OTP DEV MODE] Simulated SMS for test number +91 {clean_phone}: {otp_code}")
-        return True, f"OTP generated (Test Mode: {otp_code})", False
-
-    fast2sms_key = (os.environ.get('FAST2SMS_API_KEY') or '').strip()
-    twilio_sid = (os.environ.get('TWILIO_ACCOUNT_SID') or '').strip()
-    twilio_token = (os.environ.get('TWILIO_AUTH_TOKEN') or '').strip()
-    twilio_from = (os.environ.get('TWILIO_PHONE_NUMBER') or '').strip()
-
-    # 1. Fast2SMS (Indian SMS Gateway)
-    if fast2sms_key:
-        try:
-            url = "https://www.fast2sms.com/dev/bulkV2"
-            payload = {
-                "variables_values": otp_code,
-                "route": "otp",
-                "numbers": clean_phone
-            }
-            headers = {
-                'authorization': fast2sms_key,
-                'Content-Type': "application/json"
-            }
-            response = requests.post(url, json=payload, headers=headers, timeout=5)
-            if response.status_code == 200:
-                res_data = response.json()
-                if res_data.get('return'):
-                    print(f"[OTP PRODUCTION] Real SMS successfully sent via Fast2SMS to +91 {clean_phone}")
-                    return True, f"OTP SMS sent successfully to +91 {clean_phone}.", True
-                else:
-                    # Try Quick SMS route if OTP template requires DLT
-                    q_payload = {
-                        "route": "q",
-                        "message": f"Your EVENTS verification OTP is {otp_code}. Valid for 10 minutes.",
-                        "numbers": clean_phone
-                    }
-                    q_resp = requests.post(url, json=q_payload, headers=headers, timeout=5)
-                    if q_resp.status_code == 200:
-                        q_data = q_resp.json()
-                        if q_data.get('return'):
-                            print(f"[OTP PRODUCTION] Real Quick SMS successfully sent via Fast2SMS to +91 {clean_phone}")
-                            return True, f"OTP SMS sent successfully to +91 {clean_phone}.", True
-                    err_msg = res_data.get('message') or 'SMS delivery rejected by gateway'
-                    print(f"[OTP FAST2SMS] {err_msg}")
-            else:
-                print(f"[OTP FAST2SMS ERROR] Status {response.status_code}: {response.text}")
-        except Exception as e:
-            print(f"[OTP ERROR] Fast2SMS dispatch failed: {e}")
-
-    # 2. Twilio SMS
-    if twilio_sid and twilio_token and twilio_from:
-        try:
-            to_number = phone_number if str(phone_number).startswith('+') else f"+91{clean_phone}"
-            url = f"https://api.twilio.com/2010-04-01/Accounts/{twilio_sid}/Messages.json"
-            data = {
-                'From': twilio_from,
-                'To': to_number,
-                'Body': f"Your EVENTS verification code is: {otp_code}. Valid for 10 minutes."
-            }
-            response = requests.post(url, data=data, auth=(twilio_sid, twilio_token), timeout=5)
-            if response.status_code in [200, 201]:
-                print(f"[OTP PRODUCTION] Real SMS successfully sent via Twilio to {to_number}")
-                return True, f"OTP SMS sent to {phone_number}.", True
-            else:
-                print(f"[OTP TWILIO ERROR] Status {response.status_code}: {response.text}")
-        except Exception as e:
-            print(f"[OTP ERROR] Twilio dispatch failed: {e}")
-
-    print(f"[OTP DEV MODE] SMS Gateway unavailable or unconfigured. Generated OTP for {clean_phone}: {otp_code}")
-    return True, f"OTP sent to {clean_phone} (Dev Mode: {otp_code})", False
-
-
 @app.route('/api/send_otp', methods=['POST'])
 def api_send_otp():
     data = request.get_json() or {}
     target = data.get('target', '').strip()
-    target_type = data.get('type', 'mobile') # 'mobile' or 'email'
+    target_type = data.get('type', 'email') # Email verification
     if not target:
-        return jsonify({'ok': False, 'error': 'Target email or mobile number is required.'}), 400
+        return jsonify({'ok': False, 'error': 'Target email address is required.'}), 400
     
     if target_type == 'mobile':
-        is_v, clean_or_err = validate_mobile(target)
-        if not is_v:
-            return jsonify({'ok': False, 'error': clean_or_err}), 400
-        target = clean_or_err
-    elif target_type == 'email':
-        is_v, clean_or_err = validate_email_address(target)
-        if not is_v:
-            return jsonify({'ok': False, 'error': clean_or_err}), 400
-        target = clean_or_err
+        return jsonify({'ok': False, 'error': 'Mobile SMS verification is disabled. Please verify via Email OTP.'}), 400
+
+    is_v, clean_or_err = validate_email_address(target)
+    if not is_v:
+        return jsonify({'ok': False, 'error': clean_or_err}), 400
+    target = clean_or_err
 
     otp = f"{random.randint(100000, 999999)}"
     _OTP_STORE[target.lower()] = {
         'otp': otp,
-        'type': target_type,
+        'type': 'email',
         'expires': time.time() + 600, # 10 minutes
         'verified': False
     }
 
-    if target_type == 'email':
-        ok, msg, is_real = send_email_otp(target, otp)
-    else:
-        ok, msg, is_real = send_sms_otp(target, otp)
+    ok, msg, is_real = send_email_otp(target, otp)
 
     return jsonify({
         'ok': True,
@@ -1134,16 +1043,10 @@ def api_send_otp():
 def api_verify_otp():
     data = request.get_json() or {}
     target = data.get('target', '').strip().lower()
-    target_type = data.get('type', '')
     otp = data.get('otp', '').strip()
     
     if not target or not otp:
-        return jsonify({'ok': False, 'error': 'Target and OTP are required.'}), 400
-    
-    if target_type == 'mobile' or (target.replace('+91', '').strip().isdigit()):
-        _, cleaned = validate_mobile(target)
-        if cleaned and len(cleaned) == 10:
-            target = cleaned
+        return jsonify({'ok': False, 'error': 'Target email and OTP are required.'}), 400
 
     entry = _OTP_STORE.get(target) or _OTP_STORE.get(target.lower())
     if not entry:
@@ -1151,7 +1054,7 @@ def api_verify_otp():
         if len(otp) == 6 and (otp == '123456' or otp.isdigit()):
             _OTP_STORE[target] = {'otp': otp, 'verified': True, 'expires': time.time() + 600}
             return jsonify({'ok': True, 'message': 'Verified successfully.'})
-        return jsonify({'ok': False, 'error': 'No OTP found for this target. Please request a new OTP.'}), 400
+        return jsonify({'ok': False, 'error': 'No OTP found for this email. Please request a new OTP.'}), 400
     
     if time.time() > entry['expires']:
         _OTP_STORE.pop(target, None)
@@ -2592,19 +2495,13 @@ def profile():
                     conn.close()
                     return redirect(url_for('profile', error="Verification required: Please verify your new email address with OTP before saving."))
 
-        # Check if phone is valid & changed
+        # Check if phone is valid (format check only, no OTP verification needed)
         if phone:
             is_phone_v, clean_phone = validate_mobile(phone)
             if not is_phone_v:
                 conn.close()
                 return redirect(url_for('profile', error=clean_phone))
             phone = clean_phone
-
-            if phone != db_clean_phone:
-                otp_entry = _OTP_STORE.get(phone.lower())
-                if not otp_entry or not otp_entry.get('verified'):
-                    conn.close()
-                    return redirect(url_for('profile', error="Verification required: Please verify your new mobile number with OTP before saving."))
 
         full_name = f"{first_name} {middle_name} {last_name}".replace(' ', ' ').strip()
         if not full_name:

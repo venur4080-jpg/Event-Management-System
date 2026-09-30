@@ -293,20 +293,10 @@
                     <span>📞</span> Contact & Verification
                 </div>
 
-                <!-- Mobile Number with OTP -->
-                <div class="otp-group-wrapper">
-                    <label style="display: block; margin-bottom: 0.4rem; color: var(--text-muted); font-size: 0.9rem;">Mobile Number (Verify with OTP) *</label>
-                    <div class="otp-row">
-                        <input type="tel" name="phone" id="reg_phone" class="input-field" placeholder="Enter mobile number" required oninput="handleRegPhoneInput(this)" maxlength="15" autocomplete="tel">
-                        <button type="button" class="otp-action-btn" id="sendPhoneOtpBtn" onclick="handleSendOtp('mobile', 'reg_phone')">
-                            Send OTP
-                        </button>
-                        <span id="phoneVerifiedBadge" class="otp-verified-badge" style="display: none;">✓ Verified</span>
-                    </div>
-                    <div id="phoneOtpDrawer" class="otp-input-drawer">
-                        <input type="text" id="phoneOtpInput" class="input-field" placeholder="Enter 6-digit OTP" style="width: 160px;" maxlength="6">
-                        <button type="button" class="otp-action-btn" onclick="handleVerifyOtp('mobile', 'reg_phone', 'phoneOtpInput')">Verify</button>
-                    </div>
+                <!-- Mobile Number -->
+                <div class="input-group">
+                    <label>Mobile Number *</label>
+                    <input type="tel" name="phone" id="reg_phone" class="input-field" placeholder="Enter 10-digit mobile number" required oninput="handleRegPhoneInput(this)" maxlength="15" autocomplete="tel">
                     <span id="phoneOtpStatus" class="otp-status-text"></span>
                 </div>
 
@@ -447,49 +437,38 @@
             }
         }
 
-        // OTP Verification Logic
-        let isPhoneVerified = false;
+        // Email OTP Verification Logic
         let isEmailVerified = false;
 
         async function handleSendOtp(type, inputId) {
             const val = document.getElementById(inputId).value.trim();
-            const statusEl = document.getElementById(type === 'mobile' ? 'phoneOtpStatus' : 'emailOtpStatus');
-            const drawerEl = document.getElementById(type === 'mobile' ? 'phoneOtpDrawer' : 'emailOtpDrawer');
-            const btnEl = document.getElementById(type === 'mobile' ? 'sendPhoneOtpBtn' : 'sendEmailOtpBtn');
+            const statusEl = document.getElementById('emailOtpStatus');
+            const drawerEl = document.getElementById('emailOtpDrawer');
+            const btnEl = document.getElementById('sendEmailOtpBtn');
 
             if (!val) {
                 statusEl.className = 'otp-status-text error';
-                statusEl.textContent = `Please enter a valid ${type === 'mobile' ? 'mobile number' : 'email address'} first.`;
+                statusEl.textContent = 'Please enter a valid email address first.';
                 return;
             }
 
-            // Strict pre-check format
-            if (type === 'mobile') {
-                const phoneCheck = validateMobileNumber(val);
-                if (!phoneCheck.valid) {
-                    statusEl.className = 'otp-status-text error';
-                    statusEl.textContent = '❌ ' + phoneCheck.error;
-                    return;
-                }
-            } else {
-                const emailCheck = validateEmailAddress(val);
-                if (!emailCheck.valid) {
-                    statusEl.className = 'otp-status-text error';
-                    statusEl.textContent = '❌ ' + emailCheck.error;
-                    return;
-                }
+            const emailCheck = validateEmailAddress(val);
+            if (!emailCheck.valid) {
+                statusEl.className = 'otp-status-text error';
+                statusEl.textContent = '❌ ' + emailCheck.error;
+                return;
             }
 
             btnEl.disabled = true;
             btnEl.textContent = 'Sending...';
             statusEl.className = 'otp-status-text info';
-            statusEl.textContent = 'Generating & dispatching OTP...';
+            statusEl.textContent = 'Generating & dispatching Email OTP...';
 
             try {
                 const res = await fetch('/api/send_otp', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ type: type, target: val })
+                    body: JSON.stringify({ type: 'email', target: val })
                 });
                 const data = await res.json();
 
@@ -501,7 +480,7 @@
                     statusEl.className = 'otp-status-text success';
                     statusEl.textContent = (data.message || 'OTP sent.') + (data.demo_otp ? ` (OTP: ${data.demo_otp})` : '');
                     
-                    const otpInput = document.getElementById(type === 'mobile' ? 'phoneOtpInput' : 'emailOtpInput');
+                    const otpInput = document.getElementById('emailOtpInput');
                     if (otpInput) {
                         otpInput.value = '';
                         otpInput.focus();
@@ -523,10 +502,10 @@
         async function handleVerifyOtp(type, targetInputId, otpInputId) {
             const target = document.getElementById(targetInputId).value.trim();
             const otp = document.getElementById(otpInputId).value.trim();
-            const statusEl = document.getElementById(type === 'mobile' ? 'phoneOtpStatus' : 'emailOtpStatus');
-            const drawerEl = document.getElementById(type === 'mobile' ? 'phoneOtpDrawer' : 'emailOtpDrawer');
-            const badgeEl = document.getElementById(type === 'mobile' ? 'phoneVerifiedBadge' : 'emailVerifiedBadge');
-            const sendBtn = document.getElementById(type === 'mobile' ? 'sendPhoneOtpBtn' : 'sendEmailOtpBtn');
+            const statusEl = document.getElementById('emailOtpStatus');
+            const drawerEl = document.getElementById('emailOtpDrawer');
+            const badgeEl = document.getElementById('emailVerifiedBadge');
+            const sendBtn = document.getElementById('sendEmailOtpBtn');
 
             if (!otp || otp.length < 4) {
                 statusEl.className = 'otp-status-text error';
@@ -538,13 +517,12 @@
                 const res = await fetch('/api/verify_otp', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ type: type, target: target, otp: otp })
+                    body: JSON.stringify({ type: 'email', target: target, otp: otp })
                 });
                 const data = await res.json();
 
                 if (data && data.ok) {
-                    if (type === 'mobile') isPhoneVerified = true;
-                    if (type === 'email') isEmailVerified = true;
+                    isEmailVerified = true;
 
                     drawerEl.style.display = 'none';
                     drawerEl.classList.remove('active');
@@ -554,7 +532,7 @@
                         badgeEl.textContent = '✓ Verified';
                     }
                     statusEl.className = 'otp-status-text success';
-                    statusEl.textContent = `✓ ${type === 'mobile' ? 'Mobile number' : 'Email address'} successfully verified!`;
+                    statusEl.textContent = '✓ Email address successfully verified!';
                 } else {
                     statusEl.className = 'otp-status-text error';
                     statusEl.textContent = (data && data.error) ? data.error : 'Invalid OTP. Please try again.';

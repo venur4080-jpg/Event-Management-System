@@ -437,24 +437,8 @@ class EventManagementSystemTests(unittest.TestCase):
         self.assertEqual(resp_v_email.status_code, 200)
         self.assertTrue(resp_v_email.get_json()['ok'])
 
-        # 4. Send mobile OTP
+        # 4. Save Profile with verified email and updated mobile phone (no SMS OTP required)
         new_phone = '9123456789'
-        resp_send_phone = self.client.post('/api/send_otp',
-                                           data=json.dumps({'type': 'mobile', 'target': new_phone}),
-                                           content_type='application/json')
-        self.assertEqual(resp_send_phone.status_code, 200)
-        data_phone = resp_send_phone.get_json()
-        self.assertTrue(data_phone['ok'])
-
-        # 5. Verify mobile OTP
-        demo_phone_otp = data_phone.get('demo_otp') or '123456'
-        resp_v_phone = self.client.post('/api/verify_otp',
-                                        data=json.dumps({'type': 'mobile', 'target': new_phone, 'otp': demo_phone_otp}),
-                                        content_type='application/json')
-        self.assertEqual(resp_v_phone.status_code, 200)
-        self.assertTrue(resp_v_phone.get_json()['ok'])
-
-        # 6. Save Profile with verified contact details
         resp_save = self.client.post('/profile', data={
             'first_name': 'Verified',
             'last_name': 'User',

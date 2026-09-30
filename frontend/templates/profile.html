@@ -541,25 +541,10 @@
                         <span id="emailOtpStatus" class="otp-status-text"></span>
                     </div>
 
-                    <!-- Mobile Number with OTP -->
-                    <div class="otp-group-wrapper">
-                        <div class="otp-group-header">
-                            <label>Mobile Number</label>
-                            <div class="otp-badge-container">
-                                <span id="phoneVerifiedBadge" class="otp-verified-badge" style="{% if not user.phone %}display: none;{% endif %}">✓ Verified</span>
-                                <button type="button" id="changePhoneBtn" class="change-contact-btn" onclick="enableEditContact('mobile')" style="{% if not user.phone %}display: none;{% endif %}">✏️ Change / Re-verify</button>
-                            </div>
-                        </div>
-                        <div class="otp-row">
-                            <input type="tel" name="phone" id="profile_phone" class="input-field" value="{{ user.phone or '' }}" placeholder="9876543210" data-original="{{ user.phone or '' }}" oninput="handleContactInputChange('mobile')" onkeyup="handleContactInputChange('mobile')" onchange="handleContactInputChange('mobile')" onpaste="handleContactInputChange('mobile')" autocomplete="tel">
-                            <button type="button" class="otp-action-btn" id="sendPhoneOtpBtn" onclick="handleSendProfileOtp('mobile')" style="{% if user.phone %}display: none;{% else %}display: inline-flex;{% endif %}">
-                                📱 Send OTP
-                            </button>
-                        </div>
-                        <div id="phoneOtpDrawer" class="otp-input-drawer">
-                            <input type="text" id="phoneOtpInput" class="input-field" placeholder="Enter 6-digit OTP" inputmode="numeric" pattern="[0-9]*" maxlength="6">
-                            <button type="button" class="otp-action-btn" onclick="handleVerifyProfileOtp('mobile')">Verify</button>
-                        </div>
+                    <!-- Mobile Number -->
+                    <div class="input-group">
+                        <label>Mobile Number</label>
+                        <input type="tel" name="phone" id="profile_phone" class="input-field" value="{{ user.phone or '' }}" placeholder="Enter 10-digit mobile number" oninput="handleContactInputChange('mobile')" maxlength="15" autocomplete="tel">
                         <span id="phoneOtpStatus" class="otp-status-text"></span>
                     </div>
                 </div>
@@ -923,39 +908,32 @@
             };
         }
 
-        // OTP Verification Logic for Profile Edit
+        // Email OTP Verification Logic for Profile Edit
         let isEmailVerified = {{ 'true' if user.email else 'false' }};
-        let isPhoneVerified = {{ 'true' if user.phone else 'false' }};
         let isEditingEmail = false;
-        let isEditingPhone = false;
-        const otpResendTimers = { email: null, mobile: null };
+        let otpResendTimer = null;
 
         function enableEditContact(type) {
-            const isEmail = type === 'email';
-            if (isEmail) {
-                isEditingEmail = true;
-                isEmailVerified = false;
-            } else {
-                isEditingPhone = true;
-                isPhoneVerified = false;
-            }
+            if (type !== 'email') return;
+            isEditingEmail = true;
+            isEmailVerified = false;
 
-            const input = document.getElementById(isEmail ? 'profile_email' : 'profile_phone');
-            const sendBtn = document.getElementById(isEmail ? 'sendEmailOtpBtn' : 'sendPhoneOtpBtn');
-            const badge = document.getElementById(isEmail ? 'emailVerifiedBadge' : 'phoneVerifiedBadge');
-            const changeBtn = document.getElementById(isEmail ? 'changeEmailBtn' : 'changePhoneBtn');
-            const statusEl = document.getElementById(isEmail ? 'emailOtpStatus' : 'phoneOtpStatus');
+            const input = document.getElementById('profile_email');
+            const sendBtn = document.getElementById('sendEmailOtpBtn');
+            const badge = document.getElementById('emailVerifiedBadge');
+            const changeBtn = document.getElementById('changeEmailBtn');
+            const statusEl = document.getElementById('emailOtpStatus');
 
             if (badge) badge.style.display = 'none';
             if (changeBtn) changeBtn.style.display = 'none';
             if (sendBtn) {
                 sendBtn.style.display = 'inline-flex';
                 sendBtn.disabled = false;
-                sendBtn.innerHTML = isEmail ? '✉️ Send OTP' : '📱 Send OTP';
+                sendBtn.innerHTML = '✉️ Send OTP';
             }
             if (statusEl) {
                 statusEl.className = 'otp-status-text info';
-                statusEl.innerHTML = `✏️ <strong>Edit Mode:</strong> Click "Send OTP" to verify this ${isEmail ? 'email address' : 'mobile number'}.`;
+                statusEl.innerHTML = `✏️ <strong>Edit Mode:</strong> Click "Send OTP" to verify this email address.`;
             }
             if (input) {
                 input.focus();
@@ -964,20 +942,39 @@
         }
 
         function handleContactInputChange(type) {
-            const isEmail = type === 'email';
-            const input = document.getElementById(isEmail ? 'profile_email' : 'profile_phone');
+            if (type === 'mobile') {
+                const phoneInput = document.getElementById('profile_phone');
+                const phoneStatus = document.getElementById('phoneOtpStatus');
+                const val = phoneInput.value.trim();
+                if (!val) {
+                    phoneStatus.textContent = '';
+                    return;
+                }
+                const check = validateMobileNumber(val);
+                if (!check.valid) {
+                    phoneStatus.className = 'otp-status-text error';
+                    phoneStatus.textContent = '❌ ' + check.error;
+                } else {
+                    phoneStatus.className = 'otp-status-text success';
+                    phoneStatus.textContent = '✓ Valid mobile format (' + check.cleaned + ')';
+                }
+                return;
+            }
+
+            // Email input handling
+            const input = document.getElementById('profile_email');
             const orig = (input.getAttribute('data-original') || '').trim();
             const curr = input.value.trim();
-            const sendBtn = document.getElementById(isEmail ? 'sendEmailOtpBtn' : 'sendPhoneOtpBtn');
-            const badge = document.getElementById(isEmail ? 'emailVerifiedBadge' : 'phoneVerifiedBadge');
-            const changeBtn = document.getElementById(isEmail ? 'changeEmailBtn' : 'changePhoneBtn');
-            const drawer = document.getElementById(isEmail ? 'emailOtpDrawer' : 'phoneOtpDrawer');
-            const statusEl = document.getElementById(isEmail ? 'emailOtpStatus' : 'phoneOtpStatus');
+            const sendBtn = document.getElementById('sendEmailOtpBtn');
+            const badge = document.getElementById('emailVerifiedBadge');
+            const changeBtn = document.getElementById('changeEmailBtn');
+            const drawer = document.getElementById('emailOtpDrawer');
+            const statusEl = document.getElementById('emailOtpStatus');
 
             // If input is cleared
             if (!curr) {
-                if (isEmail) { isEmailVerified = true; isEditingEmail = false; }
-                else { isPhoneVerified = true; isEditingPhone = false; }
+                isEmailVerified = true;
+                isEditingEmail = false;
                 if (badge) badge.style.display = 'none';
                 if (changeBtn) changeBtn.style.display = 'none';
                 if (sendBtn) sendBtn.style.display = 'none';
@@ -986,11 +983,9 @@
                 return;
             }
 
-            const inEditMode = isEmail ? isEditingEmail : isEditingPhone;
-            
             // If text matches original database value AND user didn't click Edit
-            if (!inEditMode && curr.toLowerCase() === orig.toLowerCase() && orig !== '') {
-                if (isEmail) isEmailVerified = true; else isPhoneVerified = true;
+            if (!isEditingEmail && curr.toLowerCase() === orig.toLowerCase() && orig !== '') {
+                isEmailVerified = true;
                 if (badge) {
                     badge.style.display = 'inline-flex';
                     badge.textContent = '✓ Verified';
@@ -1003,16 +998,16 @@
             }
 
             // Value modified or user clicked Change / Re-verify
-            if (isEmail) isEmailVerified = false; else isPhoneVerified = false;
+            isEmailVerified = false;
             if (badge) badge.style.display = 'none';
             if (changeBtn) changeBtn.style.display = 'none';
 
-            const check = isEmail ? validateEmailAddress(curr) : validateMobileNumber(curr);
+            const check = validateEmailAddress(curr);
             if (!check.valid) {
                 if (sendBtn) {
                     sendBtn.style.display = 'inline-flex';
                     sendBtn.disabled = true;
-                    sendBtn.innerHTML = isEmail ? '✉️ Send OTP' : '📱 Send OTP';
+                    sendBtn.innerHTML = '✉️ Send OTP';
                 }
                 statusEl.className = 'otp-status-text error';
                 statusEl.textContent = '❌ ' + check.error;
@@ -1020,7 +1015,7 @@
                 if (sendBtn) {
                     sendBtn.style.display = 'inline-flex';
                     sendBtn.disabled = false;
-                    sendBtn.innerHTML = isEmail ? '✉️ Send OTP' : '📱 Send OTP';
+                    sendBtn.innerHTML = '✉️ Send OTP';
                 }
                 statusEl.className = 'otp-status-text info';
                 statusEl.innerHTML = `✓ Valid format. Click <strong>"Send OTP"</strong> to verify <code>${curr}</code>.`;
@@ -1028,20 +1023,19 @@
         }
 
         async function handleSendProfileOtp(type) {
-            const isEmail = type === 'email';
-            const inputId = isEmail ? 'profile_email' : 'profile_phone';
+            const inputId = 'profile_email';
             const val = document.getElementById(inputId).value.trim();
-            const statusEl = document.getElementById(isEmail ? 'emailOtpStatus' : 'phoneOtpStatus');
-            const drawerEl = document.getElementById(isEmail ? 'emailOtpDrawer' : 'phoneOtpDrawer');
-            const btnEl = document.getElementById(isEmail ? 'sendEmailOtpBtn' : 'sendPhoneOtpBtn');
+            const statusEl = document.getElementById('emailOtpStatus');
+            const drawerEl = document.getElementById('emailOtpDrawer');
+            const btnEl = document.getElementById('sendEmailOtpBtn');
 
             if (!val) {
                 statusEl.className = 'otp-status-text error';
-                statusEl.textContent = `Please enter a valid ${isEmail ? 'email address' : 'mobile number'} first.`;
+                statusEl.textContent = 'Please enter a valid email address first.';
                 return;
             }
 
-            const check = isEmail ? validateEmailAddress(val) : validateMobileNumber(val);
+            const check = validateEmailAddress(val);
             if (!check.valid) {
                 statusEl.className = 'otp-status-text error';
                 statusEl.textContent = '❌ ' + check.error;
@@ -1057,7 +1051,7 @@
                 const res = await fetch('/api/send_otp', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ type: isEmail ? 'email' : 'mobile', target: check.cleaned || val })
+                    body: JSON.stringify({ type: 'email', target: check.cleaned || val })
                 });
                 const data = await res.json();
 
@@ -1065,58 +1059,53 @@
                     drawerEl.style.display = 'flex';
                     drawerEl.classList.add('active');
                     statusEl.className = 'otp-status-text success';
-                    const icon = isEmail ? '✉️' : '📱';
-                    const channel = isEmail ? 'email inbox' : 'SMS inbox';
-                    statusEl.innerHTML = `${icon} 6-digit OTP sent to <strong>${val}</strong>! Please check your ${channel}.` + (data.demo_otp ? ` <br><span style="color:#f59e0b; font-weight: 600;">(Demo Mode OTP: <strong>${data.demo_otp}</strong>)</span>` : '');
+                    statusEl.innerHTML = `✉️ 6-digit OTP sent to <strong>${val}</strong>! Please check your email inbox.` + (data.demo_otp ? ` <br><span style="color:#f59e0b; font-weight: 600;">(Demo Mode OTP: <strong>${data.demo_otp}</strong>)</span>` : '');
                     
                     // Countdown timer
                     let countdown = 30;
                     btnEl.disabled = true;
                     btnEl.textContent = `Resend in ${countdown}s`;
-                    if (otpResendTimers[type]) clearInterval(otpResendTimers[type]);
-                    otpResendTimers[type] = setInterval(() => {
+                    if (otpResendTimer) clearInterval(otpResendTimer);
+                    otpResendTimer = setInterval(() => {
                         countdown--;
                         if (countdown <= 0) {
-                            clearInterval(otpResendTimers[type]);
+                            clearInterval(otpResendTimer);
                             btnEl.disabled = false;
-                            btnEl.innerHTML = isEmail ? '✉️ Resend OTP' : '📱 Resend OTP';
+                            btnEl.innerHTML = '✉️ Resend OTP';
                         } else {
                             btnEl.textContent = `Resend in ${countdown}s`;
                         }
                     }, 1000);
 
-                    const otpInputId = isEmail ? 'emailOtpInput' : 'phoneOtpInput';
-                    const otpInput = document.getElementById(otpInputId);
+                    const otpInput = document.getElementById('emailOtpInput');
                     if (otpInput) {
                         otpInput.value = '';
                         setTimeout(() => otpInput.focus(), 100);
                     }
                 } else {
                     btnEl.disabled = false;
-                    btnEl.innerHTML = isEmail ? '✉️ Send OTP' : '📱 Send OTP';
+                    btnEl.innerHTML = '✉️ Send OTP';
                     statusEl.className = 'otp-status-text error';
                     statusEl.textContent = (data && data.error) ? data.error : 'Failed to send OTP.';
                 }
             } catch (err) {
                 btnEl.disabled = false;
-                btnEl.innerHTML = isEmail ? '✉️ Send OTP' : '📱 Send OTP';
+                btnEl.innerHTML = '✉️ Send OTP';
                 statusEl.className = 'otp-status-text error';
                 statusEl.textContent = 'Network error while contacting verification server.';
             }
         }
 
         async function handleVerifyProfileOtp(type) {
-            const isEmail = type === 'email';
-            const targetInputId = isEmail ? 'profile_email' : 'profile_phone';
-            const otpInputId = isEmail ? 'emailOtpInput' : 'phoneOtpInput';
-            const targetInput = document.getElementById(targetInputId);
+            const targetInput = document.getElementById('profile_email');
             const target = targetInput.value.trim();
-            const otp = document.getElementById(otpInputId).value.trim();
-            const statusEl = document.getElementById(isEmail ? 'emailOtpStatus' : 'phoneOtpStatus');
-            const drawerEl = document.getElementById(isEmail ? 'emailOtpDrawer' : 'phoneOtpDrawer');
-            const badgeEl = document.getElementById(isEmail ? 'emailVerifiedBadge' : 'phoneVerifiedBadge');
-            const changeBtn = document.getElementById(isEmail ? 'changeEmailBtn' : 'changePhoneBtn');
-            const sendBtn = document.getElementById(isEmail ? 'sendEmailOtpBtn' : 'sendPhoneOtpBtn');
+            const otpInput = document.getElementById('emailOtpInput');
+            const otp = otpInput.value.trim();
+            const statusEl = document.getElementById('emailOtpStatus');
+            const drawerEl = document.getElementById('emailOtpDrawer');
+            const badgeEl = document.getElementById('emailVerifiedBadge');
+            const changeBtn = document.getElementById('changeEmailBtn');
+            const sendBtn = document.getElementById('sendEmailOtpBtn');
 
             if (!otp || otp.length < 4) {
                 statusEl.className = 'otp-status-text error';
@@ -1128,20 +1117,15 @@
                 const res = await fetch('/api/verify_otp', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ type: isEmail ? 'email' : 'mobile', target: target, otp: otp })
+                    body: JSON.stringify({ type: 'email', target: target, otp: otp })
                 });
                 const data = await res.json();
 
                 if (data && data.ok) {
-                    if (isEmail) {
-                        isEmailVerified = true;
-                        isEditingEmail = false;
-                    } else {
-                        isPhoneVerified = true;
-                        isEditingPhone = false;
-                    }
+                    isEmailVerified = true;
+                    isEditingEmail = false;
 
-                    if (otpResendTimers[type]) clearInterval(otpResendTimers[type]);
+                    if (otpResendTimer) clearInterval(otpResendTimer);
 
                     drawerEl.style.display = 'none';
                     drawerEl.classList.remove('active');
@@ -1157,7 +1141,7 @@
                         changeBtn.style.display = 'inline-block';
                     }
                     statusEl.className = 'otp-status-text success';
-                    statusEl.innerHTML = `🎉 <strong>${isEmail ? 'Email address' : 'Mobile number'} successfully verified!</strong> Click <em>"Save Profile Changes"</em> to save.`;
+                    statusEl.innerHTML = `🎉 <strong>Email address successfully verified!</strong> Click <em>"Save Profile Changes"</em> to save.`;
                 } else {
                     statusEl.className = 'otp-status-text error';
                     statusEl.textContent = (data && data.error) ? data.error : 'Invalid OTP. Please check the code and try again.';
@@ -1170,24 +1154,21 @@
 
         // Auto-verify on 6-digit entry and Enter key
         document.addEventListener('DOMContentLoaded', () => {
-            ['emailOtpInput', 'phoneOtpInput'].forEach(id => {
-                const el = document.getElementById(id);
-                if (el) {
-                    const type = id.startsWith('email') ? 'email' : 'mobile';
-                    el.addEventListener('input', () => {
-                        const val = el.value.trim();
-                        if (val.length === 6 && /^\d{6}$/.test(val)) {
-                            handleVerifyProfileOtp(type);
-                        }
-                    });
-                    el.addEventListener('keydown', (e) => {
-                        if (e.key === 'Enter') {
-                            e.preventDefault();
-                            handleVerifyProfileOtp(type);
-                        }
-                    });
-                }
-            });
+            const el = document.getElementById('emailOtpInput');
+            if (el) {
+                el.addEventListener('input', () => {
+                    const val = el.value.trim();
+                    if (val.length === 6 && /^\d{6}$/.test(val)) {
+                        handleVerifyProfileOtp('email');
+                    }
+                });
+                el.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleVerifyProfileOtp('email');
+                    }
+                });
+            }
         });
 
         function validateProfileForm() {
@@ -1198,8 +1179,6 @@
             
             const origEmail = (emailInput.getAttribute('data-original') || '').trim();
             const currEmail = emailInput.value.trim();
-            
-            const origPhone = (phoneInput.getAttribute('data-original') || '').trim();
             const currPhone = phoneInput.value.trim();
 
             if (currEmail) {
@@ -1236,17 +1215,6 @@
                 alert(`⚠️ Verification Required: Please verify your email (${currEmail}) with OTP before saving.`);
                 enableEditContact('email');
                 emailInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                return false;
-            }
-
-            if (currPhone && (currPhone !== origPhone || isEditingPhone) && !isPhoneVerified) {
-                if (phoneStatus) {
-                    phoneStatus.className = 'otp-status-text error';
-                    phoneStatus.innerHTML = `⚠️ <strong>Verification Required:</strong> Please verify your mobile number (${currPhone}) with OTP before saving.`;
-                }
-                alert(`⚠️ Verification Required: Please verify your mobile number (${currPhone}) with OTP before saving.`);
-                enableEditContact('mobile');
-                phoneInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 return false;
             }
 
