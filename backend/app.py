@@ -32,32 +32,56 @@ if sys.platform == 'win32':
     except Exception:
         pass
 
-# Load environment variables first (supporting multi-path search for cloud and local deployments)
+# Multi-path search for environment files across Local, Docker, and Render /etc/secrets
+_env_search_locations = [
+    '/etc/secrets/.env',
+    '/etc/secrets/env',
+    os.path.join(os.path.dirname(os.path.abspath(__file__)), '.env'),
+    os.path.join(os.path.dirname(os.path.abspath(__file__)), 'env'),
+    os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), '.env'),
+    os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'env'),
+    os.path.join(os.getcwd(), '.env'),
+    os.path.join(os.getcwd(), 'env'),
+]
+for _loc in _env_search_locations:
+    if os.path.exists(_loc):
+        load_dotenv(_loc, override=False)
 load_dotenv()
-_backend_env = os.path.join(os.path.dirname(os.path.abspath(__file__)), '.env')
-if os.path.exists(_backend_env):
-    load_dotenv(_backend_env)
-_root_env = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), '.env')
-if os.path.exists(_root_env):
-    load_dotenv(_root_env)
 
 
-def _connect_smtp_server(smtp_server: str, smtp_port: int, smtp_email: str, smtp_password: str, timeout: int = 8):
+def _get_smtp_config():
+    """
+    Returns sanitized, production-ready SMTP credentials.
+    Ensures email delivery works seamlessly in local development and on cloud platforms like Render.
+    """
+    email = (os.environ.get('SMTP_EMAIL') or os.environ.get('MAIL_USERNAME') or '').strip()
+    password = (os.environ.get('SMTP_PASSWORD') or os.environ.get('MAIL_PASSWORD') or '').strip().replace(' ', '').replace('"', '').replace("'", "")
+    server = (os.environ.get('SMTP_SERVER') or 'smtp.gmail.com').strip()
+    try:
+        port = int(os.environ.get('SMTP_PORT', 465))
+    except Exception:
+        port = 465
+    sender = (os.environ.get('SMTP_SENDER_NAME') or 'EVENTS Team').strip()
+    return email, password, server, port, sender
+
+
+def _connect_smtp_server(smtp_server: str = 'smtp.gmail.com', smtp_port: int = 465, smtp_email: str = None, smtp_password: str = None, timeout: int = 15):
     """
     Establishes an authenticated SMTP connection supporting both port 465 (SSL)
     and port 587 (STARTTLS) with automatic cross-port fallback for cloud deployments.
     Prioritizes port 465 SSL for cloud environments like Render to bypass port 587 firewall restrictions.
     """
-    clean_email = (smtp_email or '').strip()
-    clean_pass = (smtp_password or '').strip().replace(' ', '').replace('"', '').replace("'", "")
-    clean_server = (smtp_server or 'smtp.gmail.com').strip()
+    def_email, def_pass, def_server, def_port, _ = _get_smtp_config()
+    clean_email = (smtp_email or def_email).strip()
+    clean_pass = (smtp_password or def_pass).strip().replace(' ', '').replace('"', '').replace("'", "")
+    clean_server = (smtp_server or def_server).strip()
+    effective_port = smtp_port or def_port or 465
 
-    # In cloud platforms (Render, Railway, AWS), outbound port 587 is frequently filtered,
-    # whereas Port 465 (direct SSL) is open. Prioritize 465 for Gmail.
-    if clean_server == 'smtp.gmail.com' or smtp_port == 465:
+    # Cloud platforms like Render block outbound port 587; prioritize port 465 (SSL)
+    if clean_server == 'smtp.gmail.com' or effective_port == 465:
         ports_to_try = [465, 587]
     else:
-        ports_to_try = [smtp_port, 465] if smtp_port != 465 else [465, 587]
+        ports_to_try = [effective_port, 465] if effective_port != 465 else [465, 587]
 
     last_err = None
     for port in ports_to_try:
@@ -935,13 +959,7 @@ def send_email_otp(recipient_email: str, otp_code: str):
         print(f"[OTP DEV MODE] Simulated OTP for test address {recipient_email}: {otp_code}")
         return True, f"OTP generated (Test Mode: {otp_code})", False
 
-    smtp_email = (os.environ.get('SMTP_EMAIL') or os.environ.get('MAIL_USERNAME') or '').strip()
-    smtp_password = (os.environ.get('SMTP_PASSWORD') or os.environ.get('MAIL_PASSWORD') or '').strip().replace(' ', '')
-    smtp_server = (os.environ.get('SMTP_SERVER') or 'smtp.gmail.com').strip()
-    try:
-        smtp_port = int(os.environ.get('SMTP_PORT', 587))
-    except Exception:
-        smtp_port = 587
+    smtp_email, smtp_password, smtp_server, smtp_port, sender_name = _get_smtp_config()
     sender_name = (os.environ.get('SMTP_SENDER_NAME') or 'EVENTS Verification').strip()
 
     if not smtp_email or not smtp_password:
@@ -1670,13 +1688,7 @@ def send_registration_confirmation_email(recipient_email: str, recipient_name: s
     if not recipient_email:
         return
 
-    smtp_email = (os.environ.get('SMTP_EMAIL') or os.environ.get('MAIL_USERNAME') or '').strip()
-    smtp_password = (os.environ.get('SMTP_PASSWORD') or os.environ.get('MAIL_PASSWORD') or '').strip().replace(' ', '')
-    smtp_server = (os.environ.get('SMTP_SERVER') or 'smtp.gmail.com').strip()
-    try:
-        smtp_port = int(os.environ.get('SMTP_PORT', 587))
-    except Exception:
-        smtp_port = 587
+    smtp_email, smtp_password, smtp_server, smtp_port, sender_name = _get_smtp_config()
     sender_name = (os.environ.get('SMTP_SENDER_NAME') or 'EVENTS Registration').strip()
 
     if isinstance(reg_info, dict):
@@ -1845,13 +1857,7 @@ def send_unregistration_confirmation_email(recipient_email: str, recipient_name:
     if not recipient_email:
         return
 
-    smtp_email = (os.environ.get('SMTP_EMAIL') or os.environ.get('MAIL_USERNAME') or '').strip()
-    smtp_password = (os.environ.get('SMTP_PASSWORD') or os.environ.get('MAIL_PASSWORD') or '').strip().replace(' ', '')
-    smtp_server = (os.environ.get('SMTP_SERVER') or 'smtp.gmail.com').strip()
-    try:
-        smtp_port = int(os.environ.get('SMTP_PORT', 587))
-    except Exception:
-        smtp_port = 587
+    smtp_email, smtp_password, smtp_server, smtp_port, sender_name = _get_smtp_config()
     sender_name = (os.environ.get('SMTP_SENDER_NAME') or 'EVENTS Team').strip()
 
     if isinstance(reg_info, dict):
@@ -2006,13 +2012,7 @@ def send_account_welcome_email(recipient_email: str, recipient_name: str, userna
     if not recipient_email:
         return
 
-    smtp_email = (os.environ.get('SMTP_EMAIL') or os.environ.get('MAIL_USERNAME') or '').strip()
-    smtp_password = (os.environ.get('SMTP_PASSWORD') or os.environ.get('MAIL_PASSWORD') or '').strip().replace(' ', '')
-    smtp_server = (os.environ.get('SMTP_SERVER') or 'smtp.gmail.com').strip()
-    try:
-        smtp_port = int(os.environ.get('SMTP_PORT', 587))
-    except Exception:
-        smtp_port = 587
+    smtp_email, smtp_password, smtp_server, smtp_port, sender_name = _get_smtp_config()
     sender_name = (os.environ.get('SMTP_SENDER_NAME') or 'EVENTS Team').strip()
 
     test_domains = (
