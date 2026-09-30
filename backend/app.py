@@ -42,18 +42,38 @@ if os.path.exists(_root_env):
     load_dotenv(_root_env)
 
 
-def _connect_smtp_server(smtp_server: str, smtp_port: int, smtp_email: str, smtp_password: str, timeout: int = 12):
+def _connect_smtp_server(smtp_server: str, smtp_port: int, smtp_email: str, smtp_password: str, timeout: int = 15):
     """
     Establishes an authenticated SMTP connection supporting both port 465 (SSL)
-    and port 587 (STARTTLS).
+    and port 587 (STARTTLS) with automatic cross-port fallback for cloud deployments.
     """
-    if smtp_port == 465:
-        server = smtplib.SMTP_SSL(smtp_server, smtp_port, timeout=timeout)
-    else:
-        server = smtplib.SMTP(smtp_server, smtp_port, timeout=timeout)
-        server.starttls()
-    server.login(smtp_email, smtp_password)
-    return server
+    clean_email = (smtp_email or '').strip()
+    clean_pass = (smtp_password or '').strip().replace(' ', '').replace('"', '').replace("'", "")
+    clean_server = (smtp_server or 'smtp.gmail.com').strip()
+
+    ports_to_try = [smtp_port]
+    if smtp_port == 587 and 465 not in ports_to_try:
+        ports_to_try.append(465)
+    elif smtp_port == 465 and 587 not in ports_to_try:
+        ports_to_try.append(587)
+
+    last_err = None
+    for port in ports_to_try:
+        try:
+            if port == 465:
+                server = smtplib.SMTP_SSL(clean_server, port, timeout=timeout)
+            else:
+                server = smtplib.SMTP(clean_server, port, timeout=timeout)
+                server.starttls()
+            server.login(clean_email, clean_pass)
+            return server
+        except Exception as err:
+            last_err = err
+            print(f"[SMTP WARNING] Port {port} connection attempt failed ({err}). Trying next available port...")
+            continue
+
+    print(f"[SMTP CRITICAL ERROR] All connection attempts to {clean_server} on ports {ports_to_try} failed: {last_err}")
+    raise last_err or Exception(f"Failed to connect to {clean_server}")
 
 import math
 import base64
