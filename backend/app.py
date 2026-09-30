@@ -32,8 +32,28 @@ if sys.platform == 'win32':
     except Exception:
         pass
 
-# Load environment variables first
+# Load environment variables first (supporting multi-path search for cloud and local deployments)
 load_dotenv()
+_backend_env = os.path.join(os.path.dirname(os.path.abspath(__file__)), '.env')
+if os.path.exists(_backend_env):
+    load_dotenv(_backend_env)
+_root_env = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), '.env')
+if os.path.exists(_root_env):
+    load_dotenv(_root_env)
+
+
+def _connect_smtp_server(smtp_server: str, smtp_port: int, smtp_email: str, smtp_password: str, timeout: int = 12):
+    """
+    Establishes an authenticated SMTP connection supporting both port 465 (SSL)
+    and port 587 (STARTTLS).
+    """
+    if smtp_port == 465:
+        server = smtplib.SMTP_SSL(smtp_server, smtp_port, timeout=timeout)
+    else:
+        server = smtplib.SMTP(smtp_server, smtp_port, timeout=timeout)
+        server.starttls()
+    server.login(smtp_email, smtp_password)
+    return server
 
 import math
 import base64
@@ -952,9 +972,7 @@ def send_email_otp(recipient_email: str, otp_code: str):
         msg.attach(part1)
         msg.attach(part2)
 
-        server = smtplib.SMTP(smtp_server, smtp_port, timeout=10)
-        server.starttls()
-        server.login(smtp_email, smtp_password)
+        server = _connect_smtp_server(smtp_server, smtp_port, smtp_email, smtp_password, timeout=12)
         server.sendmail(smtp_email, [recipient_email], msg.as_string())
         server.quit()
 
@@ -1884,9 +1902,7 @@ Please carry this ticket on your device or in print for entry.
             pdf_attachment.add_header('Content-Disposition', 'attachment', filename=filename)
             msg.attach(pdf_attachment)
 
-        server = smtplib.SMTP(smtp_server, smtp_port, timeout=12)
-        server.starttls()
-        server.login(smtp_email, smtp_password)
+        server = _connect_smtp_server(smtp_server, smtp_port, smtp_email, smtp_password, timeout=15)
         server.sendmail(smtp_email, [recipient_email], msg.as_string())
         server.quit()
 
@@ -2047,9 +2063,7 @@ If this was a mistake, you can re-register via the portal.
         msg.attach(part1)
         msg.attach(part2)
 
-        server = smtplib.SMTP(smtp_server, smtp_port, timeout=12)
-        server.starttls()
-        server.login(smtp_email, smtp_password)
+        server = _connect_smtp_server(smtp_server, smtp_port, smtp_email, smtp_password, timeout=15)
         server.sendmail(smtp_email, [recipient_email], msg.as_string())
         server.quit()
 
@@ -2176,9 +2190,7 @@ You can log in using either your User ID ({user_id}) or your registered email ad
         msg.attach(part1)
         msg.attach(part2)
 
-        server = smtplib.SMTP(smtp_server, smtp_port, timeout=12)
-        server.starttls()
-        server.login(smtp_email, smtp_password)
+        server = _connect_smtp_server(smtp_server, smtp_port, smtp_email, smtp_password, timeout=15)
         server.sendmail(smtp_email, [recipient_email], msg.as_string())
         server.quit()
 
