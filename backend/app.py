@@ -956,8 +956,12 @@ def _dispatch_html_email(recipient_email: str, subject: str, html_content: str, 
     # 1. Tier 1: Resend HTTPS API (Port 443 - 100% open on all cloud platforms)
     if resend_key:
         try:
-            raw_from = (os.environ.get('EMAIL_FROM') or os.environ.get('RESEND_FROM') or 'onboarding@resend.dev').strip()
-            from_sender = raw_from if ('<' in raw_from) else f"EVENTS <{raw_from}>"
+            raw_from = (os.environ.get('EMAIL_FROM') or os.environ.get('RESEND_FROM') or '').strip()
+            if not raw_from or '@' not in raw_from or raw_from.upper() == 'EMAIL_FROM':
+                from_sender = "EVENTS <onboarding@resend.dev>"
+            else:
+                from_sender = raw_from if ('<' in raw_from) else f"EVENTS <{raw_from}>"
+            
             payload = {
                 "from": from_sender,
                 "to": [recipient_email],
