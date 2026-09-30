@@ -941,12 +941,115 @@ def validate_email_address(email: str):
 # In-memory OTP Store for phone and email verification
 _OTP_STORE = {}
 
+def _dispatch_html_email(recipient_email: str, subject: str, html_content: str, text_content: str, pdf_bytes: bytes = None, pdf_filename: str = None) -> tuple:
+    """
+    Unified high-reliability email dispatcher supporting both HTTPS REST APIs (Resend / Brevo)
+    and direct SMTP (Gmail / Custom SMTP).
+    
+    Why HTTPS: Render Free Tier completely blocks outbound raw TCP on SMTP ports (25, 465, 587),
+    causing [Errno 101] Network is unreachable. HTTPS (Port 443) APIs bypass cloud firewalls completely.
+    """
+    resend_key = (os.environ.get('RESEND_API_KEY') or '').strip()
+    brevo_key = (os.environ.get('BREVO_API_KEY') or '').strip()
+    smtp_email, smtp_password, smtp_server, smtp_port, sender_name = _get_smtp_config()
+
+    # 1. Tier 1: Resend HTTPS API (Port 443 - 100% open on all cloud platforms)
+    if resend_key:
+        try:
+            from_sender = (os.environ.get('RESEND_FROM') or 'EVENTS <onboarding@resend.dev>').strip()
+            payload = {
+                "from": from_sender,
+                "to": [recipient_email],
+                "subject": subject,
+                "html": html_content,
+                "text": text_content
+            }
+            if pdf_bytes and pdf_filename:
+                payload["attachments"] = [{
+                    "filename": pdf_filename,
+                    "content": base64.b64encode(pdf_bytes).decode('utf-8')
+                }]
+            res = requests.post("https://api.resend.com/emails", json=payload, headers={
+                "Authorization": f"Bearer {resend_key}",
+                "Content-Type": "application/json"
+            }, timeout=12)
+            if res.status_code in (200, 201):
+                print(f"[RESEND SUCCESS] Email delivered via Resend HTTPS API to {recipient_email}")
+                return True, "Email delivered successfully via HTTPS API.", True
+            else:
+                print(f"[RESEND ERROR] HTTP {res.status_code}: {res.text}")
+        except Exception as e:
+            print(f"[RESEND EXCEPTION] {e}")
+
+    # 2. Tier 2: Brevo (Sendinblue) HTTPS API (Port 443)
+    if brevo_key:
+        try:
+            payload = {
+                "sender": {"name": sender_name or "EVENTS Team", "email": smtp_email or "contact@eventsplatform.com"},
+                "to": [{"email": recipient_email}],
+                "subject": subject,
+                "htmlContent": html_content,
+                "textContent": text_content
+            }
+            if pdf_bytes and pdf_filename:
+                payload["attachment"] = [{
+                    "name": pdf_filename,
+                    "content": base64.b64encode(pdf_bytes).decode('utf-8')
+                }]
+            res = requests.post("https://api.brevo.com/v3/smtp/email", json=payload, headers={
+                "api-key": brevo_key,
+                "Content-Type": "application/json"
+            }, timeout=12)
+            if res.status_code in (200, 201):
+                print(f"[BREVO SUCCESS] Email delivered via Brevo HTTPS API to {recipient_email}")
+                return True, "Email delivered successfully via HTTPS API.", True
+            else:
+                print(f"[BREVO ERROR] HTTP {res.status_code}: {res.text}")
+        except Exception as e:
+            print(f"[BREVO EXCEPTION] {e}")
+
+    # 3. Tier 3: Direct SMTP (Port 465 SSL / Port 587)
+    if not smtp_email or not smtp_password:
+        return False, "Email service credentials not configured. Please add SMTP_EMAIL and SMTP_PASSWORD (or RESEND_API_KEY) in environment variables.", False
+
+    try:
+        msg = MIMEMultipart('mixed' if pdf_bytes else 'alternative')
+        msg['Subject'] = subject
+        msg['From'] = f"{sender_name} <{smtp_email}>"
+        msg['To'] = recipient_email
+
+        if pdf_bytes:
+            from email.mime.application import MIMEApplication
+            alt_part = MIMEMultipart('alternative')
+            alt_part.attach(MIMEText(text_content, 'plain'))
+            alt_part.attach(MIMEText(html_content, 'html'))
+            msg.attach(alt_part)
+            pdf_attach = MIMEApplication(pdf_bytes, _subtype="pdf")
+            pdf_attach.add_header('Content-Disposition', 'attachment', filename=pdf_filename or "ticket.pdf")
+            msg.attach(pdf_attach)
+        else:
+            msg.attach(MIMEText(text_content, 'plain'))
+            msg.attach(MIMEText(html_content, 'html'))
+
+        server = _connect_smtp_server(smtp_server, smtp_port, smtp_email, smtp_password, timeout=12)
+        server.sendmail(smtp_email, [recipient_email], msg.as_string())
+        server.quit()
+        return True, "Email successfully delivered via SMTP.", True
+    except Exception as e:
+        err_str = str(e)
+        if '101' in err_str or 'unreachable' in err_str.lower():
+            print(f"[SMTP FIREWALL BLOCK] Outbound SMTP ports 465/587 are blocked by cloud hosting firewall. ({e})")
+            return False, "Render Free tier blocks outbound SMTP ports 465/587 (Errno 101). Add a free RESEND_API_KEY in Render environment variables for instant HTTPS delivery.", False
+        print(f"[SMTP ERROR] Failed to send email to {recipient_email}: {e}")
+        return False, f"Failed to send email: {e}", False
+
+
 def send_email_otp(recipient_email: str, otp_code: str):
     """
-    Dispatches a real HTML verification email with the 6-digit OTP via SMTP (Gmail / Custom SMTP).
+    Dispatches a real HTML verification email with the 6-digit OTP via HTTPS API / SMTP.
     Returns (success: bool, status_msg: str, is_real_delivery: bool)
     """
-    # Guard: Never dispatch real SMTP emails during testing or to test/dummy domains
+    # Guard: Never dispatch real emails during testing or to test/dummy domains
     test_domains = (
         '@test.com', '@example.com', '@test.local', '@fake.com', '@dummy.com',
         '@invalid', '@sample.com', '@domain.com', '@mailinator.com', '@localhost'
@@ -959,69 +1062,45 @@ def send_email_otp(recipient_email: str, otp_code: str):
         print(f"[OTP TEST MODE] Simulated OTP for test address {recipient_email}: {otp_code}")
         return True, f"OTP generated (Test Mode: {otp_code})", False
 
-    smtp_email, smtp_password, smtp_server, smtp_port, sender_name = _get_smtp_config()
-    sender_name = (os.environ.get('SMTP_SENDER_NAME') or 'EVENTS Verification').strip()
-
-    if not smtp_email or not smtp_password:
-        print(f"[OTP ERROR] SMTP credentials not found in environment (SMTP_EMAIL / SMTP_PASSWORD). Cannot send email to {recipient_email}.")
-        return False, "Email service credentials not configured on server. Please add SMTP_EMAIL and SMTP_PASSWORD in environment variables.", False
-
-    try:
-        msg = MIMEMultipart('alternative')
-        msg['Subject'] = f"{otp_code} is your EVENTS Verification Code"
-        msg['From'] = f"{sender_name} <{smtp_email}>"
-        msg['To'] = recipient_email
-
-        html_content = f"""
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <meta charset="utf-8">
-            <style>
-                body {{ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #0b0f19; color: #f8fafc; margin: 0; padding: 20px; }}
-                .email-container {{ max-width: 500px; margin: 0 auto; background: #131d31; border: 1px solid rgba(0, 242, 254, 0.3); border-radius: 16px; padding: 30px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }}
-                .logo {{ font-size: 24px; font-weight: 800; color: #ffffff; letter-spacing: 2px; margin-bottom: 20px; }}
-                .logo span {{ color: #00f2fe; }}
-                .title {{ font-size: 18px; font-weight: 600; color: #94a3b8; margin-bottom: 15px; }}
-                .otp-box {{ background: rgba(0, 242, 254, 0.1); border: 2px dashed #00f2fe; border-radius: 12px; padding: 18px; margin: 25px 0; font-size: 34px; font-weight: 800; letter-spacing: 8px; color: #00f2fe; font-family: monospace; }}
-                .expiry-note {{ font-size: 13px; color: #f59e0b; margin-bottom: 20px; font-weight: 600; }}
-                .footer {{ font-size: 12px; color: #64748b; line-height: 1.6; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 20px; margin-top: 20px; }}
-            </style>
-        </head>
-        <body>
-            <div class="email-container">
-                <div class="logo">EV<span>ENTS</span></div>
-                <div class="title">Verification Code</div>
-                <p style="color: #cbd5e1; font-size: 14px; margin-bottom: 5px;">Use the 6-digit OTP code below to verify your email address:</p>
-                <div class="otp-box">{otp_code}</div>
-                <div class="expiry-note">⏱ This code is valid for 10 minutes only.</div>
-                <p style="color: #94a3b8; font-size: 13px;">If you did not request this verification, please ignore this email.</p>
-                <div class="footer">
-                    &copy; 2026 EVENTS Management System. All rights reserved.<br>
-                    Automated security notification — do not reply to this email.
-                </div>
+    subject = f"{otp_code} is your EVENTS Verification Code"
+    text_content = f"Your EVENTS verification code is: {otp_code}. Valid for 10 minutes. Do not share this OTP."
+    html_content = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="utf-8">
+        <style>
+            body {{ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #0b0f19; color: #f8fafc; margin: 0; padding: 20px; }}
+            .email-container {{ max-width: 500px; margin: 0 auto; background: #131d31; border: 1px solid rgba(0, 242, 254, 0.3); border-radius: 16px; padding: 30px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }}
+            .logo {{ font-size: 24px; font-weight: 800; color: #ffffff; letter-spacing: 2px; margin-bottom: 20px; }}
+            .logo span {{ color: #00f2fe; }}
+            .title {{ font-size: 18px; font-weight: 600; color: #94a3b8; margin-bottom: 15px; }}
+            .otp-box {{ background: rgba(0, 242, 254, 0.1); border: 2px dashed #00f2fe; border-radius: 12px; padding: 18px; margin: 25px 0; font-size: 34px; font-weight: 800; letter-spacing: 8px; color: #00f2fe; font-family: monospace; }}
+            .expiry-note {{ font-size: 13px; color: #f59e0b; margin-bottom: 20px; font-weight: 600; }}
+            .footer {{ font-size: 12px; color: #64748b; line-height: 1.6; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 20px; margin-top: 20px; }}
+        </style>
+    </head>
+    <body>
+        <div class="email-container">
+            <div class="logo">EV<span>ENTS</span></div>
+            <div class="title">Verification Code</div>
+            <p style="color: #cbd5e1; font-size: 14px; margin-bottom: 5px;">Use the 6-digit OTP code below to verify your email address:</p>
+            <div class="otp-box">{otp_code}</div>
+            <div class="expiry-note">⏱ This code is valid for 10 minutes only.</div>
+            <p style="color: #94a3b8; font-size: 13px;">If you did not request this verification, please ignore this email.</p>
+            <div class="footer">
+                &copy; 2026 EVENTS Management System. All rights reserved.<br>
+                Automated security notification — do not reply to this email.
             </div>
-        </body>
-        </html>
-        """
-        
-        text_content = f"Your EVENTS verification code is: {otp_code}. Valid for 10 minutes. Do not share this OTP."
+        </div>
+    </body>
+    </html>
+    """
 
-        part1 = MIMEText(text_content, 'plain')
-        part2 = MIMEText(html_content, 'html')
-        msg.attach(part1)
-        msg.attach(part2)
-
-        server = _connect_smtp_server(smtp_server, smtp_port, smtp_email, smtp_password, timeout=12)
-        server.sendmail(smtp_email, [recipient_email], msg.as_string())
-        server.quit()
-
-        print(f"[OTP PRODUCTION] Real verification email successfully delivered to {recipient_email}")
-        return True, f"Verification OTP sent to {recipient_email}. Please check your inbox.", True
-
-    except Exception as e:
-        print(f"[OTP ERROR] Failed to deliver real email via SMTP to {recipient_email}: {e}")
-        return False, f"Failed to send email OTP: {e}. Please ensure your Gmail App Password and SMTP settings are correct.", False
+    ok, msg, is_real = _dispatch_html_email(recipient_email, subject, html_content, text_content)
+    if ok:
+        return True, f"Verification OTP sent to {recipient_email}. Please check your inbox.", is_real
+    return False, msg, False
 
 
 @app.route('/api/send_otp', methods=['POST'])
@@ -1832,23 +1911,21 @@ Your official PDF admission ticket is attached to this email.
 Please carry this ticket on your device or in print for entry.
 """
 
-        msg_alternative = MIMEMultipart('alternative')
-        msg_alternative.attach(MIMEText(text_body, 'plain'))
-        msg_alternative.attach(MIMEText(html_body, 'html'))
-        msg.attach(msg_alternative)
+        safe_title = re.sub(r'[^a-zA-Z0-9_-]', '_', event.get('title', 'Event'))
+        filename = f"Ticket_{safe_title}_{ticket_num}.pdf"
 
-        if pdf_bytes:
-            safe_title = re.sub(r'[^a-zA-Z0-9_-]', '_', event.get('title', 'Event'))
-            filename = f"Ticket_{safe_title}_{ticket_num}.pdf"
-            pdf_attachment = MIMEApplication(pdf_bytes, _subtype="pdf")
-            pdf_attachment.add_header('Content-Disposition', 'attachment', filename=filename)
-            msg.attach(pdf_attachment)
-
-        server = _connect_smtp_server(smtp_server, smtp_port, smtp_email, smtp_password, timeout=15)
-        server.sendmail(smtp_email, [recipient_email], msg.as_string())
-        server.quit()
-
-        print(f"[REGISTRATION EMAIL SENT] Ticket PDF successfully delivered to {recipient_email} for event '{event.get('title')}'")
+        ok, msg, is_real = _dispatch_html_email(
+            recipient_email,
+            f"🎟️ Ticket Confirmed: {event.get('title')} ({ticket_num})",
+            html_body,
+            text_body,
+            pdf_bytes=pdf_bytes,
+            pdf_filename=filename
+        )
+        if ok:
+            print(f"[REGISTRATION EMAIL SENT] Ticket PDF successfully delivered to {recipient_email} for event '{event.get('title')}'")
+        else:
+            print(f"[REGISTRATION EMAIL ERROR] {msg}")
 
     except Exception as e:
         print(f"[REGISTRATION EMAIL ERROR] Failed to send email to {recipient_email}: {e}")
@@ -1994,16 +2071,16 @@ Your registration has been cancelled and the admission pass is now void.
 If this was a mistake, you can re-register via the portal.
 """
 
-        part1 = MIMEText(text_body, 'plain')
-        part2 = MIMEText(html_body, 'html')
-        msg.attach(part1)
-        msg.attach(part2)
-
-        server = _connect_smtp_server(smtp_server, smtp_port, smtp_email, smtp_password, timeout=15)
-        server.sendmail(smtp_email, [recipient_email], msg.as_string())
-        server.quit()
-
-        print(f"[UNREGISTRATION EMAIL SENT] Cancellation notice delivered to {recipient_email} for event '{event.get('title')}'")
+        ok, msg, is_real = _dispatch_html_email(
+            recipient_email,
+            f"🚫 Cancellation Confirmed: {event.get('title')} ({ticket_num})",
+            html_body,
+            text_body
+        )
+        if ok:
+            print(f"[UNREGISTRATION EMAIL SENT] Cancellation notice delivered to {recipient_email} for event '{event.get('title')}'")
+        else:
+            print(f"[UNREGISTRATION EMAIL ERROR] {msg}")
 
     except Exception as e:
         print(f"[UNREGISTRATION EMAIL ERROR] Failed to send cancellation email to {recipient_email}: {e}")
@@ -2017,9 +2094,6 @@ def send_account_welcome_email(recipient_email: str, recipient_name: str, userna
     if not recipient_email:
         return
 
-    smtp_email, smtp_password, smtp_server, smtp_port, sender_name = _get_smtp_config()
-    sender_name = (os.environ.get('SMTP_SENDER_NAME') or 'EVENTS Team').strip()
-
     test_domains = (
         '@test.com', '@example.com', '@test.local', '@fake.com', '@dummy.com',
         '@invalid', '@sample.com', '@domain.com', '@mailinator.com', '@localhost'
@@ -2032,16 +2106,7 @@ def send_account_welcome_email(recipient_email: str, recipient_name: str, userna
         print(f"[WELCOME EMAIL SIMULATED] Skipping real SMTP delivery for test recipient: {recipient_email} (User ID: {user_id})")
         return
 
-    if not smtp_email or not smtp_password:
-        print(f"[WELCOME EMAIL DEV MODE] SMTP credentials not set in .env. Welcome email prepared for {recipient_email}")
-        return
-
     try:
-        msg = MIMEMultipart('alternative')
-        msg['Subject'] = f"🚀 Welcome to EVENTS — Your User ID is {user_id}"
-        msg['From'] = f"{sender_name} <{smtp_email}>"
-        msg['To'] = recipient_email
-
         html_body = f"""
         <!DOCTYPE html>
         <html>
@@ -2115,16 +2180,16 @@ Registered Email: {recipient_email}
 You can log in using either your User ID ({user_id}) or your registered email address.
 """
 
-        part1 = MIMEText(text_body, 'plain')
-        part2 = MIMEText(html_body, 'html')
-        msg.attach(part1)
-        msg.attach(part2)
-
-        server = _connect_smtp_server(smtp_server, smtp_port, smtp_email, smtp_password, timeout=15)
-        server.sendmail(smtp_email, [recipient_email], msg.as_string())
-        server.quit()
-
-        print(f"[WELCOME EMAIL SENT] Welcome email successfully delivered to {recipient_email} (User ID: {user_id})")
+        ok, msg, is_real = _dispatch_html_email(
+            recipient_email,
+            f"🚀 Welcome to EVENTS — Your User ID is {user_id}",
+            html_body,
+            text_body
+        )
+        if ok:
+            print(f"[WELCOME EMAIL SENT] Welcome email successfully delivered to {recipient_email} (User ID: {user_id})")
+        else:
+            print(f"[WELCOME EMAIL ERROR] {msg}")
 
     except Exception as e:
         print(f"[WELCOME EMAIL ERROR] Failed to send welcome email to {recipient_email}: {e}")
