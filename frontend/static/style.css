@@ -351,7 +351,7 @@ select:focus {
     color: var(--primary);
 }
 
-.nav-links button {
+.nav-links button:not(.theme-toggle-btn):not(.nature-theme-btn):not(#notifBell) {
     background: transparent;
     border: 1px solid var(--secondary);
     color: var(--secondary);
@@ -362,7 +362,7 @@ select:focus {
     transition: 0.3s;
 }
 
-.nav-links button:hover {
+.nav-links button:not(.theme-toggle-btn):not(.nature-theme-btn):not(#notifBell):hover {
     background: var(--secondary);
     color: white;
     box-shadow: 0 0 15px rgba(255, 0, 128, 0.4);
@@ -1218,25 +1218,38 @@ body.light-mode .modal-content {
 
 /* --- Theme Switcher Toggle --- */
 .theme-toggle-btn {
-    background: transparent;
-    border: 1px solid var(--glass-border);
-    color: var(--text-main);
-    cursor: pointer;
-    padding: 0.5rem;
-    font-size: 1.2rem;
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    transition: 0.3s;
-    margin-right: 1.5rem;
-    outline: none;
+    background: transparent !important;
+    border: 1px solid var(--glass-border) !important;
+    color: var(--text-main) !important;
+    cursor: pointer !important;
+    padding: 0 !important;
+    font-size: 1.15rem !important;
+    border-radius: 50% !important;
+    width: 38px !important;
+    height: 38px !important;
+    min-width: 38px !important;
+    max-width: 38px !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    transition: all 0.25s ease !important;
+    margin: 0 !important;
+    outline: none !important;
+    box-sizing: border-box !important;
+    flex-shrink: 0 !important;
 }
 .theme-toggle-btn:hover {
-    background: var(--bg-card);
-    transform: scale(1.08);
+    background: var(--bg-card) !important;
+    border-color: var(--primary) !important;
+    transform: scale(1.08) !important;
+}
+body.light-mode .theme-toggle-btn {
+    border-color: rgba(0, 0, 0, 0.15) !important;
+    color: #1e293b !important;
+}
+body.light-mode .theme-toggle-btn:hover {
+    background: #f1f5f9 !important;
+    border-color: var(--primary) !important;
 }
 
 /* --- Live Search & Filters --- */
@@ -3089,51 +3102,59 @@ body.theme-nature-valley { --page-bg-image: var(--nature-valley) !important; }
    Nature Wallpaper Switcher Modal & Button Styles
    ========================================================================== */
 .nature-theme-btn {
-    background: rgba(16, 185, 129, 0.12);
-    color: #10b981;
-    border: 1px solid rgba(16, 185, 129, 0.35);
-    padding: 0.42rem 0.85rem;
-    border-radius: 50px;
-    font-size: 0.82rem;
-    font-weight: 700;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-    backdrop-filter: blur(8px);
+    background: rgba(16, 185, 129, 0.15) !important;
+    color: #10b981 !important;
+    border: 1px solid rgba(16, 185, 129, 0.45) !important;
+    padding: 0.42rem 0.9rem !important;
+    border-radius: 50px !important;
+    font-size: 0.82rem !important;
+    font-weight: 700 !important;
+    cursor: pointer !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    backdrop-filter: blur(8px) !important;
+    margin: 0 !important;
+    outline: none !important;
+    box-sizing: border-box !important;
+    flex-shrink: 0 !important;
+    white-space: nowrap !important;
 }
 
 .nature-theme-btn:hover {
-    background: #10b981;
-    color: #0f172a;
-    box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
-    transform: translateY(-1px);
+    background: #10b981 !important;
+    color: #0f172a !important;
+    border-color: #10b981 !important;
+    box-shadow: 0 0 15px rgba(16, 185, 129, 0.45) !important;
+    transform: translateY(-1px) !important;
 }
 
 body.light-mode .nature-theme-btn {
-    background: #ecfdf5;
-    color: #065f46;
-    border-color: #a7f3d0;
+    background: #ecfdf5 !important;
+    color: #065f46 !important;
+    border-color: #a7f3d0 !important;
 }
 
 body.light-mode .nature-theme-btn:hover {
-    background: #10b981;
-    color: #ffffff;
+    background: #10b981 !important;
+    color: #ffffff !important;
+    border-color: #10b981 !important;
 }
 
 .nature-modal-overlay {
     display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.75);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    z-index: 99999;
-    align-items: center;
-    justify-content: center;
-    padding: 1.5rem;
-    animation: fadeIn 0.3s ease-out;
+    position: fixed !important;
+    inset: 0 !important;
+    background: rgba(0, 0, 0, 0.78) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    z-index: 999999 !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 1.5rem !important;
+    box-sizing: border-box !important;
+    animation: fadeIn 0.3s ease-out !important;
 }
 
 .nature-modal-content {

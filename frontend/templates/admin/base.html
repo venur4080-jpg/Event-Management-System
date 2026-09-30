@@ -6,7 +6,7 @@
     <title>Admin Panel | EVENTS</title>
     <meta name="description" content="EVENTS system administrator control panel">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=5.0">
-    <script src="{{ url_for('static', filename='themes.js') }}"></script>
+    <script src="{{ url_for('static', filename='themes.js') }}?v=5.0"></script>
     <script>
         if (localStorage.getItem('theme') === 'light') document.body.classList.add('light-mode');
         if (window.loadPersistedTheme) loadPersistedTheme();

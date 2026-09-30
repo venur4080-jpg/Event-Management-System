@@ -189,7 +189,157 @@
   }
 
   // ─── 5. Nature Wallpaper Modal Switcher UI ────────────────────────────────
+  function injectThemeCoreStyles() {
+    if (document.getElementById('themes-dynamic-style')) return;
+    const style = document.createElement('style');
+    style.id = 'themes-dynamic-style';
+    style.textContent = `
+      .nature-theme-btn {
+        background: rgba(16, 185, 129, 0.15) !important;
+        color: #10b981 !important;
+        border: 1px solid rgba(16, 185, 129, 0.45) !important;
+        padding: 0.42rem 0.9rem !important;
+        border-radius: 50px !important;
+        font-size: 0.82rem !important;
+        font-weight: 700 !important;
+        cursor: pointer !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 6px !important;
+        transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        backdrop-filter: blur(8px) !important;
+        margin: 0 !important;
+        outline: none !important;
+        box-sizing: border-box !important;
+        flex-shrink: 0 !important;
+        white-space: nowrap !important;
+      }
+      .nature-theme-btn:hover {
+        background: #10b981 !important;
+        color: #0f172a !important;
+        border-color: #10b981 !important;
+        box-shadow: 0 0 15px rgba(16, 185, 129, 0.45) !important;
+        transform: translateY(-1px) !important;
+      }
+      body.light-mode .nature-theme-btn {
+        background: #ecfdf5 !important;
+        color: #065f46 !important;
+        border-color: #a7f3d0 !important;
+      }
+      body.light-mode .nature-theme-btn:hover {
+        background: #10b981 !important;
+        color: #ffffff !important;
+        border-color: #10b981 !important;
+      }
+      .nature-modal-overlay {
+        display: none;
+        position: fixed !important;
+        inset: 0 !important;
+        background: rgba(0, 0, 0, 0.8) !important;
+        backdrop-filter: blur(12px) !important;
+        -webkit-backdrop-filter: blur(12px) !important;
+        z-index: 999999 !important;
+        align-items: center !important;
+        justify-content: center !important;
+        padding: 1.5rem !important;
+        box-sizing: border-box !important;
+      }
+      .nature-modal-content {
+        background: #0f172a !important;
+        backdrop-filter: blur(24px) !important;
+        border: 1px solid rgba(255, 255, 255, 0.15) !important;
+        border-radius: 20px !important;
+        padding: 2rem !important;
+        max-width: 760px !important;
+        width: 100% !important;
+        max-height: 85vh !important;
+        overflow-y: auto !important;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7) !important;
+        box-sizing: border-box !important;
+      }
+      body.light-mode .nature-modal-content {
+        background: #ffffff !important;
+        border-color: rgba(0, 0, 0, 0.1) !important;
+        box-shadow: 0 20px 45px rgba(0, 0, 0, 0.15) !important;
+      }
+      .nature-grid {
+        display: grid !important;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)) !important;
+        gap: 1rem !important;
+        margin-top: 1.4rem !important;
+      }
+      .nature-card {
+        position: relative !important;
+        border-radius: 14px !important;
+        overflow: hidden !important;
+        cursor: pointer !important;
+        border: 2px solid rgba(255, 255, 255, 0.12) !important;
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        background: rgba(0, 0, 0, 0.4) !important;
+        height: 115px !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: flex-end !important;
+        padding: 0.85rem !important;
+        box-sizing: border-box !important;
+      }
+      .nature-card.active {
+        border-color: #00f2fe !important;
+        box-shadow: 0 0 20px rgba(0, 242, 254, 0.5) !important;
+      }
+      .nature-card img.nature-card-bg {
+        position: absolute !important;
+        inset: 0 !important;
+        width: 100% !important;
+        height: 100% !important;
+        object-fit: cover !important;
+        transition: transform 0.4s ease !important;
+        z-index: 1 !important;
+      }
+      .nature-card:hover img.nature-card-bg {
+        transform: scale(1.08) !important;
+      }
+      .nature-card::before {
+        content: '' !important;
+        position: absolute !important;
+        inset: 0 !important;
+        background: linear-gradient(to top, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0.25) 60%, transparent 100%) !important;
+        z-index: 2 !important;
+      }
+      .nature-card-info {
+        position: relative !important;
+        z-index: 3 !important;
+      }
+      .nature-card-title {
+        color: white !important;
+        font-weight: 700 !important;
+        font-size: 0.95rem !important;
+        margin-bottom: 2px !important;
+      }
+      .nature-card-desc {
+        color: rgba(255, 255, 255, 0.7) !important;
+        font-size: 0.72rem !important;
+        line-height: 1.2 !important;
+      }
+      .nature-active-badge {
+        position: absolute !important;
+        top: 8px !important;
+        right: 8px !important;
+        background: #00f2fe !important;
+        color: #0f172a !important;
+        font-size: 0.68rem !important;
+        font-weight: 800 !important;
+        padding: 2px 7px !important;
+        border-radius: 6px !important;
+        z-index: 4 !important;
+        text-transform: uppercase !important;
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
   function buildNatureModal() {
+    injectThemeCoreStyles();
     if (document.getElementById('natureWallpaperModal')) return;
 
     const modalOverlay = document.createElement('div');
@@ -305,6 +455,8 @@
 
   // ─── 8. Initialization ────────────────────────────────────────────────────
   function init() {
+    injectThemeCoreStyles();
+
     const savedWallpaper = localStorage.getItem('natureWallpaperTheme') || 'dynamic';
     applyNatureWallpaper(savedWallpaper);
 
