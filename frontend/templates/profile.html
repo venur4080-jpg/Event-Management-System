@@ -1065,8 +1065,7 @@
                 if (data && data.ok) {
                     drawerEl.style.display = 'flex';
                     drawerEl.classList.add('active');
-                    statusEl.className = 'otp-status-text success';
-                    statusEl.innerHTML = `✉️ 6-digit OTP sent to <strong>${val}</strong>! Please check your email inbox.` + (data.demo_otp ? ` <br><span style="color:#f59e0b; font-weight: 600;">(Demo Mode OTP: <strong>${data.demo_otp}</strong>)</span>` : '');
+                    statusEl.innerHTML = `✉️ 6-digit OTP sent to <strong>${val}</strong>! Please check your email inbox.`;
                     
                     // Countdown timer
                     let countdown = 30;

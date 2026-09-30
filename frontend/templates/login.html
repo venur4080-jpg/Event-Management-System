@@ -475,12 +475,10 @@
                 const data = await res.json();
 
                 if (data && data.ok) {
-                    drawerEl.style.display = 'flex';
-                    drawerEl.classList.add('active');
-                    btnEl.textContent = 'Resend OTP';
                     btnEl.disabled = false;
+                    btnEl.textContent = 'Resend OTP';
                     statusEl.className = 'otp-status-text success';
-                    statusEl.textContent = (data.message || 'OTP sent.') + (data.demo_otp ? ` (OTP: ${data.demo_otp})` : '');
+                    statusEl.textContent = data.message || 'Verification OTP sent to your email. Please check your inbox.';
                     
                     const otpInput = document.getElementById('emailOtpInput');
                     if (otpInput) {

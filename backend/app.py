@@ -36,7 +36,6 @@ if sys.platform == 'win32':
 _env_search_locations = [
     '/etc/secrets/.env',
     '/etc/secrets/env',
-    '/etc/secrets/secrets.env',
     os.path.join(os.path.dirname(os.path.abspath(__file__)), '.env'),
     os.path.join(os.path.dirname(os.path.abspath(__file__)), 'env'),
     os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), '.env'),
@@ -44,18 +43,6 @@ _env_search_locations = [
     os.path.join(os.getcwd(), '.env'),
     os.path.join(os.getcwd(), 'env'),
 ]
-
-# 1. Check all files inside Render's /etc/secrets directory
-if os.path.exists('/etc/secrets'):
-    try:
-        for _fn in os.listdir('/etc/secrets'):
-            _fp = os.path.join('/etc/secrets', _fn)
-            if os.path.isfile(_fp):
-                load_dotenv(_fp, override=True)
-    except Exception as _e:
-        print(f"[ENV NOTICE] /etc/secrets scan: {_e}")
-
-# 2. Check predefined search locations
 for _loc in _env_search_locations:
     if os.path.exists(_loc):
         load_dotenv(_loc, override=False)
@@ -67,15 +54,14 @@ def _get_smtp_config():
     Returns sanitized, production-ready SMTP credentials.
     Ensures email delivery works seamlessly in local development and on cloud platforms like Render.
     """
-    email = (os.environ.get('SMTP_EMAIL') or os.environ.get('MAIL_USERNAME') or '').strip().strip('"').strip("'")
-    password = (os.environ.get('SMTP_PASSWORD') or os.environ.get('MAIL_PASSWORD') or '').strip().replace(' ', '').strip('"').strip("'")
-    server = (os.environ.get('SMTP_SERVER') or 'smtp.gmail.com').strip().strip('"').strip("'")
+    email = (os.environ.get('SMTP_EMAIL') or os.environ.get('MAIL_USERNAME') or '').strip()
+    password = (os.environ.get('SMTP_PASSWORD') or os.environ.get('MAIL_PASSWORD') or '').strip().replace(' ', '').replace('"', '').replace("'", "")
+    server = (os.environ.get('SMTP_SERVER') or 'smtp.gmail.com').strip()
     try:
-        port_raw = str(os.environ.get('SMTP_PORT', '465')).strip().strip('"').strip("'")
-        port = int(port_raw) if port_raw.isdigit() else 465
+        port = int(os.environ.get('SMTP_PORT', 465))
     except Exception:
         port = 465
-    sender = (os.environ.get('SMTP_SENDER_NAME') or 'EVENTS Team').strip().strip('"').strip("'")
+    sender = (os.environ.get('SMTP_SENDER_NAME') or 'EVENTS Team').strip()
     return email, password, server, port, sender
 
 
@@ -970,16 +956,15 @@ def send_email_otp(recipient_email: str, otp_code: str):
     is_testing = app.config.get('TESTING') or os.environ.get('TESTING') == '1' or os.environ.get('FLASK_ENV') == 'testing'
 
     if is_test_email or is_testing:
-        print(f"[OTP DEV MODE] Simulated OTP for test address {recipient_email}: {otp_code}")
+        print(f"[OTP TEST MODE] Simulated OTP for test address {recipient_email}: {otp_code}")
         return True, f"OTP generated (Test Mode: {otp_code})", False
 
     smtp_email, smtp_password, smtp_server, smtp_port, sender_name = _get_smtp_config()
     sender_name = (os.environ.get('SMTP_SENDER_NAME') or 'EVENTS Verification').strip()
 
     if not smtp_email or not smtp_password:
-        err_msg = "SMTP credentials not configured. Please add SMTP_EMAIL and SMTP_PASSWORD in your Render Environment Variables."
-        print(f"[OTP CONFIG ERROR] {err_msg}")
-        return False, err_msg, False
+        print(f"[OTP ERROR] SMTP credentials not found in environment (SMTP_EMAIL / SMTP_PASSWORD). Cannot send email to {recipient_email}.")
+        return False, "Email service credentials not configured on server. Please add SMTP_EMAIL and SMTP_PASSWORD in environment variables.", False
 
     try:
         msg = MIMEMultipart('alternative')
@@ -1035,45 +1020,8 @@ def send_email_otp(recipient_email: str, otp_code: str):
         return True, f"Verification OTP sent to {recipient_email}. Please check your inbox.", True
 
     except Exception as e:
-        err_msg = f"Email delivery failed via SMTP: {e}"
-        print(f"[OTP ERROR] {err_msg}")
-        return False, err_msg, False
-
-
-@app.route('/api/smtp_status', methods=['GET'])
-def api_smtp_status():
-    """Diagnostic route to inspect SMTP and environment configuration on Render."""
-    email, password, server, port, sender = _get_smtp_config()
-    env_found = [loc for loc in _env_search_locations if os.path.exists(loc)]
-    if os.path.exists('/etc/secrets'):
-        try:
-            env_found.extend([os.path.join('/etc/secrets', f) for f in os.listdir('/etc/secrets')])
-        except Exception:
-            pass
-
-    diag = {
-        'status': 'OK',
-        'has_smtp_email': bool(email),
-        'smtp_email_masked': f"{email[:3]}***@{email.split('@')[-1]}" if '@' in email else ('SET' if email else 'NOT CONFIGURED'),
-        'has_smtp_password': bool(password),
-        'smtp_server': server,
-        'smtp_port': port,
-        'env_files_detected': list(set(env_found)),
-        'gemini_configured': bool(os.environ.get('GEMINI_API_KEY')),
-        'openai_configured': bool(os.environ.get('OPENAI_API_KEY'))
-    }
-
-    if email and password:
-        try:
-            srv = _connect_smtp_server(server, port, email, password, timeout=8)
-            srv.quit()
-            diag['live_smtp_test'] = 'SUCCESS (Connected & Authenticated to Gmail)'
-        except Exception as e:
-            diag['live_smtp_test'] = f'FAILED: {e}'
-    else:
-        diag['live_smtp_test'] = 'NOT CONFIGURED (Add SMTP_EMAIL and SMTP_PASSWORD in Render Environment)'
-
-    return jsonify(diag)
+        print(f"[OTP ERROR] Failed to deliver real email via SMTP to {recipient_email}: {e}")
+        return False, f"Failed to send email OTP: {e}. Please ensure your Gmail App Password and SMTP settings are correct.", False
 
 
 @app.route('/api/send_otp', methods=['POST'])
@@ -1101,12 +1049,12 @@ def api_send_otp():
     }
 
     ok, msg, is_real = send_email_otp(target, otp)
+
     if not ok:
         return jsonify({
             'ok': False,
-            'error': msg,
-            'is_real_delivery': False
-        }), 400
+            'error': msg
+        }), 500
 
     return jsonify({
         'ok': True,
