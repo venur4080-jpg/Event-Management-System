@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ticket Verification | EVENTS Security</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@700;800&display=swap" rel="stylesheet">
+    <script src="{{ url_for('static', filename='themes.js') }}"></script>
+    <style>
+        .verify-page-wrap {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 1rem;
+        }
+        .verify-card {
+            max-width: 580px;
+            width: 100%;
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            border: 1px solid var(--glass-border);
+            padding: 2.5rem 2rem;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5);
+            position: relative;
+            overflow: hidden;
+            animation: fadeIn 0.4s ease-out;
+        }
+        body.light-mode .verify-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-color: rgba(0, 0, 0, 0.1);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.08);
+        }
+        .status-hero {
+            text-align: center;
+            padding-bottom: 1.8rem;
+            margin-bottom: 1.8rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        body.light-mode .status-hero {
+            border-bottom-color: rgba(0, 0, 0, 0.08);
+        }
+        .status-badge-lg {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.95rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 8px 18px;
+            border-radius: 50px;
+            margin-bottom: 1.2rem;
+        }
+        .badge-valid {
+            background: rgba(16, 185, 129, 0.15);
+            color: #10b981;
+            border: 1px solid #10b981;
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.25);
+        }
+        .badge-revoked {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            border: 1px solid #ef4444;
+            box-shadow: 0 0 25px rgba(239, 68, 68, 0.35);
+            animation: pulse-red 2s infinite;
+        }
+        .badge-used {
+            background: rgba(245, 158, 11, 0.15);
+            color: #f59e0b;
+            border: 1px solid #f59e0b;
+        }
+        .badge-invalid {
+            background: rgba(148, 163, 184, 0.15);
+            color: #94a3b8;
+            border: 1px solid #94a3b8;
+        }
+        @keyframes pulse-red {
+            0%, 100% { box-shadow: 0 0 15px rgba(239, 68, 68, 0.3); }
+            50% { box-shadow: 0 0 30px rgba(239, 68, 68, 0.6); }
+        }
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.2rem;
+            margin-bottom: 1.8rem;
+        }
+        @media (max-width: 500px) {
+            .info-grid { grid-template-columns: 1fr; }
+        }
+        .info-cell {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 12px;
+            padding: 0.9rem 1rem;
+        }
+        body.light-mode .info-cell {
+            background: #f8fafc;
+            border-color: #e2e8f0;
+        }
+        .info-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+        .info-val {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #ffffff;
+            word-break: break-word;
+        }
+        body.light-mode .info-val {
+            color: #0f172a;
+        }
+        .banner-alert {
+            padding: 1rem 1.2rem;
+            border-radius: 14px;
+            margin-bottom: 1.8rem;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+        .banner-revoked {
+            background: rgba(239, 68, 68, 0.12);
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            color: #fca5a5;
+        }
+        body.light-mode .banner-revoked {
+            background: #fef2f2;
+            border-color: #fecaca;
+            color: #991b1b;
+        }
+        .banner-valid {
+            background: rgba(16, 185, 129, 0.12);
+            border: 1px solid rgba(16, 185, 129, 0.4);
+            color: #a7f3d0;
+        }
+        body.light-mode .banner-valid {
+            background: #ecfdf5;
+            border-color: #a7f3d0;
+            color: #065f46;
+        }
+        .banner-used {
+            background: rgba(245, 158, 11, 0.12);
+            border: 1px solid rgba(245, 158, 11, 0.4);
+            color: #fde68a;
+        }
+        body.light-mode .banner-used {
+            background: #fffbeb;
+            border-color: #fde68a;
+            color: #92400e;
+        }
+    </style>
+</head>
+<body>
+    <script>
+        if (localStorage.getItem('theme') === 'light') {
+            document.body.classList.add('light-mode');
+        }
+    </script>
+    <div class="verify-page-wrap">
+        <div style="margin-bottom: 1.2rem; display: flex; justify-content: flex-start;">
+            <a href="{{ url_for('dashboard') }}" class="back-btn-unified">
+                <span class="arrow">←</span> Back to Dashboard
+            </a>
+        </div>
+
+        <div style="margin-bottom: 1.5rem; text-align: center;">
+            <div class="logo" style="font-size: 1.8rem;">EV<span>ENTS</span></div>
+            <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 4px; font-weight: 600;">Live Gate Verification & Pass Authenticator</p>
+        </div>
+
+        <div class="verify-card">
+            {% if not found %}
+                <!-- State 4: Ticket Not Found -->
+                <div class="status-hero">
+                    <span class="status-badge-lg badge-invalid">
+                        <span>❓</span> UNRECOGNIZED CODE
+                    </span>
+                    <h2 style="font-size: 1.5rem; font-weight: 800; color: #ffffff; margin-bottom: 6px;">Ticket Not Found</h2>
+                    <p style="color: var(--text-muted); font-size: 0.9rem;">The ticket code <code style="color: var(--primary); font-weight: 700;">{{ ticket_code }}</code> was not found in our records.</p>
+                </div>
+
+                <div class="banner-alert banner-revoked" style="text-align: center;">
+                    Please check the ticket reference code or scan a valid official QR code issued by EVENTS.
+                </div>
+
+                <div style="margin-top: 1.5rem; text-align: center;">
+                    <a href="{{ url_for('dashboard') }}" class="btn-primary" style="display: inline-block; padding: 0.75rem 1.8rem; border-radius: 12px; font-weight: 700; text-decoration: none;">
+                        🏠 Return to Home
+                    </a>
+                </div>
+
+            {% elif status == 'cancelled' %}
+                <!-- State 1: Ticket REVOKED / CANCELLED -->
+                <div class="status-hero">
+                    <span class="status-badge-lg badge-revoked">
+                        <span>🚫</span> TICKET REVOKED & VOID
+                    </span>
+                    <h2 style="font-size: 1.6rem; font-weight: 800; color: #ef4444; margin-bottom: 6px;">Admission Denied</h2>
+                    <p style="color: #fca5a5; font-size: 0.92rem; font-weight: 600;">This pass was invalidated upon event unregistration.</p>
+                </div>
+
+                <div class="banner-alert banner-revoked">
+                    <strong>⛔ Security Alert:</strong> Attendee unregistered from this event on <strong>{{ cancelled_at or 'earlier' }}</strong>. This pass is permanently voided and cannot be used for gate admission.
+                    {% if cancellation_reason and cancellation_reason != 'Not specified' %}
+                    <div style="margin-top: 6px; font-size: 0.85rem; opacity: 0.9;"><strong>Recorded Reason:</strong> {{ cancellation_reason }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="info-grid">
+                    <div class="info-cell">
+                        <div class="info-label">Attendee Name</div>
+                        <div class="info-val">{{ attendee_name }}</div>
+                    </div>
+                    <div class="info-cell">
+                        <div class="info-label">College / Student ID</div>
+                        <div class="info-val">{{ college_id or 'N/A' }}</div>
+                    </div>
+                    <div class="info-cell" style="grid-column: 1 / -1;">
+                        <div class="info-label">Event</div>
+                        <div class="info-val" style="color: var(--primary);">{{ event_title }}</div>
+                    </div>
+                    <div class="info-cell">
+                        <div class="info-label">Ticket Reference</div>
+                        <div class="info-val"><code style="color: #ef4444;">{{ ticket_code }}</code></div>
+                    </div>
+                    <div class="info-cell">
+                        <div class="info-label">Cancellation Date</div>
+                        <div class="info-val" style="color: #ef4444;">{{ cancelled_at or 'N/A' }}</div>
+                    </div>
+                </div>
+
+            {% elif checked_in %}
+                <!-- State 3: Already Checked In -->
+                <div class="status-hero">
+                    <span class="status-badge-lg badge-used">
+                        <span>⚠️</span> ALREADY CHECKED IN
+                    </span>
+                    <h2 style="font-size: 1.6rem; font-weight: 800; color: #f59e0b; margin-bottom: 6px;">Pass Already Admitted</h2>
+                    <p style="color: var(--text-muted); font-size: 0.92rem;">This ticket was previously verified and admitted at the entrance gate.</p>
+                </div>
+
+                <div class="banner-alert banner-used">
+                    <strong>Gate Check-in Record:</strong> Verified and checked in on <strong>{{ checkin_time or 'Today' }}</strong>. Duplicate admissions with the same pass are prohibited.
+                </div>
+
+                <div class="info-grid">
+                    <div class="info-cell">
+                        <div class="info-label">Attendee Name</div>
+                        <div class="info-val">{{ attendee_name }}</div>
+                    </div>
+                    <div class="info-cell">
+                        <div class="info-label">College / Student ID</div>
+                        <div class="info-val">{{ college_id or 'N/A' }}</div>
+                    </div>
+                    <div class="info-cell" style="grid-column: 1 / -1;">
+                        <div class="info-label">Event</div>
+                        <div class="info-val" style="color: var(--primary);">{{ event_title }}</div>
+                    </div>
+                    <div class="info-cell">
+                        <div class="info-label">Check-in Time</div>
+                        <div class="info-val" style="color: #f59e0b;">{{ checkin_time or 'Recorded' }}</div>
+                    </div>
+                    <div class="info-cell">
+                        <div class="info-label">Ticket Reference</div>
+                        <div class="info-val"><code>{{ ticket_code }}</code></div>
+                    </div>
+                </div>
+
+            {% else %}
+                <!-- State 2: Valid Pass -->
+                <div class="status-hero">
+                    <span class="status-badge-lg badge-valid">
+                        <span>✓</span> VALID ADMISSION PASS
+                    </span>
+                    <h2 style="font-size: 1.6rem; font-weight: 800; color: #10b981; margin-bottom: 6px;">Admission Approved</h2>
+                    <p style="color: var(--text-muted); font-size: 0.92rem;">Official registered pass is verified and ready for gate entry.</p>
+                </div>
+
+                <div class="banner-alert banner-valid">
+                    <strong>✓ Confirmed Delegate:</strong> Present this screen or physical PDF ticket with photo ID at the venue entrance.
+                </div>
+
+                <div class="info-grid">
+                    <div class="info-cell">
+                        <div class="info-label">Attendee Name</div>
+                        <div class="info-val">{{ attendee_name }}</div>
+                    </div>
+                    <div class="info-cell">
+                        <div class="info-label">College / Student ID</div>
+                        <div class="info-val">{{ college_id or 'N/A' }}</div>
+                    </div>
+                    <div class="info-cell" style="grid-column: 1 / -1;">
+                        <div class="info-label">Event</div>
+                        <div class="info-val" style="color: var(--primary);">{{ event_title }}</div>
+                    </div>
+                    <div class="info-cell">
+                        <div class="info-label">Date & Time</div>
+                        <div class="info-val">{{ event_date }}</div>
+                    </div>
+                    <div class="info-cell">
+                        <div class="info-label">Ticket Type</div>
+                        <div class="info-val">{{ team_name and ('Team: ' ~ team_name) or 'Solo Entry Pass' }}</div>
+                    </div>
+                    <div class="info-cell" style="grid-column: 1 / -1;">
+                        <div class="info-label">Venue & Physical Location</div>
+                        <div class="info-val">{{ venue_name }}</div>
+                        {% if venue_address %}
+                        <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 3px;">{{ venue_address }}</div>
+                        {% endif %}
+                        <div style="margin-top: 6px;">
+                            <a href="https://www.google.com/maps/search/?api=1&query={{ (((venue_name or '') ~ ' ' ~ (venue_address or '')) | urlencode) }}" 
+                               target="_blank" rel="noopener noreferrer" 
+                               style="color: var(--primary); font-size: 0.82rem; text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;">
+                                🗺️ Open in Google Maps ↗
+                            </a>
+                        </div>
+                    </div>
+                    <div class="info-cell">
+                        <div class="info-label">Ticket Reference</div>
+                        <div class="info-val"><code>{{ ticket_code }}</code></div>
+                    </div>
+                    <div class="info-cell">
+                        <div class="info-label">Registration Date</div>
+                        <div class="info-val">{{ reg_time }}</div>
+                    </div>
+                </div>
+            {% endif %}
+
+            <div style="margin-top: 1.8rem; padding-top: 1.2rem; border-top: 1px solid rgba(255,255,255,0.08); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                <span style="font-size: 0.78rem; color: var(--text-muted);">
+                    🔒 Cryptographically Verified by EVENTS Platform
+                </span>
+                <a href="{{ url_for('dashboard') }}" style="font-size: 0.85rem; font-weight: 700; color: var(--primary); text-decoration: none;">
+                    🏠 Dashboard →
+                </a>
+            </div>
+        </div>
+    </div>
+    <script src="{{ url_for('static', filename='animations.js') }}"></script>
+</body>
+</html>

@@ -3,6 +3,8 @@ test_system.py - Automated verification test suite for the Event Management Syst
 Tests authentication, registration, seats tracking, notifications, audit logs,
 admin controls, AI assistant responses, and PDF ticket generation.
 """
+import os
+os.environ['TESTING'] = '1'
 import unittest
 import json
 import sqlite3
@@ -356,17 +358,49 @@ class EventManagementSystemTests(unittest.TestCase):
         self.assertTrue(data_dup['ok'])
         self.assertTrue(data_dup['already_checked_in'])
 
-        # 3. Check recent checkins API
+        # 3. Check public verification page /verify/<ticket_code>
+        tkt_code = f"TKT-{ev_id:03d}-{data['reg_id']:05d}"
+        resp_verify_page = self.client.get(f'/verify/{tkt_code}')
+        self.assertEqual(resp_verify_page.status_code, 200)
+        self.assertIn(b'ALREADY CHECKED IN', resp_verify_page.data)
+
+        # 4. Check recent checkins API
         resp_recent = self.client.get('/api/recent_checkins')
         self.assertEqual(resp_recent.status_code, 200)
         recent_data = resp_recent.get_json()
         self.assertTrue(len(recent_data['checkins']) > 0)
 
-        # Clean up
+        # 5. Attendee unregisters from event
         with self.client.session_transaction() as sess:
             sess['loggedin'] = True
             sess['username'] = attendee_user
-        self.client.post(f'/unregister/{ev_id}')
+        resp_unreg = self.client.post(f'/unregister/{ev_id}', data={
+            'reason': 'Schedule conflict / Personal emergency',
+            'feedback': 'Cannot attend due to sudden emergency.'
+        })
+        self.assertIn(resp_unreg.status_code, [200, 302])
+
+        # 6. Verify ticket download is blocked after cancellation
+        resp_blocked_dl = self.client.get(f'/download_ticket/{ev_id}')
+        self.assertEqual(resp_blocked_dl.status_code, 302)
+
+        # 7. Scanner attempts to scan the revoked ticket -> Must be DENIED with HTTP 400
+        with self.client.session_transaction() as sess:
+            sess['loggedin'] = True
+            sess['username'] = 'admin'
+        resp_revoked_scan = self.client.post('/api/verify_ticket',
+                                            data=json.dumps({'code': tkt_code}),
+                                            content_type='application/json')
+        self.assertEqual(resp_revoked_scan.status_code, 400)
+        revoked_data = resp_revoked_scan.get_json()
+        self.assertFalse(revoked_data['ok'])
+        self.assertTrue(revoked_data.get('is_cancelled'))
+        self.assertIn('REVOKED', revoked_data.get('error', '').upper())
+
+        # 8. Public verification page now shows REVOKED status
+        resp_verify_revoked = self.client.get(f'/verify/{tkt_code}')
+        self.assertEqual(resp_verify_revoked.status_code, 200)
+        self.assertIn(b'TICKET REVOKED', resp_verify_revoked.data)
 
     def test_08_profile_otp_verification_and_save(self):
         """Test sending OTP, verifying OTP, and saving profile changes."""
@@ -498,8 +532,7 @@ class EventManagementSystemTests(unittest.TestCase):
             'password': 'SecretPass123!'
         }, follow_redirects=True)
         self.assertEqual(resp_name.status_code, 200)
-        self.assertIn(b'Login with username or name is not allowed', resp_name.data)
-        self.assertIn(b'Please enter your 4-digit User ID', resp_name.data)
+        self.assertIn(b'Invalid credentials. Please enter your User ID or registered Email address.', resp_name.data)
 
         # 5. Attempt to login with full name 'Test Auth User' -> BLOCKED with explicit error message
         resp_fullname = self.client.post('/', data={
@@ -508,7 +541,7 @@ class EventManagementSystemTests(unittest.TestCase):
             'password': 'SecretPass123!'
         }, follow_redirects=True)
         self.assertEqual(resp_fullname.status_code, 200)
-        self.assertIn(b'Login with username or name is not allowed', resp_fullname.data)
+        self.assertIn(b'Invalid credentials. Please enter your User ID or registered Email address.', resp_fullname.data)
 
         # 6. Forgot Password reset using 4-digit User ID '0042' -> SUCCESS
         resp_forgot_uid = self.client.post('/forgot_password', data={
@@ -536,6 +569,262 @@ class EventManagementSystemTests(unittest.TestCase):
         conn.commit()
         conn.close()
 
+    def test_10_checkin_history_page_and_export(self):
+        """Test accessing /checkin_history and CSV export as host/admin."""
+        with self.client.session_transaction() as sess:
+            sess['loggedin'] = True
+            sess['username'] = 'admin'
+
+        # Test GET /checkin_history renders with HTTP 200 and required components
+        resp = self.client.get('/checkin_history')
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn(b'Check-in History', resp.data)
+        self.assertIn(b'Export Check-ins CSV', resp.data)
+
+        # Test GET /host/export_checkins_csv downloads CSV file
+        resp_csv = self.client.get('/host/export_checkins_csv')
+        self.assertEqual(resp_csv.status_code, 200)
+        self.assertIn('text/csv', resp_csv.headers.get('Content-Type', ''))
+        self.assertIn(b'Attendee Name', resp_csv.data)
+
+    def test_11_event_timings_and_today_2hr_cutoff_rule(self):
+        """Test 2-hour registration cutoff rule for events held today, timing status calculation, and dashboard calendar data."""
+        from app import get_event_status_info, parse_time_string
+        from datetime import datetime, timedelta, time as dtime
+
+        today_str = datetime.now().strftime("%b %d, %Y")
+        today_date = datetime.now().date()
+
+        # 1. Test helper status calculations for an event at 10:00 AM
+        event_sample = {
+            'id': 9999,
+            'title': 'Cutoff Unit Test Event',
+            'date': today_str,
+            'time': '10:00 AM',
+            'end_time': '05:00 PM',
+            'seats_total': 100,
+            'seats_filled': 10
+        }
+
+        # Case A: Simulated time at 07:30 AM (before 08:00 AM cutoff) -> OPEN
+        bh, bm = parse_time_string('07:30 AM')
+        t_before = datetime.combine(today_date, dtime(bh, bm))
+        status_before = get_event_status_info(event_sample, ref_now=t_before)
+        self.assertTrue(status_before['is_today'])
+        self.assertTrue(status_before['is_open'])
+        self.assertFalse(status_before['is_cutoff_reached'])
+        self.assertEqual(status_before['status_badge'], 'today_open')
+        self.assertEqual(status_before['cutoff_time_str'], '08:00 AM')
+
+        # Case B: Simulated time at 08:00 AM (exactly 2h cutoff) -> CLOSED
+        ch, cm = parse_time_string('08:00 AM')
+        t_cutoff = datetime.combine(today_date, dtime(ch, cm))
+        status_cutoff = get_event_status_info(event_sample, ref_now=t_cutoff)
+        self.assertTrue(status_cutoff['is_today'])
+        self.assertFalse(status_cutoff['is_open'])
+        self.assertTrue(status_cutoff['is_cutoff_reached'])
+        self.assertEqual(status_cutoff['status_badge'], 'today_cutoff')
+
+        # Case C: Simulated time at 09:30 AM (past cutoff, before start) -> CLOSED
+        ah, am = parse_time_string('09:30 AM')
+        t_after = datetime.combine(today_date, dtime(ah, am))
+        status_after = get_event_status_info(event_sample, ref_now=t_after)
+        self.assertTrue(status_after['is_today'])
+        self.assertFalse(status_after['is_open'])
+        self.assertTrue(status_after['is_cutoff_reached'])
+
+        # 2. Test registration route enforcement for a today cutoff event
+        conn = sqlite3.connect('users.db', timeout=15)
+        c = conn.cursor()
+        c.execute("""
+            INSERT OR REPLACE INTO events 
+            (id, title, date, time, end_time, price, desc, purpose, full_details, outcome, color, image, venue, venue_address, seats_total, seats_filled)
+            VALUES (9999, 'Cutoff Test Event Today', ?, '10:00 AM', '05:00 PM', 'Free', 'Test Desc', 'Test Purpose', 'Test Breakdown', 'Test Outcome', '#ff0000', 'https://example.com/img.jpg', 'Auditorium', 'Bangalore', 100, 0)
+        """, (today_str,))
+        conn.commit()
+        conn.close()
+
+        with self.client.session_transaction() as sess:
+            sess['loggedin'] = True
+            sess['username'] = 'test_student_user'
+
+        # If current time is past 08:00 AM today, POST /register/9999 should be rejected
+        now_dt = datetime.now()
+        sh, sm = parse_time_string('10:00 AM')
+        cutoff_dt = datetime.combine(today_date, dtime(sh, sm)) - timedelta(hours=2)
+        if now_dt >= cutoff_dt:
+            resp_reg = self.client.post('/register/9999', data={
+                'full_name': 'Test Student',
+                'email': 'student@test.com',
+                'phone': '9876543210',
+                'college_id': 'COL-2026-001'
+            }, follow_redirects=True)
+            self.assertIn(b'Registration is closed', resp_reg.data)
+            self.assertIn(b'2 hours before', resp_reg.data)
+
+        # 3. Test Dashboard renders calendar legend with 3 status dots and event time info
+        resp_dash = self.client.get('/dashboard')
+        self.assertEqual(resp_dash.status_code, 200)
+        self.assertIn(b'dot-open', resp_dash.data)
+        self.assertIn(b'dot-today', resp_dash.data)
+        self.assertIn(b'dot-closed', resp_dash.data)
+        self.assertIn(b'data-cutoff-time', resp_dash.data)
+        self.assertIn(b'data-is-today', resp_dash.data)
+
+        # 4. Test Live Auto-Update API endpoint (/api/events)
+        resp_api = self.client.get('/api/events')
+        self.assertEqual(resp_api.status_code, 200)
+        api_data = json.loads(resp_api.data.decode('utf-8'))
+        self.assertEqual(api_data.get('status'), 'success')
+        self.assertIsInstance(api_data.get('events'), list)
+        self.assertTrue(len(api_data.get('events')) > 0)
+        first_ev = api_data['events'][0]
+        self.assertIn('cutoff_time', first_ev)
+        self.assertIn('time', first_ev)
+        self.assertIn('end_time', first_ev)
+
+        # Clean up test event
+        conn = sqlite3.connect('users.db', timeout=15)
+        c = conn.cursor()
+        c.execute("DELETE FROM events WHERE id=9999")
+        conn.commit()
+        conn.close()
+
+    def test_12_real_time_locations_and_google_maps(self):
+        """Test real-time event locations, physical addresses, and Google Maps integration."""
+        with self.client.session_transaction() as sess:
+            sess['loggedin'] = True
+            sess['username'] = 'test_student_user'
+
+        # 1. Test /api/events exposes venue, venue_address, maps_url, and maps_directions_url
+        resp_api = self.client.get('/api/events')
+        self.assertEqual(resp_api.status_code, 200)
+        api_data = json.loads(resp_api.data.decode('utf-8'))
+        events = api_data.get('events', [])
+        self.assertTrue(len(events) > 0)
+        
+        sample_ev = events[0]
+        self.assertTrue(bool(sample_ev.get('venue')), "Event must have an authentic venue name")
+        self.assertTrue(bool(sample_ev.get('venue_address')), "Event must have a physical street address")
+        self.assertIn('google.com/maps/search', sample_ev.get('maps_url', ''))
+        self.assertIn('google.com/maps/dir', sample_ev.get('maps_directions_url', ''))
+
+        # 2. Test Dashboard renders Google Maps link on event cards
+        resp_dash = self.client.get('/dashboard')
+        self.assertEqual(resp_dash.status_code, 200)
+        self.assertIn(b'event-venue-link', resp_dash.data)
+        self.assertIn(b'google.com/maps', resp_dash.data)
+
+        # 3. Test Event Detail page renders Venue section, Maps Search, Directions, and Copy button
+        ev_id = sample_ev.get('id', 1)
+        resp_detail = self.client.get(f'/event/{ev_id}')
+        self.assertEqual(resp_detail.status_code, 200)
+        self.assertIn(b'event-venue-section', resp_detail.data)
+        self.assertIn(b'Open in Google Maps', resp_detail.data)
+        self.assertIn(b'Get Directions', resp_detail.data)
+        self.assertIn(b'Copy Address', resp_detail.data)
+        self.assertIn(sample_ev['venue'].encode('utf-8'), resp_detail.data)
+
+        # 4. Test PDF Ticket incorporates venue name and address
+        from app import generate_ticket_pdf_bytes
+        reg_mock = {
+            'id': 101,
+            'full_name': 'Map Test Attendee',
+            'email': 'attendee@test.com',
+            'phone': '9876543210',
+            'college_id': 'COL-MAP-01',
+            'username': 'test_student_user',
+            'status': 'active'
+        }
+        pdf_bytes = generate_ticket_pdf_bytes(sample_ev, reg_mock)
+        self.assertIsInstance(pdf_bytes, bytes)
+        self.assertTrue(len(pdf_bytes) > 1000)
+        self.assertTrue(pdf_bytes.startswith(b'%PDF-'))
+
+    def test_13_registration_and_unregistration_emails(self):
+        """
+        Test email dispatching functions:
+        1. send_registration_confirmation_email
+        2. send_unregistration_confirmation_email
+        3. send_account_welcome_email
+        Ensuring formatting, variables, and parameters are fully resolved without NameError or syntax exceptions.
+        """
+        from app import (
+            send_registration_confirmation_email,
+            send_unregistration_confirmation_email,
+            send_account_welcome_email,
+            get_event,
+            generate_ticket_pdf_bytes
+        )
+
+        sample_event = get_event(1) or {
+            'id': 1,
+            'title': 'Email Test Hackathon',
+            'date': 'Oct 15, 2026',
+            'time': '10:00 AM',
+            'venue': 'Campus Tech Dome',
+            'venue_address': 'Bangalore, India',
+            'price': 'Free'
+        }
+
+        reg_data = {
+            'id': 99,
+            'full_name': 'Email Tester',
+            'email': 'attendee@test.com',
+            'phone': '9876543210',
+            'team_name': 'Code Warriors',
+            'ticket_code': 'TKT-001-00099'
+        }
+
+        pdf_bytes = generate_ticket_pdf_bytes(sample_event, reg_data)
+
+        # 1. Test Registration Confirmation Email function execution
+        try:
+            send_registration_confirmation_email(
+                recipient_email='attendee@test.com',
+                recipient_name='Email Tester',
+                event=sample_event,
+                reg_info=reg_data,
+                pdf_bytes=pdf_bytes
+            )
+            reg_email_success = True
+        except Exception as e:
+            reg_email_success = False
+            self.fail(f"send_registration_confirmation_email raised an unexpected exception: {e}")
+        self.assertTrue(reg_email_success)
+
+        # 2. Test Unregistration Confirmation Email function execution
+        try:
+            send_unregistration_confirmation_email(
+                recipient_email='attendee@test.com',
+                recipient_name='Email Tester',
+                event=sample_event,
+                reg_info=reg_data,
+                reason='Schedule conflict',
+                feedback='Great event, but conflict on this date.'
+            )
+            unreg_email_success = True
+        except Exception as e:
+            unreg_email_success = False
+            self.fail(f"send_unregistration_confirmation_email raised an unexpected exception: {e}")
+        self.assertTrue(unreg_email_success)
+
+        # 3. Test Account Welcome Email function execution
+        try:
+            send_account_welcome_email(
+                recipient_email='newuser@test.com',
+                recipient_name='New Test User',
+                username='newtestuser',
+                user_id='UID-0099'
+            )
+            welcome_email_success = True
+        except Exception as e:
+            welcome_email_success = False
+            self.fail(f"send_account_welcome_email raised an unexpected exception: {e}")
+        self.assertTrue(welcome_email_success)
+
+
 if __name__ == '__main__':
     unittest.main()
+
 

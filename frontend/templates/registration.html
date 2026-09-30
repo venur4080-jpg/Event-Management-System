@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register | {{ event.title }}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="{{ url_for('static', filename='themes.js') }}"></script>
     <style>
         .reg-container {
             min-height: calc(100vh - 100px);
@@ -107,8 +108,10 @@
                 <div class="hamburger" id="hamburger">☰</div>
                 <div class="logo">EV<span>ENTS</span></div>
             </div>
-            <div class="nav-links">
-                <button onclick="window.location.href='{{ url_for('dashboard') }}'">Cancel</button>
+            <div class="nav-links" style="display: flex; align-items: center; gap: 12px;">
+                <button class="theme-toggle-btn" id="themeToggle" title="Toggle Light/Dark Mode" type="button" style="margin-right: 0;">🌓</button>
+                <a href="{{ url_for('event_detail', event_id=event.id if event else 1) }}" class="nav-btn-dash">🏠 Event Details</a>
+                <a href="{{ url_for('logout') }}" class="logout-btn-unique">⏻ Logout</a>
             </div>
         </div>
     </nav>
@@ -133,6 +136,11 @@
 
 
     <div class="reg-container">
+        <div style="margin-bottom: 1.5rem;">
+            <a href="{{ url_for('event_detail', event_id=event.id if event else 1) }}" class="back-btn-unified">
+                <span class="arrow">←</span> Back to Event Details
+            </a>
+        </div>
         <div class="reg-card">
             {% if success %}
             <div class="success-message">
@@ -162,7 +170,15 @@
             <div class="reg-header">
                 <h2 class="reg-title">Event Registration</h2>
                 <p class="reg-subtitle">{{ event.title }}</p>
-                <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 5px;">{{ event.date }} • 📍 {{ event.venue or 'Tech Arena' }}</p>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 5px;">
+                    {{ event.date }} • 
+                    <a href="https://www.google.com/maps/search/?api=1&query={{ (((event.venue or '') ~ ' ' ~ (event.venue_address or '')) | urlencode) }}" 
+                       target="_blank" rel="noopener noreferrer" 
+                       style="color: var(--primary); text-decoration: none; font-weight: 500;"
+                       title="Open venue in Google Maps">
+                        📍 {{ event.venue or 'Tech Arena' }} ↗
+                    </a>
+                </p>
             </div>
 
             <form method="POST" id="regForm" onsubmit="return validateEventRegForm(this)">
@@ -435,6 +451,7 @@
 
     <script src="{{ url_for('static', filename='toast.js') }}"></script>
     <script src="{{ url_for('static', filename='confetti.js') }}"></script>
+    <script src="{{ url_for('static', filename='animations.js') }}"></script>
     {% if success %}
     <script>
         document.addEventListener('DOMContentLoaded', () => {

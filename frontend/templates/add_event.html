@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Add New Event | EVENTS</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="{{ url_for('static', filename='themes.js') }}"></script>
     <style>
         .form-container {
             max-width: 800px;
@@ -93,14 +94,22 @@
     <nav class="navbar">
         <div class="nav-container">
             <div class="logo">EV<span>ENTS</span></div>
-            <div class="nav-links" style="display: flex; align-items: center; gap: 15px;">
+            <div class="nav-links" style="display: flex; align-items: center; gap: 12px;">
                 <button class="theme-toggle-btn" id="themeToggle" title="Toggle Light/Dark Mode" type="button" style="margin-right: 0;">🌓</button>
-                <button onclick="window.location.href='{{ url_for('dashboard') }}'">Back to Dashboard</button>
+                <a href="{{ url_for('dashboard') }}" class="nav-btn-dash">🏠 Dashboard</a>
+                <a href="{{ url_for('logout') }}" class="logout-btn-unique">⏻ Logout</a>
             </div>
         </div>
     </nav>
 
     <div class="form-container">
+        <!-- Back Button -->
+        <div style="margin-bottom: 1.5rem;">
+            <a href="{{ url_for('dashboard') }}" class="back-btn-unified">
+                <span class="arrow">←</span> Back to Dashboard
+            </a>
+        </div>
+
         <h2 style="color: white; margin-bottom: 2rem; text-align: center;">Add New Event</h2>
         <form action="{{ url_for('add_event') }}" method="POST">
             <div class="form-group">
@@ -117,6 +126,19 @@
                 <div class="form-group">
                     <label for="price">Price / Registration Fee</label>
                     <input type="text" id="price" name="price" class="form-control" placeholder="e.g. Free or ₹800" required>
+                </div>
+            </div>
+
+            <div class="grid-2">
+                <div class="form-group">
+                    <label for="time">Start Time</label>
+                    <input type="text" id="time" name="time" class="form-control" placeholder="e.g. 10:00 AM" value="10:00 AM" required>
+                    <small style="color: var(--text-muted); font-size: 0.8rem;">Format: hh:mm AM/PM (Cutoff is 2 hrs before)</small>
+                </div>
+                <div class="form-group">
+                    <label for="end_time">End Time</label>
+                    <input type="text" id="end_time" name="end_time" class="form-control" placeholder="e.g. 05:00 PM" value="05:00 PM" required>
+                    <small style="color: var(--text-muted); font-size: 0.8rem;">Format: hh:mm AM/PM</small>
                 </div>
             </div>
 
@@ -178,6 +200,7 @@
             };
         }
     </script>
+    <script src="{{ url_for('static', filename='animations.js') }}"></script>
 </body>
 
 </html>

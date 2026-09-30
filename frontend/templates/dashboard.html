@@ -106,6 +106,10 @@
             background-color: #22c55e;
             box-shadow: 0 0 6px rgba(34, 197, 94, 0.7);
         }
+        .event-status-dot.dot-today {
+            background-color: #f59e0b;
+            box-shadow: 0 0 6px rgba(245, 158, 11, 0.7);
+        }
         .event-status-dot.dot-closed {
             background-color: #ef4444;
             box-shadow: 0 0 6px rgba(239, 68, 68, 0.7);
@@ -118,6 +122,47 @@
             margin-top: 6px;
             font-size: 0.8rem;
             color: var(--text-muted);
+            flex-wrap: wrap;
+        }
+        .day-events-pill {
+            position: absolute;
+            top: 6px;
+            right: 8px;
+            font-size: 0.65rem;
+            font-weight: 700;
+            background: rgba(0, 242, 254, 0.2);
+            color: var(--primary);
+            border: 1px solid rgba(0, 242, 254, 0.4);
+            padding: 1px 6px;
+            border-radius: 10px;
+            pointer-events: none;
+        }
+        .calendar-nav-btn {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid var(--glass-border);
+            color: white;
+            padding: 0.45rem 0.9rem;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.82rem;
+            font-weight: 600;
+            transition: all 0.25s ease;
+            white-space: nowrap;
+        }
+        .calendar-nav-btn:hover {
+            background: var(--primary);
+            color: var(--bg-dark);
+            box-shadow: 0 0 12px rgba(0, 242, 254, 0.4);
+            transform: translateY(-2px);
+        }
+        body.light-mode .calendar-nav-btn {
+            background: #ffffff;
+            border-color: rgba(0, 0, 0, 0.1);
+            color: #1e293b;
+        }
+        body.light-mode .calendar-nav-btn:hover {
+            background: #0284c7;
+            color: #ffffff;
         }
     </style>
     <!-- Theme loader (before paint to avoid flash) -->
@@ -189,20 +234,11 @@
                         ">0</span>
                     </button>
                     <!-- Notification Dropdown -->
-                    <div id="notifPanel" style="
-                        position:absolute;top:calc(100%+10px);right:-1rem;
-                        width:320px;max-height:400px;
-                        background:var(--bg-card,rgba(15,23,42,0.97));
-                        border:1px solid var(--glass-border);border-radius:16px;
-                        box-shadow:0 20px 50px rgba(0,0,0,0.4);
-                        z-index:9999;overflow:hidden;display:none;
-                        backdrop-filter:blur(14px);
-                    " onclick="event.stopPropagation()">
-                        <div
-                            style="padding:1rem;border-bottom:1px solid var(--glass-border);font-weight:700;font-size:0.9rem;color:var(--text-main)">
-                            🔔 Notifications
+                    <div id="notifPanel" class="notif-panel" onclick="event.stopPropagation()">
+                        <div class="notif-header">
+                            <span>🔔 Notifications</span>
                         </div>
-                        <div id="notifList" style="max-height:340px;overflow-y:auto">
+                        <div id="notifList" class="notif-list-scrollable">
                             <div style="padding:1.5rem;color:var(--text-muted);text-align:center;font-size:0.85rem">
                                 Loading...</div>
                         </div>
@@ -216,9 +252,8 @@
                     style="margin-right:10px;color:var(--admin-accent,#f59e0b);font-weight:700;font-size:0.85rem;text-decoration:none;white-space:nowrap"
                     title="Admin Panel">⚡ Admin</a>
                 {% endif %}
-                <a href="{{ url_for('logout') }}" class="register-btn-sm"
-                    style="text-decoration:none; padding:0.4rem 0.9rem; color:white; background:rgba(255,255,255,0.08); border-radius:8px; border:1px solid var(--glass-border); font-size:0.85rem;"
-                    aria-label="Log out of your account">Logout</a>
+                <a href="{{ url_for('logout') }}" class="logout-btn-unique"
+                    aria-label="Log out of your account">⏻ Logout</a>
             </div>
         </div>
     </nav>
@@ -289,51 +324,70 @@
         {% endif %}
     </header>
 
-    <!-- Search, Filter & View Controls -->
+    <!-- Floating Standalone Search, Filter & View Controls -->
     <div class="search-filter-container">
-        <!-- Search Input -->
-        <div class="search-box">
-            <input type="text" id="searchInput" placeholder="Search events by title or keywords..."
-                oninput="filterEvents()">
+        <!-- Standalone Search Pill -->
+        <div class="search-input-wrapper">
+            <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"/>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+            <input type="text" id="searchInput" class="search-input-field" placeholder="Search events by title, topic, or keyword..." oninput="filterEvents()" autocomplete="off">
         </div>
 
-        <!-- Filters & View Toggle -->
+        <!-- Floating Filters & View Mode Group -->
         <div class="filters-group">
-            <select id="categoryFilter" class="filter-select" onchange="filterEvents()">
-                <option value="all">All Categories</option>
-                <option value="AI & ML">AI & ML</option>
-                <option value="Cybersecurity">Cybersecurity</option>
-                <option value="Web Development">Web Development</option>
-                <option value="Cloud & DevOps">Cloud & DevOps</option>
-                <option value="Data Science">Data Science</option>
-                <option value="IoT & Robotics">IoT & Robotics</option>
-                <option value="UI/UX Design">UI/UX Design</option>
-                <option value="Gaming">Gaming</option>
-                <option value="General Tech">General Tech</option>
-            </select>
+            <div class="select-wrapper">
+                <select id="categoryFilter" class="filter-select" onchange="filterEvents()">
+                    <option value="all">All Categories</option>
+                    <option value="AI & ML">AI & ML</option>
+                    <option value="Cybersecurity">Cybersecurity</option>
+                    <option value="Web Development">Web Development</option>
+                    <option value="Cloud & DevOps">Cloud & DevOps</option>
+                    <option value="Data Science">Data Science</option>
+                    <option value="IoT & Robotics">IoT & Robotics</option>
+                    <option value="UI/UX Design">UI/UX Design</option>
+                    <option value="Gaming">Gaming</option>
+                    <option value="General Tech">General Tech</option>
+                </select>
+            </div>
 
-            <select id="priceFilter" class="filter-select" onchange="filterEvents()">
-                <option value="all">All Prices</option>
-                <option value="free">Free Only</option>
-                <option value="paid">Paid Only</option>
-            </select>
+            <div class="select-wrapper">
+                <select id="priceFilter" class="filter-select" onchange="filterEvents()">
+                    <option value="all">All Prices</option>
+                    <option value="free">Free Only</option>
+                    <option value="paid">Paid Only</option>
+                </select>
+            </div>
 
-            <button class="calendar-nav-btn" id="viewToggleBtn" onclick="toggleView()">📅 Calendar View</button>
+            <button class="view-toggle-btn" id="viewToggleBtn" onclick="toggleView()" title="Toggle Calendar and Grid view">
+                📅 Calendar View
+            </button>
         </div>
     </div>
 
     <!-- Calendar View Container (initially hidden) -->
     <div id="calendarViewContainer" class="calendar-container" style="display: none;">
-        <div class="calendar-header">
-            <button class="calendar-nav-btn" onclick="prevMonth()">◀ Prev</button>
-            <div style="text-align: center;">
-                <h2 id="calendarTitle">Month Year</h2>
+        <div class="calendar-header" style="flex-wrap: wrap; gap: 12px; justify-content: space-between; align-items: center;">
+            <div style="display: flex; gap: 6px; align-items: center;">
+                <button class="calendar-nav-btn" onclick="prevMonth()" title="Previous Month">◀ Prev</button>
+                <button class="calendar-nav-btn" onclick="jumpToToday()" title="Jump to Current Month" style="background: rgba(0, 242, 254, 0.15); border-color: var(--primary); color: var(--primary);">⚡ Today</button>
+            </div>
+            <div style="text-align: center; flex: 1; min-width: 260px;">
+                <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 4px;">
+                    <h2 id="calendarTitle" style="margin: 0; font-size: 1.5rem; color: white;">Month Year</h2>
+                    <span id="calendarEventCountBadge" style="background: rgba(0, 242, 254, 0.18); color: var(--primary); border: 1px solid rgba(0, 242, 254, 0.4); font-size: 0.75rem; font-weight: 700; padding: 2px 10px; border-radius: 12px;">0 Events</span>
+                </div>
                 <div class="calendar-legend">
                     <span style="display: inline-flex; align-items: center; gap: 5px;"><span class="event-status-dot dot-open"></span> Open / Upcoming</span>
-                    <span style="display: inline-flex; align-items: center; gap: 5px;"><span class="event-status-dot dot-closed"></span> Closed</span>
+                    <span style="display: inline-flex; align-items: center; gap: 5px;"><span class="event-status-dot dot-today"></span> Held Today (Open - Closes 2h before start)</span>
+                    <span style="display: inline-flex; align-items: center; gap: 5px;"><span class="event-status-dot dot-closed"></span> Closed / Cutoff Reached</span>
                 </div>
             </div>
-            <button class="calendar-nav-btn" onclick="nextMonth()">Next ▶</button>
+            <div style="display: flex; gap: 6px; align-items: center;">
+                <button class="calendar-nav-btn" onclick="jumpToNextEventMonth()" title="Jump to Next Month with Events" style="background: rgba(255, 255, 255, 0.08);">🎯 Next Event</button>
+                <button class="calendar-nav-btn" onclick="nextMonth()" title="Next Month">Next ▶</button>
+            </div>
         </div>
         <div class="calendar-grid" id="calendarGrid">
             <!-- Dynamically populated weekdays and days -->
@@ -351,8 +405,17 @@
                 <div class="carousel-item" data-id="{{ event.id }}"
                     style="--carousel-angle: {{ event.carousel_angle }}deg; --carousel-tz: {{ event.carousel_tz }}px;"
                     data-title="{{ event.title|lower }}" data-category="{{ event.category }}"
+                    data-date="{{ event.date }}" data-time="{{ event.time }}" data-end-time="{{ event.end_time }}"
+                    data-cutoff-time="{{ event.cutoff_time }}"
+                    data-venue="{{ event.venue }}"
+                    data-venue-address="{{ event.venue_address }}"
+                    data-maps-url="{{ event.maps_url or ('https://www.google.com/maps/search/?api=1&query=' ~ ((event.venue ~ ' ' ~ event.venue_address) | urlencode)) }}"
+                    data-is-today="{{ '1' if event.is_today else '0' }}"
+                    data-is-open="{{ '1' if event.is_open else '0' }}"
+                    data-is-cutoff="{{ '1' if event.is_cutoff_reached else '0' }}"
+                    data-status-label="{{ event.status_label }}"
                     data-price="{% if event.price.lower() == 'free' %}free{% else %}paid{% endif %}">
-                    <div class="glass-panel event-card {% if event.is_expired %}event-expired{% endif %}">
+                    <div class="glass-panel event-card {% if event.is_expired and not event.is_today %}event-expired{% endif %}">
                         <!-- Event Image -->
                         <a href="{{ url_for('event_detail', event_id=event.id) }}" class="image-wrapper"
                             style="display: block; overflow: hidden; border-radius: 16px 16px 0 0; position: relative; text-decoration: none;">
@@ -366,37 +429,73 @@
                                 <a href="{{ url_for('event_detail', event_id=event.id) }}"
                                     style="color: inherit; text-decoration: none;">{{ event.title }}</a>
                             </h3>
+
+                            <!-- Event Real-Time Location & Google Maps Navigation Link -->
+                            <div class="event-venue-row" style="display: flex; align-items: center; gap: 6px; margin-bottom: 0.4rem; font-size: 0.8rem; overflow: hidden;">
+                                <a href="{{ event.maps_url or ('https://www.google.com/maps/search/?api=1&query=' ~ ((event.venue ~ ' ' ~ event.venue_address) | urlencode)) }}"
+                                   target="_blank" rel="noopener noreferrer" class="event-venue-link"
+                                   title="Open {{ event.venue }} on Google Maps"
+                                   onclick="event.stopPropagation();"
+                                   style="color: var(--primary); text-decoration: none; display: inline-flex; align-items: center; gap: 4px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; transition: opacity 0.2s;"
+                                   onmouseover="this.style.textDecoration='underline'; this.style.opacity='0.9';"
+                                   onmouseout="this.style.textDecoration='none'; this.style.opacity='1';">
+                                    <span style="flex-shrink: 0;">📍</span> <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ event.venue or 'Main Auditorium' }}</span> <span style="font-size: 0.72rem; opacity: 0.85; flex-shrink: 0;">↗</span>
+                                </a>
+                            </div>
+
+                            <!-- Event Timing & 2-Hour Cutoff Badge -->
+                            <div class="event-time-row" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 6px; margin-bottom: 0.5rem; font-size: 0.82rem;">
+                                <span style="color: var(--primary); font-weight: 600; display: inline-flex; align-items: center; gap: 4px;">
+                                    ⏰ {{ event.time }} - {{ event.end_time }}
+                                </span>
+                                {% if event.is_today %}
+                                    {% if event.is_open %}
+                                    <span style="background: rgba(245, 158, 11, 0.2); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.4); padding: 2px 8px; border-radius: 12px; font-size: 0.72rem; font-weight: 700;">⚡ Today (Closes {{ event.cutoff_time }})</span>
+                                    {% else %}
+                                    <span style="background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.4); padding: 2px 8px; border-radius: 12px; font-size: 0.72rem; font-weight: 700;">⛔ Closed (2h Cutoff)</span>
+                                    {% endif %}
+                                {% endif %}
+                            </div>
+
                             <p class="event-desc">{{ event.desc }}</p>
 
                             <!-- Moved Price Tag above the line -->
                             <div style="margin-top: auto; padding-bottom: 1rem; text-align: left;">
                                 <span class="price-tag"
                                     style="font-size: 1.5rem; font-weight: 800; letter-spacing: 1px;">
-                                    {% if event.is_expired %}Not Available{% else %}{{ event.price }}{% endif %}
+                                    {% if event.is_expired and not event.is_today %}Not Available{% else %}{{ event.price }}{% endif %}
                                 </span>
                             </div>
 
                             <div class="card-footer" style="justify-content: center;">
                                 <div style="display: flex; gap: 8px; align-items: center; flex-wrap: nowrap;">
-                                    {% if not event.is_expired %}
-                                    {% if event.is_registered %}
-                                    <a href="{{ url_for('download_ticket', event_id=event.id) }}"
-                                        class="register-btn-sm"
-                                        style="background: rgba(0, 242, 254, 0.2); color: var(--primary); text-decoration: none; padding: 0.4rem 0.6rem; font-size: 0.8rem; white-space: nowrap;"
-                                        target="_blank">📥 Ticket</a>
-                                    <form action="{{ url_for('unregister_event', event_id=event.id) }}" method="POST"
-                                        style="display: inline; margin: 0;">
-                                        <button type="submit" class="register-btn-sm unregister-btn"
-                                            style="padding: 0.4rem 0.8rem; font-size: 0.8rem; white-space: nowrap;">Unregister</button>
-                                    </form>
+                                    {% if event.is_open %}
+                                        {% if event.is_registered %}
+                                        <a href="{{ url_for('download_ticket', event_id=event.id) }}"
+                                            class="register-btn-sm"
+                                            style="background: rgba(0, 242, 254, 0.2); color: var(--primary); text-decoration: none; padding: 0.4rem 0.6rem; font-size: 0.8rem; white-space: nowrap;"
+                                            target="_blank">📥 Ticket</a>
+                                        <button type="button" class="register-btn-sm unregister-btn"
+                                            style="padding: 0.4rem 0.8rem; font-size: 0.8rem; white-space: nowrap; cursor: pointer;"
+                                            onclick="openUnregisterModal('{{ event.id }}', '{{ event.title | escape }}')">Unregister</button>
+                                        {% else %}
+                                        <a href="{{ url_for('register_event', event_id=event.id) }}" class="register-btn-sm"
+                                            style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center; padding: 0.4rem 0.8rem; font-size: 0.8rem; white-space: nowrap;">Register</a>
+                                        {% endif %}
                                     {% else %}
-                                    <a href="{{ url_for('register_event', event_id=event.id) }}" class="register-btn-sm"
-                                        style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center; padding: 0.4rem 0.8rem; font-size: 0.8rem; white-space: nowrap;">Register</a>
-                                    {% endif %}
-                                    {% else %}
-                                    <button class="register-btn-sm"
-                                        style="padding: 0.4rem 0.8rem; font-size: 0.8rem; white-space: nowrap; background: rgba(255,255,255,0.1); color: var(--text-muted); border: 1px solid rgba(255,255,255,0.1); cursor: not-allowed;"
-                                        disabled>Closed</button>
+                                        {% if event.is_registered %}
+                                        <a href="{{ url_for('download_ticket', event_id=event.id) }}"
+                                            class="register-btn-sm"
+                                            style="background: rgba(0, 242, 254, 0.2); color: var(--primary); text-decoration: none; padding: 0.4rem 0.6rem; font-size: 0.8rem; white-space: nowrap;"
+                                            target="_blank">📥 Ticket</a>
+                                        <button type="button" class="register-btn-sm unregister-btn"
+                                            style="padding: 0.4rem 0.8rem; font-size: 0.8rem; white-space: nowrap; cursor: pointer;"
+                                            onclick="openUnregisterModal('{{ event.id }}', '{{ event.title | escape }}')">Unregister</button>
+                                        {% else %}
+                                        <button class="register-btn-sm"
+                                            style="padding: 0.4rem 0.8rem; font-size: 0.8rem; white-space: nowrap; background: rgba(255,255,255,0.08); color: var(--text-muted); border: 1px solid rgba(255,255,255,0.1); cursor: not-allowed;"
+                                            title="{{ event.status_reason }}" disabled>{% if event.is_cutoff_reached %}Cutoff Reached{% elif event.is_sold_out %}Sold Out{% else %}Closed{% endif %}</button>
+                                        {% endif %}
                                     {% endif %}
 
                                     {% if is_host %}
@@ -444,6 +543,15 @@
             <div class="glass-panel event-card event-expired" data-id="{{ event.id }}"
                 style="height: auto; opacity: 0.85; transition: transform 0.3s; transform: scale(0.98);"
                 data-title="{{ event.title|lower }}" data-category="{{ event.category }}"
+                data-date="{{ event.date }}" data-time="{{ event.time }}" data-end-time="{{ event.end_time }}"
+                data-cutoff-time="{{ event.cutoff_time }}"
+                data-venue="{{ event.venue }}"
+                data-venue-address="{{ event.venue_address }}"
+                data-maps-url="{{ event.maps_url or ('https://www.google.com/maps/search/?api=1&query=' ~ ((event.venue ~ ' ' ~ event.venue_address) | urlencode)) }}"
+                data-is-today="{{ '1' if event.is_today else '0' }}"
+                data-is-open="0"
+                data-is-cutoff="{{ '1' if event.is_cutoff_reached else '0' }}"
+                data-status-label="{{ event.status_label }}"
                 data-price="{% if event.price.lower() == 'free' %}free{% else %}paid{% endif %}">
                 <a href="{{ url_for('event_detail', event_id=event.id) }}" class="image-wrapper"
                     style="display: block; overflow: hidden; border-radius: 16px 16px 0 0; position: relative; text-decoration: none;">
@@ -455,10 +563,22 @@
                         {{ event.date }}</div>
                 </a>
                 <div class="card-content" style="padding: 1.5rem;">
-                    <h3 class="event-title" style="color: var(--text-muted); margin-bottom: 0.5rem;">
+                    <h3 class="event-title" style="color: var(--text-muted); margin-bottom: 0.3rem;">
                         <a href="{{ url_for('event_detail', event_id=event.id) }}"
                             style="color: inherit; text-decoration: none;">{{ event.title }}</a>
                     </h3>
+                    <!-- Event Real-Time Location & Google Maps Navigation Link -->
+                    <div class="event-venue-row" style="display: flex; align-items: center; gap: 6px; margin-bottom: 0.4rem; font-size: 0.8rem; overflow: hidden;">
+                        <a href="{{ event.maps_url or ('https://www.google.com/maps/search/?api=1&query=' ~ ((event.venue ~ ' ' ~ event.venue_address) | urlencode)) }}"
+                           target="_blank" rel="noopener noreferrer" class="event-venue-link"
+                           title="Open {{ event.venue }} on Google Maps"
+                           style="color: var(--text-muted); text-decoration: none; display: inline-flex; align-items: center; gap: 4px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%;">
+                            <span style="flex-shrink: 0;">📍</span> <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ event.venue or 'Main Auditorium' }}</span> <span style="font-size: 0.72rem; opacity: 0.85; flex-shrink: 0;">↗</span>
+                        </a>
+                    </div>
+                    <div style="color: var(--text-muted); font-size: 0.82rem; margin-bottom: 0.5rem;">
+                        ⏰ {{ event.time }} - {{ event.end_time }}
+                    </div>
                     <p class="event-desc" style="color: var(--text-muted); font-size: 0.95rem;">{{ event.desc }}</p>
                     <div
                         style="margin-top: 1.5rem; display: flex; justify-content: center; gap: 10px; align-items: center;">
@@ -790,8 +910,11 @@
             container.addEventListener('pointercancel', endPointerSwipe);
         }
 
+        let pastEventsData = [];
+
         function initEventsData() {
             upcomingEventsData = [];
+            pastEventsData = [];
             const items = document.querySelectorAll('.carousel-item');
             items.forEach(item => {
                 const titleEl = item.querySelector('.event-title');
@@ -800,13 +923,30 @@
                 const descEl = item.querySelector('.event-desc');
                 const id = item.getAttribute('data-id') || '';
                 const isExpired = item.querySelector('.event-expired') !== null;
+                const time = item.getAttribute('data-time') || '10:00 AM';
+                const endTime = item.getAttribute('data-end-time') || '05:00 PM';
+                const cutoffTime = item.getAttribute('data-cutoff-time') || '';
+                const isToday = item.getAttribute('data-is-today') === '1';
+                const isOpen = item.getAttribute('data-is-open') === '1';
+                const isCutoff = item.getAttribute('data-is-cutoff') === '1';
+                const statusLabel = item.getAttribute('data-status-label') || '';
 
                 upcomingEventsData.push({
                     id: parseInt(id) || 0,
                     title: titleEl ? titleEl.textContent.trim() : '',
                     category: item.getAttribute('data-category'),
                     price: item.getAttribute('data-price'),
-                    date: dateEl ? dateEl.textContent.trim() : '',
+                    date: dateEl ? dateEl.textContent.trim() : (item.getAttribute('data-date') || ''),
+                    time: time,
+                    endTime: endTime,
+                    cutoffTime: cutoffTime,
+                    venue: item.getAttribute('data-venue') || 'Main Auditorium',
+                    venueAddress: item.getAttribute('data-venue-address') || '',
+                    mapsUrl: item.getAttribute('data-maps-url') || '',
+                    isToday: isToday,
+                    isOpen: isOpen,
+                    isCutoff: isCutoff,
+                    statusLabel: statusLabel,
                     desc: descEl ? descEl.textContent.trim() : '',
                     image: imageEl ? imageEl.src : '',
                     element: item,
@@ -814,9 +954,79 @@
                 });
             });
 
+            const pastCards = document.querySelectorAll('#pastEventsContainer .event-card');
+            pastCards.forEach(card => {
+                const titleEl = card.querySelector('.event-title');
+                const dateEl = card.querySelector('.date-badge');
+                const id = card.getAttribute('data-id') || '';
+                const category = card.getAttribute('data-category');
+                const price = card.getAttribute('data-price');
+                const descEl = card.querySelector('.event-desc');
+                const time = card.getAttribute('data-time') || '10:00 AM';
+                const endTime = card.getAttribute('data-end-time') || '05:00 PM';
+                const cutoffTime = card.getAttribute('data-cutoff-time') || '';
+                const isToday = card.getAttribute('data-is-today') === '1';
+                const isOpen = card.getAttribute('data-is-open') === '1';
+                const isCutoff = card.getAttribute('data-is-cutoff') === '1';
+
+                pastEventsData.push({
+                    id: parseInt(id) || 0,
+                    title: titleEl ? titleEl.textContent.trim() : '',
+                    category: category,
+                    price: price,
+                    date: dateEl ? dateEl.textContent.trim() : (card.getAttribute('data-date') || ''),
+                    time: time,
+                    endTime: endTime,
+                    cutoffTime: cutoffTime,
+                    venue: card.getAttribute('data-venue') || 'Main Auditorium',
+                    venueAddress: card.getAttribute('data-venue-address') || '',
+                    mapsUrl: card.getAttribute('data-maps-url') || '',
+                    isToday: isToday,
+                    isOpen: isOpen,
+                    isCutoff: isCutoff,
+                    statusLabel: 'Registration Closed',
+                    desc: descEl ? descEl.textContent.trim() : '',
+                    element: card,
+                    isPast: true
+                });
+            });
+
+            // Smart Initial Calendar Navigation based on active events
+            autoSelectRelevantMonth();
+
             const totalEvents = upcomingEventsData.length;
             rotationStep = totalEvents > 0 ? 360 / totalEvents : 0;
             initCarouselTouchpad();
+            
+            // If calendar is open, auto-update it
+            const calendar = document.getElementById('calendarViewContainer');
+            if (calendar && calendar.style.display !== 'none') {
+                renderCalendar();
+            }
+        }
+
+        function autoSelectRelevantMonth() {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            // Check if current month already has events
+            const allEvents = [...upcomingEventsData, ...pastEventsData];
+            const hasCurrentMonthEvents = allEvents.some(ev => {
+                const d = new Date(ev.date);
+                return !isNaN(d.getTime()) && d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+            });
+
+            if (!hasCurrentMonthEvents && upcomingEventsData.length > 0) {
+                // Find first upcoming event date
+                for (const ev of upcomingEventsData) {
+                    const d = new Date(ev.date);
+                    if (!isNaN(d.getTime()) && d >= today) {
+                        currentMonth = d.getMonth();
+                        currentYear = d.getFullYear();
+                        break;
+                    }
+                }
+            }
         }
 
         function rotateCarousel(direction) {
@@ -829,22 +1039,22 @@
 
         // Filter and Search Logic
         function filterEvents() {
-            const searchVal = document.getElementById('searchInput').value.toLowerCase();
-            const catVal = document.getElementById('categoryFilter').value;
-            const priceVal = document.getElementById('priceFilter').value;
+            const searchVal = (document.getElementById('searchInput') ? document.getElementById('searchInput').value : '').toLowerCase().trim();
+            const catVal = document.getElementById('categoryFilter') ? document.getElementById('categoryFilter').value : 'all';
+            const priceVal = document.getElementById('priceFilter') ? document.getElementById('priceFilter').value : 'all';
 
             // 1. Filter upcoming carousel items
             let visibleCount = 0;
             upcomingEventsData.forEach(ev => {
-                const matchSearch = ev.title.toLowerCase().includes(searchVal) || ev.desc.toLowerCase().includes(searchVal);
+                const matchSearch = !searchVal || ev.title.toLowerCase().includes(searchVal) || ev.desc.toLowerCase().includes(searchVal);
                 const matchCat = catVal === 'all' || ev.category === catVal;
                 const matchPrice = priceVal === 'all' || ev.price === priceVal;
 
                 if (matchSearch && matchCat && matchPrice) {
-                    ev.element.style.display = 'block';
+                    if (ev.element) ev.element.style.display = 'block';
                     visibleCount++;
                 } else {
-                    ev.element.style.display = 'none';
+                    if (ev.element) ev.element.style.display = 'none';
                 }
             });
 
@@ -855,12 +1065,13 @@
             if (pastContainer) {
                 const pastCards = pastContainer.querySelectorAll('.event-card');
                 pastCards.forEach(card => {
-                    const title = card.getAttribute('data-title') || '';
-                    const desc = card.querySelector('.event-desc').textContent.toLowerCase();
+                    const title = (card.getAttribute('data-title') || '').toLowerCase();
+                    const descEl = card.querySelector('.event-desc');
+                    const desc = descEl ? descEl.textContent.toLowerCase() : '';
                     const category = card.getAttribute('data-category');
                     const price = card.getAttribute('data-price');
 
-                    const matchSearch = title.includes(searchVal) || desc.includes(searchVal);
+                    const matchSearch = !searchVal || title.includes(searchVal) || desc.includes(searchVal);
                     const matchCat = catVal === 'all' || category === catVal;
                     const matchPrice = priceVal === 'all' || price === priceVal;
 
@@ -871,6 +1082,19 @@
                     }
                 });
             }
+
+            // 3. Auto-update Calendar with filtered events
+            renderCalendar();
+        }
+
+        function resetFiltersAndCalendar() {
+            const searchInput = document.getElementById('searchInput');
+            const catFilter = document.getElementById('categoryFilter');
+            const priceFilter = document.getElementById('priceFilter');
+            if (searchInput) searchInput.value = '';
+            if (catFilter) catFilter.value = 'all';
+            if (priceFilter) priceFilter.value = 'all';
+            filterEvents();
         }
 
         function recalculateCarousel(visibleCount) {
@@ -893,7 +1117,7 @@
 
             let index = 0;
             upcomingEventsData.forEach(ev => {
-                if (ev.element.style.display !== 'none') {
+                if (ev.element && ev.element.style.display !== 'none') {
                     const angle = Math.round((360 / visibleCount) * index * 100) / 100;
                     ev.element.style.setProperty('--carousel-angle', angle + 'deg');
                     ev.element.style.setProperty('--carousel-tz', radius + 'px');
@@ -935,6 +1159,9 @@
         function renderCalendar() {
             const gridEl = document.getElementById('calendarGrid');
             const titleEl = document.getElementById('calendarTitle');
+            const countBadge = document.getElementById('calendarEventCountBadge');
+            if (!gridEl || !titleEl) return;
+
             gridEl.innerHTML = '';
             titleEl.textContent = `${monthNames[currentMonth]} ${currentYear}`;
 
@@ -955,47 +1182,50 @@
                 gridEl.appendChild(emptyDay);
             }
 
+            // Read active search & filters
+            const searchVal = (document.getElementById('searchInput') ? document.getElementById('searchInput').value : '').toLowerCase().trim();
+            const catVal = document.getElementById('categoryFilter') ? document.getElementById('categoryFilter').value : 'all';
+            const priceVal = document.getElementById('priceFilter') ? document.getElementById('priceFilter').value : 'all';
+
             const eventsByDay = {};
-            const allEvents = [...upcomingEventsData];
+            const allEvents = [...upcomingEventsData, ...pastEventsData];
+            let matchingThisMonthCount = 0;
 
-            const pastCards = document.querySelectorAll('#pastEventsContainer .event-card');
-            pastCards.forEach(card => {
-                const titleEl = card.querySelector('.event-title');
-                const dateEl = card.querySelector('.date-badge');
-                const id = card.getAttribute('data-id') || '';
-                const category = card.getAttribute('data-category');
-                const price = card.getAttribute('data-price');
-                const descEl = card.querySelector('.event-desc');
-
-                allEvents.push({
-                    id: parseInt(id) || 0,
-                    title: titleEl ? titleEl.textContent.trim() : '',
-                    category: category,
-                    price: price,
-                    date: dateEl ? dateEl.textContent.trim() : '',
-                    desc: descEl ? descEl.textContent.trim() : '',
-                    isPast: true
-                });
-            });
+            const now = new Date();
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
 
             allEvents.forEach(ev => {
+                // Apply active filters to calendar
+                const matchSearch = !searchVal || ev.title.toLowerCase().includes(searchVal) || (ev.desc && ev.desc.toLowerCase().includes(searchVal));
+                const matchCat = catVal === 'all' || ev.category === catVal;
+                const matchPrice = priceVal === 'all' || ev.price === priceVal;
+
+                if (!matchSearch || !matchCat || !matchPrice) return;
+
                 try {
                     const dateObj = new Date(ev.date);
-                    if (dateObj.getMonth() === currentMonth && dateObj.getFullYear() === currentYear) {
+                    if (!isNaN(dateObj.getTime()) && dateObj.getMonth() === currentMonth && dateObj.getFullYear() === currentYear) {
                         const day = dateObj.getDate();
                         if (!eventsByDay[day]) eventsByDay[day] = [];
                         eventsByDay[day].push(ev);
+                        matchingThisMonthCount++;
                     }
                 } catch (e) { }
             });
 
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
+            if (countBadge) {
+                countBadge.textContent = `${matchingThisMonthCount} Event${matchingThisMonthCount === 1 ? '' : 's'}`;
+                countBadge.style.display = matchingThisMonthCount > 0 ? 'inline-block' : 'none';
+            }
 
             for (let d = 1; d <= totalDays; d++) {
                 const dayEl = document.createElement('div');
                 dayEl.className = 'calendar-day';
-                if (d === today.getDate() && currentMonth === today.getMonth() && currentYear === today.getFullYear()) {
+                dayEl.style.position = 'relative';
+
+                const isTodayCell = (d === today.getDate() && currentMonth === today.getMonth() && currentYear === today.getFullYear());
+                if (isTodayCell) {
                     dayEl.classList.add('today');
                 }
 
@@ -1004,7 +1234,14 @@
                 numEl.textContent = d;
                 dayEl.appendChild(numEl);
 
-                if (eventsByDay[d]) {
+                if (eventsByDay[d] && eventsByDay[d].length > 0) {
+                    if (eventsByDay[d].length > 1) {
+                        const pillEl = document.createElement('span');
+                        pillEl.className = 'day-events-pill';
+                        pillEl.textContent = `${eventsByDay[d].length} events`;
+                        dayEl.appendChild(pillEl);
+                    }
+
                     const listEl = document.createElement('div');
                     listEl.className = 'calendar-events-list';
 
@@ -1012,25 +1249,58 @@
                         const itemEl = document.createElement('div');
                         itemEl.className = 'calendar-event-item';
 
-                        let isClosed = false;
-                        if (ev.isPast) {
-                            isClosed = true;
-                        } else if (ev.date) {
-                            const eventDate = new Date(ev.date);
-                            eventDate.setHours(0, 0, 0, 0);
-                            if (!isNaN(eventDate.getTime()) && eventDate < today) {
-                                isClosed = true;
-                            }
+                        const evDateObj = ev.date ? new Date(ev.date) : null;
+                        const isActuallyToday = ev.isToday || (evDateObj && evDateObj.getDate() === today.getDate() && evDateObj.getMonth() === today.getMonth() && evDateObj.getFullYear() === today.getFullYear());
+
+                        // Real-time Cutoff Evaluation for Today's Event
+                        let isCutoffReachedLive = ev.isCutoff;
+                        let cutoffTimeDisplay = ev.cutoffTime;
+
+                        if (isActuallyToday && ev.time) {
+                            try {
+                                const parsedStart = new Date(`${ev.date} ${ev.time}`);
+                                if (!isNaN(parsedStart.getTime())) {
+                                    const cutoffDt = new Date(parsedStart.getTime() - (2 * 60 * 60 * 1000));
+                                    isCutoffReachedLive = (now.getTime() >= cutoffDt.getTime());
+                                    if (!cutoffTimeDisplay) {
+                                        cutoffTimeDisplay = cutoffDt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
+                                    }
+                                }
+                            } catch (err) { }
                         }
 
-                        itemEl.title = `${ev.title}\nCategory: ${ev.category || 'General'}\nPrice: ${ev.price || 'Free'}\nStatus: ${isClosed ? 'Closed' : 'Open / Upcoming'}`;
+                        let dotClass = 'dot-open';
+                        let statusText = 'Open / Upcoming';
+                        let state = 'open'; // 'open', 'today_open', 'today_closed', 'closed'
+
+                        if (isActuallyToday) {
+                            if (!isCutoffReachedLive && !ev.isPast && ev.isOpen !== false) {
+                                state = 'today_open';
+                                dotClass = 'dot-today';
+                                statusText = `Held Today (Open - Closes 2h prior at ${cutoffTimeDisplay || 'start - 2h'})`;
+                            } else {
+                                state = 'today_closed';
+                                dotClass = 'dot-closed';
+                                statusText = `Held Today (Closed - 2h Cutoff Reached at ${cutoffTimeDisplay || 'start - 2h'})`;
+                            }
+                        } else if (ev.isPast || ev.isOpen === false || (evDateObj && evDateObj < today)) {
+                            state = 'closed';
+                            dotClass = 'dot-closed';
+                            statusText = 'Registration Closed';
+                        } else {
+                            state = 'open';
+                            dotClass = 'dot-open';
+                            statusText = 'Open / Upcoming';
+                        }
+
+                        itemEl.title = `${ev.title}\n📍 Venue: ${ev.venue || 'Tech Arena'}\n⏰ Time: ${ev.time || '10:00 AM'} - ${ev.endTime || '05:00 PM'}\nCategory: ${ev.category || 'General'}\nPrice: ${ev.price || 'Free'}\nStatus: ${statusText}`;
                         itemEl.onclick = (e) => {
                             e.stopPropagation();
                             window.location.href = `/event/${ev.id}`;
                         };
 
                         const dotEl = document.createElement('span');
-                        dotEl.className = `event-status-dot ${isClosed ? 'dot-closed' : 'dot-open'}`;
+                        dotEl.className = `event-status-dot ${dotClass}`;
 
                         const titleWrapper = document.createElement('div');
                         titleWrapper.className = 'calendar-event-title-wrapper';
@@ -1061,7 +1331,11 @@
                         };
 
                         const isLightMode = document.body.classList.contains('light-mode');
-                        if (isClosed) {
+                        if (state === 'today_open') {
+                            itemEl.style.borderLeftColor = isLightMode ? '#f59e0b' : '#fbbf24';
+                            itemEl.style.background = isLightMode ? '#fffbeb' : 'rgba(245, 158, 11, 0.2)';
+                            itemEl.style.color = isLightMode ? '#b45309' : '#fde68a';
+                        } else if (state === 'today_closed' || state === 'closed') {
                             itemEl.style.borderLeftColor = isLightMode ? '#ef4444' : '#f87171';
                             itemEl.style.background = isLightMode ? '#fef2f2' : 'rgba(239, 68, 68, 0.15)';
                             itemEl.style.color = isLightMode ? '#991b1b' : '#fca5a5';
@@ -1077,6 +1351,18 @@
                 }
 
                 gridEl.appendChild(dayEl);
+            }
+
+            // If no matching events found in this month, display informative status banner
+            if (matchingThisMonthCount === 0) {
+                const emptyMsg = document.createElement('div');
+                emptyMsg.style.gridColumn = '1 / -1';
+                emptyMsg.style.textAlign = 'center';
+                emptyMsg.style.padding = '2.5rem 1rem';
+                emptyMsg.style.color = 'var(--text-muted)';
+                emptyMsg.style.fontSize = '0.92rem';
+                emptyMsg.innerHTML = `📅 No events scheduled in <strong>${monthNames[currentMonth]} ${currentYear}</strong> matching current filters. <button onclick="resetFiltersAndCalendar()" style="background: none; border: none; color: var(--primary); font-weight: 700; cursor: pointer; text-decoration: underline; margin-left: 6px;">Reset Filters</button> or <button onclick="jumpToNextEventMonth()" style="background: none; border: none; color: var(--primary); font-weight: 700; cursor: pointer; text-decoration: underline; margin-left: 4px;">Jump to Next Event 🎯</button>`;
+                gridEl.appendChild(emptyMsg);
             }
         }
 
@@ -1098,8 +1384,108 @@
             renderCalendar();
         }
 
+        function jumpToToday() {
+            currentMonth = new Date().getMonth();
+            currentYear = new Date().getFullYear();
+            renderCalendar();
+        }
+
+        function jumpToNextEventMonth() {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const allEvents = [...upcomingEventsData, ...pastEventsData];
+            
+            // Sort events by date ascending
+            const futureEvents = allEvents
+                .map(ev => ({ ev, d: new Date(ev.date) }))
+                .filter(item => !isNaN(item.d.getTime()) && item.d >= today)
+                .sort((a, b) => a.d.getTime() - b.d.getTime());
+
+            if (futureEvents.length > 0) {
+                currentMonth = futureEvents[0].d.getMonth();
+                currentYear = futureEvents[0].d.getFullYear();
+                renderCalendar();
+            } else if (allEvents.length > 0) {
+                jumpToToday();
+            }
+        }
+
+        // Auto-Update Engine: Periodically refreshes 2h Cutoff statuses & Polls API
+        function autoUpdateCalendarState() {
+            // 1. Re-render calendar live if open to transition today dots from yellow to red seamlessly
+            const calendar = document.getElementById('calendarViewContainer');
+            if (calendar && calendar.style.display !== 'none') {
+                renderCalendar();
+            }
+        }
+
+        async function syncEventsFromApi() {
+            try {
+                const resp = await fetch('/api/events');
+                if (!resp.ok) return;
+                const data = await resp.json();
+                if (data && data.status === 'success' && Array.isArray(data.events)) {
+                    // Update upcoming and past events data
+                    upcomingEventsData = [];
+                    pastEventsData = [];
+                    
+                    data.events.forEach(ev => {
+                        const evObj = {
+                            id: ev.id,
+                            title: ev.title || '',
+                            category: ev.category || 'General Tech',
+                            price: (ev.price || 'Free').toLowerCase() === 'free' ? 'free' : 'paid',
+                            date: ev.date || '',
+                            time: ev.time || '10:00 AM',
+                            endTime: ev.end_time || '05:00 PM',
+                            cutoffTime: ev.cutoff_time || '',
+                            venue: ev.venue || '',
+                            venueAddress: ev.venue_address || '',
+                            mapsUrl: ev.maps_url || '',
+                            mapsDirectionsUrl: ev.maps_directions_url || '',
+                            isToday: Boolean(ev.is_today),
+                            isOpen: Boolean(ev.is_open),
+                            isCutoff: Boolean(ev.is_cutoff_reached),
+                            statusLabel: ev.status_label || '',
+                            desc: ev.desc || '',
+                            image: ev.image || '',
+                            isPast: Boolean(ev.is_expired) && !ev.is_today
+                        };
+                        
+                        // Find matching DOM card if present
+                        const existingCard = document.querySelector(`.carousel-item[data-id="${ev.id}"]`);
+                        if (existingCard) {
+                            evObj.element = existingCard;
+                            existingCard.setAttribute('data-time', evObj.time);
+                            existingCard.setAttribute('data-end-time', evObj.endTime);
+                            existingCard.setAttribute('data-cutoff-time', evObj.cutoffTime);
+                            existingCard.setAttribute('data-is-today', evObj.isToday ? '1' : '0');
+                            existingCard.setAttribute('data-is-open', evObj.isOpen ? '1' : '0');
+                            existingCard.setAttribute('data-is-cutoff', evObj.isCutoff ? '1' : '0');
+                        }
+                        
+                        if (evObj.isPast) {
+                            pastEventsData.push(evObj);
+                        } else {
+                            upcomingEventsData.push(evObj);
+                        }
+                    });
+
+                    // Auto-update calendar with fresh events
+                    renderCalendar();
+                }
+            } catch (err) {
+                // Background sync error handled gracefully
+            }
+        }
+
         // Initialize lists
         initEventsData();
+
+        // Start live auto-update intervals
+        setInterval(autoUpdateCalendarState, 15000); // 15s cutoff live ticker
+        setInterval(syncEventsFromApi, 45000);        // 45s API live sync
+        window.addEventListener('focus', syncEventsFromApi); // Instant sync on tab focus
 
         // Initialize theme selector value from localStorage
         document.addEventListener('DOMContentLoaded', () => {
@@ -1165,6 +1551,167 @@
                 }
             };
         }
+    </script>
+
+    <!-- Unregister / Cancellation Reason Modal -->
+    <div id="unregisterModal" class="unreg-modal-overlay">
+        <div class="unreg-modal-content">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.2rem;">
+                <div>
+                    <h3 style="color: #ffffff; font-size: 1.35rem; font-weight: 700; margin: 0 0 4px 0;">Cancel Event Registration</h3>
+                    <p id="unregModalEventTitle" style="color: var(--primary); font-size: 0.95rem; font-weight: 600; margin: 0;"></p>
+                </div>
+                <button type="button" onclick="closeUnregisterModal()" style="background: none; border: none; color: var(--text-muted); font-size: 1.6rem; cursor: pointer; line-height: 1; padding: 0 4px;" aria-label="Close modal">&times;</button>
+            </div>
+
+            <p style="color: var(--text-muted); font-size: 0.88rem; line-height: 1.5; margin-bottom: 1.2rem;">
+                Please select the reason for unregistering. Your feedback helps us improve future events.
+            </p>
+
+            <form id="unregisterForm" method="POST" action="" onsubmit="return submitUnregisterForm(this)">
+                <input type="hidden" name="event_id" id="unregEventId" value="">
+                
+                <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 1.2rem; max-height: 320px; overflow-y: auto; padding-right: 4px;">
+                    <label class="unreg-reason-option">
+                        <input type="radio" name="reason" value="Schedule conflict / Personal emergency" required onchange="handleReasonChange(this)">
+                        <span>Schedule conflict / Personal emergency</span>
+                    </label>
+                    <label class="unreg-reason-option">
+                        <input type="radio" name="reason" value="College exams, lectures, or academic submissions" onchange="handleReasonChange(this)">
+                        <span>College exams, lectures, or academic submissions</span>
+                    </label>
+                    <label class="unreg-reason-option">
+                        <input type="radio" name="reason" value="Venue location or transportation constraints" onchange="handleReasonChange(this)">
+                        <span>Venue location or transportation constraints</span>
+                    </label>
+                    <label class="unreg-reason-option">
+                        <input type="radio" name="reason" value="Team members unavailable / Group disbanded" onchange="handleReasonChange(this)">
+                        <span>Team members unavailable / Group disbanded</span>
+                    </label>
+                    <label class="unreg-reason-option">
+                        <input type="radio" name="reason" value="Registration fee or payment concerns" onchange="handleReasonChange(this)">
+                        <span>Registration fee or payment concerns</span>
+                    </label>
+                    <label class="unreg-reason-option">
+                        <input type="radio" name="reason" value="Event timings or duration not convenient" onchange="handleReasonChange(this)">
+                        <span>Event timings or duration not convenient</span>
+                    </label>
+                    <label class="unreg-reason-option">
+                        <input type="radio" name="reason" value="Health or medical condition" onchange="handleReasonChange(this)">
+                        <span>Health or medical condition</span>
+                    </label>
+                    <label class="unreg-reason-option">
+                        <input type="radio" name="reason" value="Registered by mistake / Duplicate entry" onchange="handleReasonChange(this)">
+                        <span>Registered by mistake / Duplicate entry</span>
+                    </label>
+                    <label class="unreg-reason-option">
+                        <input type="radio" name="reason" value="Work or internship commitment" onchange="handleReasonChange(this)">
+                        <span>Work or internship commitment</span>
+                    </label>
+                    <label class="unreg-reason-option">
+                        <input type="radio" name="reason" value="Other" id="reasonOtherRadio" onchange="handleReasonChange(this)">
+                        <span>Other (Please tell us more)</span>
+                    </label>
+                </div>
+
+                <!-- Conditional Feedback Input (Only shown when 'Other' is chosen) -->
+                <div id="otherFeedbackContainer" style="display: none; margin-bottom: 1.5rem; animation: fadeIn 0.3s ease;">
+                    <label for="cancellationFeedback" style="display: block; font-size: 0.85rem; font-weight: 600; color: #ffffff; margin-bottom: 6px;">
+                        Please provide your feedback / reason <span style="color: #ef4444;">*</span>
+                    </label>
+                    <textarea id="cancellationFeedback" name="feedback" rows="3" class="input-field" placeholder="Tell us why you are unregistering..." style="width: 100%; border-radius: 10px; resize: vertical; font-family: inherit; font-size: 0.9rem;"></textarea>
+                    <span id="feedbackErrorMsg" style="display: none; color: #ef4444; font-size: 0.8rem; margin-top: 4px;">Please enter your feedback before confirming.</span>
+                </div>
+
+                <div style="display: flex; gap: 10px; justify-content: flex-end; align-items: center; margin-top: 1.5rem;">
+                    <button type="button" onclick="closeUnregisterModal()" class="btn-secondary" style="padding: 0.65rem 1.2rem; border-radius: 10px; font-weight: 600; cursor: pointer; font-size: 0.9rem;">
+                        Keep Registration
+                    </button>
+                    <button type="submit" class="btn-primary" style="padding: 0.65rem 1.4rem; background: #ef4444; color: #ffffff; border-radius: 10px; font-weight: 700; border: none; cursor: pointer; font-size: 0.9rem; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);">
+                        Confirm Unregister
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function openUnregisterModal(eventId, eventTitle) {
+            const modal = document.getElementById('unregisterModal');
+            const form = document.getElementById('unregisterForm');
+            const titleEl = document.getElementById('unregModalEventTitle');
+            const feedbackBox = document.getElementById('otherFeedbackContainer');
+            const feedbackInput = document.getElementById('cancellationFeedback');
+            const feedbackErr = document.getElementById('feedbackErrorMsg');
+            
+            if (!modal || !form) return;
+            
+            form.action = `/unregister/${eventId}`;
+            document.getElementById('unregEventId').value = eventId;
+            if (titleEl) titleEl.textContent = eventTitle || `Event #${eventId}`;
+            
+            const radios = form.querySelectorAll('input[name="reason"]');
+            radios.forEach(r => r.checked = false);
+            if (feedbackBox) feedbackBox.style.display = 'none';
+            if (feedbackInput) {
+                feedbackInput.value = '';
+                feedbackInput.removeAttribute('required');
+            }
+            if (feedbackErr) feedbackErr.style.display = 'none';
+            
+            modal.style.display = 'flex';
+        }
+
+        function closeUnregisterModal() {
+            const modal = document.getElementById('unregisterModal');
+            if (modal) modal.style.display = 'none';
+        }
+
+        function handleReasonChange(radio) {
+            const feedbackBox = document.getElementById('otherFeedbackContainer');
+            const feedbackInput = document.getElementById('cancellationFeedback');
+            const feedbackErr = document.getElementById('feedbackErrorMsg');
+            if (feedbackErr) feedbackErr.style.display = 'none';
+            
+            if (radio.value === 'Other') {
+                if (feedbackBox) feedbackBox.style.display = 'block';
+                if (feedbackInput) {
+                    feedbackInput.setAttribute('required', 'required');
+                    feedbackInput.focus();
+                }
+            } else {
+                if (feedbackBox) feedbackBox.style.display = 'none';
+                if (feedbackInput) {
+                    feedbackInput.removeAttribute('required');
+                    feedbackInput.value = '';
+                }
+            }
+        }
+
+        function submitUnregisterForm(form) {
+            const selected = form.querySelector('input[name="reason"]:checked');
+            if (!selected) {
+                alert('Please select a reason for cancellation.');
+                return false;
+            }
+            if (selected.value === 'Other') {
+                const fb = document.getElementById('cancellationFeedback');
+                const feedbackErr = document.getElementById('feedbackErrorMsg');
+                if (!fb || !fb.value.trim()) {
+                    if (feedbackErr) feedbackErr.style.display = 'block';
+                    if (fb) fb.focus();
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        window.addEventListener('click', (e) => {
+            const modal = document.getElementById('unregisterModal');
+            if (modal && e.target === modal) {
+                closeUnregisterModal();
+            }
+        });
     </script>
 
     <!-- New JS Modules -->

@@ -6,6 +6,7 @@
     <title>Check-in History (Date-Wise) | EVENTS</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@700;800&display=swap" rel="stylesheet">
+    <script src="{{ url_for('static', filename='themes.js') }}"></script>
     <style>
         .filter-toolbar {
             background: rgba(30, 41, 59, 0.6);
@@ -90,8 +91,8 @@
             <div class="nav-links" style="display: flex; align-items: center; gap: 12px;">
                 <button class="theme-toggle-btn" id="themeToggle" title="Toggle Light/Dark Mode" type="button" style="margin-right: 0;">🌓</button>
                 <a href="{{ url_for('scan_ticket') }}" class="register-btn-sm" style="background: rgba(0, 242, 254, 0.15); color: var(--primary); border: 1px solid var(--primary); text-decoration: none; padding: 0.5rem 1rem; border-radius: 8px; font-weight: 700;">📷 Live Scanner</a>
-                <a href="{{ url_for('dashboard') }}" class="logout-btn" style="text-decoration:none;">🏠 Dashboard</a>
-                <a href="{{ url_for('logout') }}" class="logout-btn" style="background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3);">Logout</a>
+                <a href="{{ url_for('dashboard') }}" class="nav-btn-dash">🏠 Dashboard</a>
+                <a href="{{ url_for('logout') }}" class="logout-btn-unique">⏻ Logout</a>
             </div>
         </div>
     </nav>
@@ -123,6 +124,13 @@
     </div>
 
     <div class="checkin-history-container">
+        <!-- Back Button -->
+        <div style="margin-bottom: 1.2rem;">
+            <a href="{{ url_for('scan_ticket') }}" class="back-btn-unified">
+                <span class="arrow">←</span> Back to Scanner
+            </a>
+        </div>
+
         <!-- Header Banner -->
         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 2rem;">
             <div>
@@ -184,7 +192,7 @@
                 <select id="dateFilter" class="filter-select" onchange="applyFilters()">
                     <option value="">All Dates</option>
                     {% for date_key, group in grouped_history.items() %}
-                    <option value="{{ date_key }}">{{ date_key }} ({{ group.items|length }})</option>
+                    <option value="{{ date_key }}">{{ date_key }} ({{ group.records|length }})</option>
                     {% endfor %}
                 </select>
             </div>
@@ -207,7 +215,7 @@
                             {% endif %}
                         </div>
                         <div class="date-count-badge">
-                            {{ group.items|length }} Verified Attendees
+                            {{ group.records|length }} Verified Attendees
                         </div>
                     </div>
                     <div style="overflow-x: auto;">
@@ -223,7 +231,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for item in group.items %}
+                                {% for item in group.records %}
                                 <tr class="checkin-row" data-name="{{ item.full_name|lower }}" data-username="{{ item.username|lower }}" data-college="{{ item.college_id|lower }}" data-event="{{ item.event_title }}">
                                     <td>
                                         <div class="user-avatar-cell">
@@ -252,7 +260,7 @@
                                         {% endif %}
                                     </td>
                                     <td>
-                                        <div style="font-weight: 600; color: #ffffff;">{{ item.checkin_time_only or item.checkin_time }}</div>
+                                        <div style="font-weight: 600; color: #ffffff;">{{ item.time_only or item.checkin_time }}</div>
                                         <div style="font-size: 0.75rem; color: var(--text-muted);">Ref: #{{ item.id }}</div>
                                     </td>
                                     <td>
@@ -361,5 +369,6 @@
             applyFilters();
         }
     </script>
+    <script src="{{ url_for('static', filename='animations.js') }}"></script>
 </body>
 </html>

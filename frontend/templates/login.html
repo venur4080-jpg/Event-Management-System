@@ -7,6 +7,7 @@
     <title>Login & Registration | EVENTS</title>
     <!-- Link to static CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="{{ url_for('static', filename='themes.js') }}"></script>
     <script src="{{ url_for('static', filename='script.js') }}"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@700;800&display=swap"
         rel="stylesheet">
@@ -146,15 +147,9 @@
 
                 <!-- User ID or Email -->
                 <div class="input-group">
-                    <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.4rem;">
-                        <label for="username" style="margin-bottom: 0;">User ID (Last 4 Digits) or Email</label>
-                        <span style="font-size: 0.72rem; color: var(--primary); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">No Name Login</span>
-                    </div>
+                    <label for="username">User ID or Email</label>
                     <input type="text" id="username" name="username" class="input-field" required
-                        value="{{ username or '' }}" placeholder="e.g. 0003 or yourname@example.com" autocomplete="username">
-                    <small style="color: var(--text-muted); font-size: 0.78rem; margin-top: 5px; display: block; line-height: 1.4;">
-                        🔒 Enter your <strong>4-digit User ID</strong> (e.g. <code>0003</code>) or registered <strong>Email address</strong>.
-                    </small>
+                        value="{{ username or '' }}" placeholder="Enter your User ID or Email" autocomplete="username">
                 </div>
 
                 <!-- Password with Eyeball -->
@@ -281,28 +276,28 @@
                 <div class="grid-3">
                     <div class="input-group">
                         <label>First Name *</label>
-                        <input type="text" name="first_name" id="first_name" class="input-field" required placeholder="e.g. Rahul" autocomplete="given-name">
+                        <input type="text" name="first_name" id="first_name" class="input-field" required placeholder="First name" autocomplete="given-name">
                     </div>
                     <div class="input-group">
                         <label>Middle Name</label>
-                        <input type="text" name="middle_name" id="middle_name" class="input-field" placeholder="e.g. Kumar" autocomplete="additional-name">
+                        <input type="text" name="middle_name" id="middle_name" class="input-field" placeholder="Middle name (optional)" autocomplete="additional-name">
                     </div>
                     <div class="input-group">
                         <label>Last Name *</label>
-                        <input type="text" name="last_name" id="last_name" class="input-field" required placeholder="e.g. Sharma" autocomplete="family-name">
+                        <input type="text" name="last_name" id="last_name" class="input-field" required placeholder="Last name" autocomplete="family-name">
                     </div>
                 </div>
 
                 <!-- 3. Contact & OTP Verification -->
                 <div class="form-section-header">
-                    <span>📱</span> Contact & Verification
+                    <span>📞</span> Contact & Verification
                 </div>
 
                 <!-- Mobile Number with OTP -->
                 <div class="otp-group-wrapper">
                     <label style="display: block; margin-bottom: 0.4rem; color: var(--text-muted); font-size: 0.9rem;">Mobile Number (Verify with OTP) *</label>
                     <div class="otp-row">
-                        <input type="tel" name="phone" id="reg_phone" class="input-field" placeholder="e.g. 9876543210" required oninput="handleRegPhoneInput(this)" maxlength="15" autocomplete="tel">
+                        <input type="tel" name="phone" id="reg_phone" class="input-field" placeholder="Enter mobile number" required oninput="handleRegPhoneInput(this)" maxlength="15" autocomplete="tel">
                         <button type="button" class="otp-action-btn" id="sendPhoneOtpBtn" onclick="handleSendOtp('mobile', 'reg_phone')">
                             Send OTP
                         </button>
@@ -319,7 +314,7 @@
                 <div class="otp-group-wrapper">
                     <label style="display: block; margin-bottom: 0.4rem; color: var(--text-muted); font-size: 0.9rem;">Email Address (Verify with OTP) *</label>
                     <div class="otp-row">
-                        <input type="email" name="email" id="reg_email" class="input-field" placeholder="e.g. rahul.sharma@example.com" required oninput="handleRegEmailInput(this)" autocomplete="email">
+                        <input type="email" name="email" id="reg_email" class="input-field" placeholder="Enter email address" required oninput="handleRegEmailInput(this)" autocomplete="email">
                         <button type="button" class="otp-action-btn" id="sendEmailOtpBtn" onclick="handleSendOtp('email', 'reg_email')">
                             Send OTP
                         </button>
@@ -345,22 +340,22 @@
                 <div class="grid-2">
                     <div class="input-group">
                         <label>Country *</label>
-                        <input type="text" name="country" id="reg_country" class="input-field" required value="India" placeholder="e.g. India" autocomplete="country-name">
+                        <input type="text" name="country" id="reg_country" class="input-field" required value="India" placeholder="Country" autocomplete="country-name">
                     </div>
                     <div class="input-group">
                         <label>State *</label>
-                        <input type="text" name="state" id="reg_state" class="input-field" required placeholder="e.g. Karnataka" autocomplete="address-level1">
+                        <input type="text" name="state" id="reg_state" class="input-field" required placeholder="State / Province" autocomplete="address-level1">
                     </div>
                 </div>
 
                 <div class="grid-2">
                     <div class="input-group">
                         <label>City / Town / Village *</label>
-                        <input type="text" name="city" id="reg_city" class="input-field" required placeholder="e.g. Bangalore" autocomplete="address-level2">
+                        <input type="text" name="city" id="reg_city" class="input-field" required placeholder="City / Town" autocomplete="address-level2">
                     </div>
                     <div class="input-group">
                         <label>PIN Code *</label>
-                        <input type="text" name="pincode" id="reg_pincode" class="input-field" required placeholder="e.g. 560001" maxlength="10" autocomplete="postal-code">
+                        <input type="text" name="pincode" id="reg_pincode" class="input-field" required placeholder="PIN / Postal Code" maxlength="10" autocomplete="postal-code">
                     </div>
                 </div>
 
@@ -599,6 +594,7 @@
             return true;
         }
     </script>
+    <script src="{{ url_for('static', filename='animations.js') }}"></script>
 </body>
 
 </html>

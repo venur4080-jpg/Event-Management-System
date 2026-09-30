@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ event.title }} | Details</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="{{ url_for('static', filename='themes.js') }}"></script>
     <style>
         .details-container {
             max-width: 1000px;
@@ -183,9 +184,10 @@
                 <div class="hamburger" id="hamburger">☰</div>
                 <div class="logo">EV<span>ENTS</span></div>
             </div>
-            <div class="nav-links" style="display: flex; align-items: center;">
-                <button class="theme-toggle-btn" id="themeToggle" title="Toggle Light/Dark Mode" type="button" style="margin-right: 1rem;">🌓</button>
-                <button onclick="window.location.href='{{ url_for('dashboard') }}'">Dashboard</button>
+            <div class="nav-links" style="display: flex; align-items: center; gap: 12px;">
+                <button class="theme-toggle-btn" id="themeToggle" title="Toggle Light/Dark Mode" type="button" style="margin-right: 0;">🌓</button>
+                <a href="{{ url_for('dashboard') }}" class="nav-btn-dash">🏠 Dashboard</a>
+                <a href="{{ url_for('logout') }}" class="logout-btn-unique">⏻ Logout</a>
             </div>
         </div>
     </nav>
@@ -221,18 +223,49 @@
 
 
     <div class="details-container">
-        <a href="{{ url_for('dashboard') }}" class="back-link">← Back to Dashboard</a>
+        <div style="margin-bottom: 1.5rem;">
+            <a href="{{ url_for('dashboard') }}" class="back-btn-unified">
+                <span class="arrow">←</span> Back to Dashboard
+            </a>
+        </div>
 
-        {% if event.is_expired %}
+        {% if event.is_today %}
+            {% if event.is_open %}
+            <div style="background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.4); color: #f59e0b; padding: 1.2rem; border-radius: 14px; margin-bottom: 2rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <span style="font-size: 1.5rem;">⚡</span>
+                    <div>
+                        <strong style="font-size: 1rem; color: #fbbf24;">Event Scheduled for Today!</strong>
+                        <div style="font-size: 0.88rem; margin-top: 2px;">Registration is open until <strong>2 hours before start time</strong> (Closes at <strong>{{ event.cutoff_time }}</strong>).</div>
+                    </div>
+                </div>
+                <span style="background: rgba(245, 158, 11, 0.25); padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 700;">Cutoff: {{ event.cutoff_time }}</span>
+            </div>
+            {% else %}
+            <div style="background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.4); color: #fca5a5; padding: 1.2rem; border-radius: 14px; margin-bottom: 2rem; display: flex; align-items: center; gap: 10px;">
+                <span style="font-size: 1.5rem;">⛔</span>
+                <div>
+                    <strong style="font-size: 1rem; color: #ef4444;">Registration Closed (2-Hour Cutoff Reached)</strong>
+                    <div style="font-size: 0.88rem; margin-top: 2px;">For today's events, registration closes strictly 2 hours prior to start time (Closed at {{ event.cutoff_time }}).</div>
+                </div>
+            </div>
+            {% endif %}
+        {% elif event.is_expired %}
         <div class="expired-notice">
             ⚠️ This event has already taken place and registration is closed.
         </div>
         {% endif %}
 
-        <div class="details-hero {% if event.is_expired %}event-expired{% endif %}">
+        <div class="details-hero {% if event.is_expired and not event.is_today %}event-expired{% endif %}">
             <img src="{{ event.image }}" alt="{{ event.title }}" class="hero-img" onerror="this.src='https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?q=80&w=2070&auto=format&fit=crop';">
             <div class="hero-overlay">
-                <span class="detail-badge">{{ event.date }}</span>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 1rem;">
+                    <span class="detail-badge" style="margin-bottom: 0;">📅 {{ event.date }}</span>
+                    <span class="detail-badge" style="background: rgba(0, 242, 254, 0.2); border: 1px solid var(--primary); color: var(--primary); margin-bottom: 0;">⏰ {{ event.time }} - {{ event.end_time }}</span>
+                    {% if event.is_today and event.is_open %}
+                    <span class="detail-badge" style="background: rgba(245, 158, 11, 0.3); border: 1px solid #f59e0b; color: #fbbf24; margin-bottom: 0;">⚡ Closes at {{ event.cutoff_time }}</span>
+                    {% endif %}
+                </div>
                 <h1 class="hero-title" style="text-align: left; margin: 0; font-size: 3.5rem;">{{ event.title }}</h1>
             </div>
         </div>
@@ -256,19 +289,23 @@
                 <div class="action-bar" style="flex-wrap: wrap; gap: 1rem;">
                     <div>
                         <span style="display: block; font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Ticket Price</span>
-                        <span class="price-large">{{ event.price }}</span>
+                        <span class="price-large">{% if event.is_expired and not event.is_today %}Not Available{% else %}{{ event.price }}{% endif %}</span>
                     </div>
                     <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
-                        {% if not event.is_expired %}
+                        {% if event.is_open %}
                             {% if event.is_registered %}
-                            <form action="{{ url_for('unregister_event', event_id=event.id) }}" method="POST" style="display: inline; margin: 0;">
-                                <button type="submit" class="btn-primary" style="width: auto; padding: 0.8rem 1.5rem; background: var(--secondary); color: white; border-radius: 12px; font-weight: 700; border: none; cursor: pointer; white-space: nowrap; margin-top: 0;">Unregister</button>
-                            </form>
+                            <a href="{{ url_for('download_ticket', event_id=event.id) }}" class="btn-primary" style="width: auto; padding: 0.8rem 1.5rem; text-decoration: none; display: inline-flex; align-items: center; border-radius: 12px; font-weight: 700; white-space: nowrap;" target="_blank">📥 View Ticket</a>
+                            <button type="button" class="btn-primary" style="width: auto; padding: 0.8rem 1.5rem; background: var(--secondary); color: white; border-radius: 12px; font-weight: 700; border: none; cursor: pointer; white-space: nowrap; margin-top: 0;" onclick="openUnregisterModal('{{ event.id }}', '{{ event.title | escape }}')">Unregister</button>
                             {% else %}
                             <button class="btn-primary" style="width: auto; padding: 0.8rem 1.5rem; border-radius: 12px; border: none; cursor: pointer; white-space: nowrap; margin-top: 0;" onclick="window.location.href='{{ url_for('register_event', event_id=event.id) }}'">Register Now</button>
                             {% endif %}
                         {% else %}
-                        <button class="btn-secondary" style="width: auto; padding: 0.8rem 1.5rem; cursor: not-allowed; opacity: 0.6; border-radius: 12px; white-space: nowrap; margin-top: 0;" disabled>Registration Closed</button>
+                            {% if event.is_registered %}
+                            <a href="{{ url_for('download_ticket', event_id=event.id) }}" class="btn-primary" style="width: auto; padding: 0.8rem 1.5rem; text-decoration: none; display: inline-flex; align-items: center; border-radius: 12px; font-weight: 700; white-space: nowrap;" target="_blank">📥 View Ticket</a>
+                            <button type="button" class="btn-primary" style="width: auto; padding: 0.8rem 1.5rem; background: var(--secondary); color: white; border-radius: 12px; font-weight: 700; border: none; cursor: pointer; white-space: nowrap; margin-top: 0;" onclick="openUnregisterModal('{{ event.id }}', '{{ event.title | escape }}')">Unregister</button>
+                            {% else %}
+                            <button class="btn-secondary" style="width: auto; padding: 0.8rem 1.5rem; cursor: not-allowed; opacity: 0.7; border-radius: 12px; white-space: nowrap; margin-top: 0;" disabled title="{{ event.status_reason }}">{% if event.is_cutoff_reached %}Registration Closed (2h Cutoff Reached){% elif event.is_sold_out %}Sold Out{% else %}Registration Closed{% endif %}</button>
+                            {% endif %}
                         {% endif %}
 
                         {% if is_host %}
@@ -293,9 +330,13 @@
                         {{ event.venue_address or 'Tech Park Campus, Innovation Block A, 4th Floor, Bangalore - 560103' }}
                     </p>
                     <div class="venue-actions">
-                        <a href="https://maps.google.com/?q={{ (event.venue or 'Tech Arena') ~ ' ' ~ (event.venue_address or 'Bangalore') | urlencode }}" 
+                        <a href="{{ event.maps_url or ('https://www.google.com/maps/search/?api=1&query=' ~ (((event.venue or '') ~ ' ' ~ (event.venue_address or '')) | urlencode)) }}" 
                            target="_blank" rel="noopener noreferrer" class="venue-map-link">
                             🗺️ Open in Google Maps
+                        </a>
+                        <a href="{{ event.maps_directions_url or ('https://www.google.com/maps/dir/?api=1&destination=' ~ (((event.venue or '') ~ ' ' ~ (event.venue_address or '')) | urlencode)) }}" 
+                           target="_blank" rel="noopener noreferrer" class="venue-map-link" style="background: rgba(0, 242, 254, 0.1); border-color: var(--primary); color: var(--primary);">
+                            🧭 Get Directions
                         </a>
                         <button type="button" class="venue-map-link" style="background: rgba(255,255,255,0.06); border-color: var(--glass-border); color: var(--text-muted); cursor: pointer;"
                                 onclick="navigator.clipboard.writeText('{{ (event.venue or '') ~ ' - ' ~ (event.venue_address or '') }}').then(() => window.showToast && showToast('Venue address copied!', 'success'))">
@@ -476,8 +517,17 @@
 
         // Countdown Timer Logic
         const eventDateStr = "{{ event.date }}";
+        const eventTimeStr = "{{ event.time }}";
         if (document.getElementById('countdownBox')) {
-            const eventDate = new Date(eventDateStr + " 09:00:00").getTime();
+            let eventDate;
+            try {
+                eventDate = new Date(`${eventDateStr} ${eventTimeStr}`).getTime();
+                if (isNaN(eventDate)) {
+                    eventDate = new Date(`${eventDateStr} 10:00:00`).getTime();
+                }
+            } catch (e) {
+                eventDate = new Date(`${eventDateStr} 10:00:00`).getTime();
+            }
             
             const timer = setInterval(() => {
                 const now = new Date().getTime();
@@ -557,9 +607,171 @@
         {% endif %}
     </script>
 
+    <!-- Unregister / Cancellation Reason Modal -->
+    <div id="unregisterModal" class="unreg-modal-overlay">
+        <div class="unreg-modal-content">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.2rem;">
+                <div>
+                    <h3 style="color: #ffffff; font-size: 1.35rem; font-weight: 700; margin: 0 0 4px 0;">Cancel Event Registration</h3>
+                    <p id="unregModalEventTitle" style="color: var(--primary); font-size: 0.95rem; font-weight: 600; margin: 0;"></p>
+                </div>
+                <button type="button" onclick="closeUnregisterModal()" style="background: none; border: none; color: var(--text-muted); font-size: 1.6rem; cursor: pointer; line-height: 1; padding: 0 4px;" aria-label="Close modal">&times;</button>
+            </div>
+
+            <p style="color: var(--text-muted); font-size: 0.88rem; line-height: 1.5; margin-bottom: 1.2rem;">
+                Please select the reason for unregistering. Your feedback helps us improve future events.
+            </p>
+
+            <form id="unregisterForm" method="POST" action="" onsubmit="return submitUnregisterForm(this)">
+                <input type="hidden" name="event_id" id="unregEventId" value="">
+                
+                <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 1.2rem; max-height: 320px; overflow-y: auto; padding-right: 4px;">
+                    <label class="unreg-reason-option">
+                        <input type="radio" name="reason" value="Schedule conflict / Personal emergency" required onchange="handleReasonChange(this)">
+                        <span>Schedule conflict / Personal emergency</span>
+                    </label>
+                    <label class="unreg-reason-option">
+                        <input type="radio" name="reason" value="College exams, lectures, or academic submissions" onchange="handleReasonChange(this)">
+                        <span>College exams, lectures, or academic submissions</span>
+                    </label>
+                    <label class="unreg-reason-option">
+                        <input type="radio" name="reason" value="Venue location or transportation constraints" onchange="handleReasonChange(this)">
+                        <span>Venue location or transportation constraints</span>
+                    </label>
+                    <label class="unreg-reason-option">
+                        <input type="radio" name="reason" value="Team members unavailable / Group disbanded" onchange="handleReasonChange(this)">
+                        <span>Team members unavailable / Group disbanded</span>
+                    </label>
+                    <label class="unreg-reason-option">
+                        <input type="radio" name="reason" value="Registration fee or payment concerns" onchange="handleReasonChange(this)">
+                        <span>Registration fee or payment concerns</span>
+                    </label>
+                    <label class="unreg-reason-option">
+                        <input type="radio" name="reason" value="Event timings or duration not convenient" onchange="handleReasonChange(this)">
+                        <span>Event timings or duration not convenient</span>
+                    </label>
+                    <label class="unreg-reason-option">
+                        <input type="radio" name="reason" value="Health or medical condition" onchange="handleReasonChange(this)">
+                        <span>Health or medical condition</span>
+                    </label>
+                    <label class="unreg-reason-option">
+                        <input type="radio" name="reason" value="Registered by mistake / Duplicate entry" onchange="handleReasonChange(this)">
+                        <span>Registered by mistake / Duplicate entry</span>
+                    </label>
+                    <label class="unreg-reason-option">
+                        <input type="radio" name="reason" value="Work or internship commitment" onchange="handleReasonChange(this)">
+                        <span>Work or internship commitment</span>
+                    </label>
+                    <label class="unreg-reason-option">
+                        <input type="radio" name="reason" value="Other" id="reasonOtherRadio" onchange="handleReasonChange(this)">
+                        <span>Other (Please tell us more)</span>
+                    </label>
+                </div>
+
+                <!-- Conditional Feedback Input (Only shown when 'Other' is chosen) -->
+                <div id="otherFeedbackContainer" style="display: none; margin-bottom: 1.5rem; animation: fadeIn 0.3s ease;">
+                    <label for="cancellationFeedback" style="display: block; font-size: 0.85rem; font-weight: 600; color: #ffffff; margin-bottom: 6px;">
+                        Please provide your feedback / reason <span style="color: #ef4444;">*</span>
+                    </label>
+                    <textarea id="cancellationFeedback" name="feedback" rows="3" class="input-field" placeholder="Tell us why you are unregistering..." style="width: 100%; border-radius: 10px; resize: vertical; font-family: inherit; font-size: 0.9rem;"></textarea>
+                    <span id="feedbackErrorMsg" style="display: none; color: #ef4444; font-size: 0.8rem; margin-top: 4px;">Please enter your feedback before confirming.</span>
+                </div>
+
+                <div style="display: flex; gap: 10px; justify-content: flex-end; align-items: center; margin-top: 1.5rem;">
+                    <button type="button" onclick="closeUnregisterModal()" class="btn-secondary" style="padding: 0.65rem 1.2rem; border-radius: 10px; font-weight: 600; cursor: pointer; font-size: 0.9rem;">
+                        Keep Registration
+                    </button>
+                    <button type="submit" class="btn-primary" style="padding: 0.65rem 1.4rem; background: #ef4444; color: #ffffff; border-radius: 10px; font-weight: 700; border: none; cursor: pointer; font-size: 0.9rem; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);">
+                        Confirm Unregister
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function openUnregisterModal(eventId, eventTitle) {
+            const modal = document.getElementById('unregisterModal');
+            const form = document.getElementById('unregisterForm');
+            const titleEl = document.getElementById('unregModalEventTitle');
+            const feedbackBox = document.getElementById('otherFeedbackContainer');
+            const feedbackInput = document.getElementById('cancellationFeedback');
+            const feedbackErr = document.getElementById('feedbackErrorMsg');
+            
+            if (!modal || !form) return;
+            
+            form.action = `/unregister/${eventId}`;
+            document.getElementById('unregEventId').value = eventId;
+            if (titleEl) titleEl.textContent = eventTitle || `Event #${eventId}`;
+            
+            const radios = form.querySelectorAll('input[name="reason"]');
+            radios.forEach(r => r.checked = false);
+            if (feedbackBox) feedbackBox.style.display = 'none';
+            if (feedbackInput) {
+                feedbackInput.value = '';
+                feedbackInput.removeAttribute('required');
+            }
+            if (feedbackErr) feedbackErr.style.display = 'none';
+            
+            modal.style.display = 'flex';
+        }
+
+        function closeUnregisterModal() {
+            const modal = document.getElementById('unregisterModal');
+            if (modal) modal.style.display = 'none';
+        }
+
+        function handleReasonChange(radio) {
+            const feedbackBox = document.getElementById('otherFeedbackContainer');
+            const feedbackInput = document.getElementById('cancellationFeedback');
+            const feedbackErr = document.getElementById('feedbackErrorMsg');
+            if (feedbackErr) feedbackErr.style.display = 'none';
+            
+            if (radio.value === 'Other') {
+                if (feedbackBox) feedbackBox.style.display = 'block';
+                if (feedbackInput) {
+                    feedbackInput.setAttribute('required', 'required');
+                    feedbackInput.focus();
+                }
+            } else {
+                if (feedbackBox) feedbackBox.style.display = 'none';
+                if (feedbackInput) {
+                    feedbackInput.removeAttribute('required');
+                    feedbackInput.value = '';
+                }
+            }
+        }
+
+        function submitUnregisterForm(form) {
+            const selected = form.querySelector('input[name="reason"]:checked');
+            if (!selected) {
+                alert('Please select a reason for cancellation.');
+                return false;
+            }
+            if (selected.value === 'Other') {
+                const fb = document.getElementById('cancellationFeedback');
+                const feedbackErr = document.getElementById('feedbackErrorMsg');
+                if (!fb || !fb.value.trim()) {
+                    if (feedbackErr) feedbackErr.style.display = 'block';
+                    if (fb) fb.focus();
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        window.addEventListener('click', (e) => {
+            const modal = document.getElementById('unregisterModal');
+            if (modal && e.target === modal) {
+                closeUnregisterModal();
+            }
+        });
+    </script>
+
     <script src="{{ url_for('static', filename='toast.js') }}"></script>
     <script src="{{ url_for('static', filename='confetti.js') }}"></script>
     <script src="{{ url_for('static', filename='chatbot.js') }}"></script>
+    <script src="{{ url_for('static', filename='animations.js') }}"></script>
 
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% for category, msg in messages %}

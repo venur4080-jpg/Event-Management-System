@@ -38,41 +38,41 @@ load_dotenv()
 import math
 import base64
 EVENTS = [
-    {"id": 1, "title": "TechNova Codeathon", "date": "Mar 15, 2026", "desc": "24-hour intense coding marathon.", "price": "Free", "color": "#4facfe", "image": "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=1200&q=80", "purpose": "Rapid prototyping and problem solving.", "full_details": "A 24-hour marathon where teams build solutions for real-world problems. Includes mentorship, workshops, and high-intensity coding.", "outcome": "Win prizes, gain deep technical experience, and network with tech leaders.", "venue": "Silicon Hub - Main Auditorium", "venue_address": "Campus North Wing, 4th Floor, Tech Innovation Block, Outer Ring Road, Bangalore - 560103"},
-    {"id": 2, "title": "AI & ML Summit", "date": "Mar 20, 2026", "desc": "Explore the future of AI with experts.", "price": "₹800", "color": "#00f2fe", "image": "https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=1200&q=80", "purpose": "Knowledge sharing on cutting-edge AI trends.", "full_details": "Deep dive into Generative AI, Neural Networks, and the ethical implications of ML. Features keynote speakers from top AI labs.", "outcome": "Certification of participation and insight into AI career paths.", "venue": "AI Excellence Pavilion", "venue_address": "Silicon Block 3, Cyber City Innovation Hub, Hitec City, Hyderabad - 500081"},
-    {"id": 3, "title": "Cyber Shield 2026", "date": "Mar 25, 2026", "desc": "Ethical Hacking workshop.", "price": "₹1200", "color": "#ff0055", "image": "https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&w=1200&q=80", "purpose": "Strengthening cybersecurity awareness and skills.", "full_details": "Hands-on penetration testing, network security basics, and threat modeling. Learn to protect modern web applications from common vulnerabilities.", "outcome": "Hands-on experience with security tools and a 'Security Badge' certification.", "venue": "Cyber Shield Lab 402", "venue_address": "Science & Engineering Complex, Gate 2, Tech Park, Mumbai - 400076"},
-    {"id": 4, "title": "WebMosaic UI/UX", "date": "Apr 02, 2026", "desc": "Design and build competition.", "price": "Free", "color": "#ff9a9e", "image": "https://images.unsplash.com/photo-1581291518857-4e27b48ff24e?auto=format&fit=crop&w=1200&q=80", "purpose": "Focusing on user-centric design principles.", "full_details": "Compete to create the most intuitive and visually stunning interface. Workshops on Figma prototyping and accessibility included.", "outcome": "Portfolio feedback from design leads and a design trophy.", "venue": "Design & UX Creative Wing", "venue_address": "Creative Arts Center, Level 2, Metro Knowledge Boulevard, Pune - 411001"},
-    {"id": 5, "title": "CloudCom Azure", "date": "Apr 10, 2026", "desc": "Hands-on workshop on Azure Cloud.", "price": "₹400", "color": "#a18cd1", "image": "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=1200&q=80", "purpose": "Mastering cloud infrastructure and deployment.", "full_details": "Deploying scalable apps on Microsoft Azure. Learn about VMs, App Services, and Cloud Databases.", "outcome": "Hands-on deployment experience and trial Azure credits.", "venue": "Azure Cloud Innovation Lab", "venue_address": "Infinity Tower, 8th Floor, Cyber Gateway, Chennai - 600096"},
-    {"id": 6, "title": "Data Science Dive", "date": "Apr 15, 2026", "desc": "Big Data analytics and visualization.", "price": "₹1500", "color": "#fbc2eb", "image": "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1200&q=80", "purpose": "Unlocking patterns through data visualization.", "full_details": "Using Pandas, Matplotlib, and Seaborn to analyze complex datasets and present findings in an impactful way.", "outcome": "Mastery of data cleaning and professional charting techniques.", "venue": "Big Data Analytics Center", "venue_address": "Campus Science Block, 3rd Floor, Knowledge Park, Kolkata - 700091"},
-    {"id": 7, "title": "Gaming Arena (CS2)", "date": "Apr 20, 2026", "desc": "5v5 Tactical Shooter tournament.", "price": "₹400/Team", "color": "#8fd3f4", "image": "https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=1200&q=80", "purpose": "Competitive gaming and team coordination.", "full_details": "A high-stakes Counter-Strike 2 tournament for college teams. Bracket-style elimination with live shoutcasting.", "outcome": "Winning team trophy and e-sports glory.", "venue": "Esports Arena & Gaming Lounge", "venue_address": "Student Recreation Complex, Arena 1, Bangalore - 560001"},
-    {"id": 8, "title": "AppVentures Mobile", "date": "Apr 25, 2026", "desc": "Flutter & React Native workshop.", "price": "₹800", "color": "#84fab0", "image": "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?auto=format&fit=crop&w=1200&q=80", "purpose": "Cross-platform mobile app development.", "full_details": "Learn to build apps that run on both iOS and Android from a single codebase. Focus on state management and UI performance.", "outcome": "A fully functional demo app ready for your portfolio.", "venue": "Mobile Dev Workshop Suite", "venue_address": "Tech Innovation Wing, Room 204, Cyber City, Gurgaon - 122002"},
-    {"id": 9, "title": "IoT Systems Expo", "date": "May 05, 2026", "desc": "Showcase your hardware projects.", "price": "Free", "color": "#fa709a", "image": "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1200&q=80", "purpose": "Connecting the physical world to the internet.", "full_details": "An exhibition of Arduino, Raspberry Pi, and ESP32 projects. Network with fellow hardware enthusiasts and innovators.", "outcome": "Project visibility and peer review from expert engineers.", "venue": "IoT & Hardware Prototyping Lab", "venue_address": "Engineering Block B, Maker Space, Electronic City, Bangalore - 560100"},
-    {"id": 10, "title": "RoboRumble", "date": "May 10, 2026", "desc": "Line follower and obstacle avoider competition.", "price": "₹1200", "color": "#fee140", "image": "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?auto=format&fit=crop&w=1200&q=80", "purpose": "Exploring robotics and autonomous logic.", "full_details": "Build and program robots to navigate complex paths and avoid obstacles. Testing speed, accuracy, and logic efficiency.", "outcome": "Robotics kit prizes and technical bragging rights.", "venue": "Robotics Arena & Mechatronics Lab", "venue_address": "Advanced Robotics Wing, Campus Center, Noida - 201301"},
-    {"id": 11, "title": "Blockchain Basics", "date": "May 15, 2026", "desc": "Introduction to Web3 and Crypto.", "price": "₹800", "color": "#667eea", "image": "https://images.unsplash.com/photo-1639762681485-074b7f938ba0?auto=format&fit=crop&w=1200&q=80", "purpose": "Demystifying decentralized technologies.", "full_details": "Understand how ledgers work, the role of Smart Contracts, and the future of Ethereum and Bitcoin ecosystem.", "outcome": "Foundational knowledge to start building dApps.", "venue": "Web3 & Crypto Pavilion", "venue_address": "FinTech Center, Level 5, BKC Financial District, Mumbai - 400051"},
-    {"id": 12, "title": "Tech QuizWhiz", "date": "May 20, 2026", "desc": "Test your tech knowledge.", "price": "Free", "color": "#30cfd0", "image": "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1200&q=80", "purpose": "Fun and engaging tech trivia.", "full_details": "Multiple rounds covering computer history, latest gadgets, and programming languages. Fast-paced and highly competitive.", "outcome": "Amazon vouchers and 'Tech Genius' title.", "venue": "Tech Quiz Amphitheatre", "venue_address": "Main Campus Auditorium, Gate 1, Bangalore - 560001"},
-    {"id": 13, "title": "Startup Pitch", "date": "May 28, 2026", "desc": "Pitch your ideas to investors.", "price": "Free", "color": "#f093fb", "image": "https://images.unsplash.com/photo-1475721027785-f74eccf877e2?auto=format&fit=crop&w=1200&q=80", "purpose": "Accelerating entrepreneurship among students.", "full_details": "A platform to present your business ideas to a panel of venture capitalists and successful alumni. Get feedback and potential funding.", "outcome": "Incubation support and mentorship opportunities.", "venue": "Venture Incubation Hub", "venue_address": "Startup Innovation Center, 6th Floor, Hitec City, Hyderabad - 500081"},
-    {"id": 14, "title": "Networking Night", "date": "Jun 01, 2026", "desc": "Alumni meet and greet.", "price": "₹2000", "color": "#c471ed", "image": "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&w=1200&q=80", "purpose": "Building professional connections.", "full_details": "A formal dinner event where current students can network with alumni working at top tech firms. Includes a panel discussion on career growth.", "outcome": "Valuable professional leads and mentorship connections.", "venue": "Grand Ballroom & Alumni Pavilion", "venue_address": "The Convention Pavilion, Golf Course Road, Bangalore - 560008"},
-    {"id": 15, "title": "Full Stack Fest", "date": "Jun 10, 2026", "desc": "MERN Stack deep dive workshop.", "price": "₹2500", "color": "#f6d365", "image": "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1200&q=80", "purpose": "End-to-end web app development.", "full_details": "From database design with MongoDB to backend logic with Node Express and frontend interactivity with React.", "outcome": "Deployment-ready Full Stack project and MERN certification.", "venue": "Full Stack Coding Lab", "venue_address": "Computer Science Block, Lab 3, Cyber Gateway, Pune - 411014"},
-    {"title": "Quantum Computing Quest", "date": "Jun 20, 2026", "desc": "Deep dive into qubits, quantum circuits, and algorithms.", "price": "₹600", "color": "#3f51b5", "image": "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?auto=format&fit=crop&w=1200&q=80", "purpose": "Introduce students to quantum mechanics in computing.", "full_details": "Learn how qubits, superposition, and entanglement are used in modern quantum computing. Hands-on coding with Qiskit.", "outcome": "Understand quantum algorithms and earn a completion certificate.", "venue": "Quantum Physics Research Lab", "venue_address": "Advanced Science Complex, Level 3, Bangalore - 560012"},
-    {"title": "Data Analytics Bootcamp", "date": "Jun 25, 2026", "desc": "Master SQL, PowerBI, and data pipelines.", "price": "₹750", "color": "#e91e63", "image": "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=1200&q=80", "purpose": "Gain real-world data analyst skills.", "full_details": "Build interactive dashboards, query large databases, and clean messy real-world datasets with industry mentors.", "outcome": "Portfolio-ready PowerBI project and data analytics certification.", "venue": "Data Insights Suite", "venue_address": "Knowledge Park 2, Analytics Wing, Greater Noida - 201306"},
-    {"title": "DevOps & CI/CD Masterclass", "date": "Jul 02, 2026", "desc": "Build automated pipelines with Docker & GitHub Actions.", "price": "₹900", "color": "#9c27b0", "image": "https://images.unsplash.com/photo-1607799279861-4dd421887fb3?auto=format&fit=crop&w=1200&q=80", "purpose": "Standardize modern deployment processes.", "full_details": "Learn containerization with Docker, orchestrate with Kubernetes, and configure continuous integration/deployment (CI/CD) pipelines.", "outcome": "Deploy a live application using fully automated CI/CD pipelines.", "venue": "Cloud Operations Center", "venue_address": "Tech Boulevard, Building 5, Sector 62, Noida - 201309"},
-    {"title": "SaaS Product Hackathon", "date": "Jul 10, 2026", "desc": "Build and launch a micro-SaaS in 48 hours.", "price": "Free", "color": "#00bcd4", "image": "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1200&q=80", "purpose": "Encourage student entrepreneurship and product building.", "full_details": "Teams will ideate, code, and launch a working software-as-a-service application. Mentoring on business model and Stripe integration.", "outcome": "A live working SaaS product and feedback from successful founders.", "venue": "Product Innovation Lounge", "venue_address": "Indiranagar Tech Hub, 100 Feet Road, Bangalore - 560038"},
-    {"title": "Ethical Hacking CTF Challenge", "date": "Jul 18, 2026", "desc": "Jeopardy-style cybersecurity competition.", "price": "₹300", "color": "#4caf50", "image": "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=1200&q=80", "purpose": "Test penetration testing and cryptography skills.", "full_details": "Solve puzzles in web security, reverse engineering, forensics, and cryptography to find hidden flags.", "outcome": "Top teams win cash prizes and exclusive cybersecurity badges.", "venue": "Cyber Arena Hall B", "venue_address": "Cyber Security Complex, Lab 101, Hyderabad - 500032"},
-    {"title": "Web3 Smart Contract Workshop", "date": "Jul 24, 2026", "desc": "Write and deploy Solidity contracts on Ethereum.", "price": "₹1100", "color": "#ff9800", "image": "https://images.unsplash.com/photo-1622979135225-d2ba269bc1df?auto=format&fit=crop&w=1200&q=80", "purpose": "Hands-on introduction to decentralized applications.", "full_details": "Master smart contract design principles, security patterns, and testing. Deploy contracts to testnets.", "outcome": "Verified smart contract on Etherscan and Web3 developer certificate.", "venue": "Ethereum Developers Hall", "venue_address": "Koramangala 4th Block, Silicon Valley Hub, Bangalore - 560034"},
-    {"title": "Game Dev Odyssey", "date": "Aug 02, 2026", "desc": "Build 2D and 3D games using Unity & C#.", "price": "₹850", "color": "#795548", "image": "https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&w=1200&q=80", "purpose": "Design and develop functional game prototypes.", "full_details": "Introduction to Unity interface, physics engine, game loop, and script writing. Build a fully functional game from scratch.", "outcome": "Playable desktop/web game build and design asset pack.", "venue": "Interactive Media & Gaming Studio", "venue_address": "Visual Arts Building, 2nd Floor, Mumbai - 400049"},
-    {"title": "Embedded Systems & Robotics", "date": "Aug 10, 2026", "desc": "Integrate sensors and microcontrollers with Python/C++.", "price": "₹1000", "color": "#607d8b", "image": "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=1200&q=80", "purpose": "Understand IoT and hardware-software interaction.", "full_details": "Connect ESP32 and Arduino boards with sensors (temperature, ultrasonic, servo motors). Program logic to build smart appliances.", "outcome": "Hands-on kit experience and participation certificate.", "venue": "Mechatronics Hardware Lab", "venue_address": "Engineering Complex, Gate 3, Chennai - 600025"},
-    {"title": "UX/UI Case Study Challenge", "date": "Aug 18, 2026", "desc": "Solve real-world user experience problems.", "price": "Free", "color": "#ff5722", "image": "https://images.unsplash.com/photo-1531403009284-440f080d1e12?auto=format&fit=crop&w=1200&q=80", "purpose": "Drive user research and visual design capabilities.", "full_details": "Participants are given a problem statement to research, create wireframes, and design high-fidelity interactive prototypes in Figma.", "outcome": "Comprehensive UX case study for student portfolios.", "venue": "UX Design Research Studio", "venue_address": "Design Center, 3rd Floor, Whitefield, Bangalore - 560066"},
-    {"title": "System Design & Architecture", "date": "Aug 25, 2026", "desc": "Learn how to scale systems to millions of users.", "price": "₹500", "color": "#009688", "image": "https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=1200&q=80", "purpose": "Master high-level software engineering concepts.", "full_details": "Covers horizontal scaling, load balancers, caching, databases replication, microservices, and message queues.", "outcome": "Solid understanding of system architecture for interviews.", "venue": "Enterprise Architecture Hall", "venue_address": "Tech Park Tower 2, Level 7, Electronic City, Bangalore - 560100"},
-    {"title": "Next-Gen AI Hackathon", "date": "Sep 02, 2026", "desc": "Build innovative applications using LLMs and Agentic AI.", "price": "Free", "color": "#FF5722", "image": "https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=1200&q=80", "purpose": "Fostering developer innovation in generative AI.", "full_details": "A 36-hour hackathon focusing on creating real-world AI applications using APIs from OpenAI, Google, and Anthropic. Mentors from top tech firms will assist teams.", "outcome": "Winning teams receive cash prizes, cloud credits, and incubation opportunities.", "venue": "AI Innovation Arena", "venue_address": "Center for Agentic Computing, Main Campus, Bangalore - 560012"},
-    {"title": "Advanced Next.js Mastery", "date": "Sep 10, 2026", "desc": "Learn App Router, Server Actions, and advanced performance optimizations.", "price": "₹750", "color": "#00E676", "image": "https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=1200&q=80", "purpose": "Master modern full-stack React framework techniques.", "full_details": "Deep dive into App Router, Server Components, optimization strategies, SEO, edge runtime, and middleware implementation in Next.js.", "outcome": "Build a production-ready, highly optimized Next.js project and get certified.", "venue": "Frontend Engineering Lab", "venue_address": "Silicon Gateway, Room 102, Hyderabad - 500084"},
-    {"title": "Rust for Systems Engineering", "date": "Sep 18, 2026", "desc": "Master memory safety, concurrency, and performance with Rust.", "price": "₹950", "color": "#FF9100", "image": "https://images.unsplash.com/photo-1515879218367-8466d910aaa4?auto=format&fit=crop&w=1200&q=80", "purpose": "Provide building blocks for high-performance backend systems.", "full_details": "Introduction to borrow checker, lifetimes, patterns, error handling, and writing safe concurrent systems without garbage collection.", "outcome": "Build a multi-threaded web server in Rust and earn a Rust developer badge.", "venue": "Low-Level Systems Lab", "venue_address": "Science Block 4, Lab 4B, Pune - 411007"},
-    {"title": "Kubernetes & Cloud Native GitOps", "date": "Sep 25, 2026", "desc": "Deploy and manage containerized apps using ArgoCD & Kubernetes.", "price": "₹1200", "color": "#2979FF", "image": "https://images.unsplash.com/photo-1667372393119-3d4c48d07fc9?auto=format&fit=crop&w=1200&q=80", "purpose": "Unlock scalable infrastructure automation.", "full_details": "Covers K8s architecture, pods, deployments, services, ingress, Helm charts, and automated GitOps deployment pipelines with ArgoCD.", "outcome": "A deployed multi-service app on a Kubernetes cluster and GitOps certificate.", "venue": "Cloud Native Pavilion", "venue_address": "DevOps Center of Excellence, Sector 18, Gurgaon - 122015"},
-    {"title": "AR/VR Immersive Experience Design", "date": "Oct 02, 2026", "desc": "Build interactive virtual and augmented reality experiences.", "price": "Free", "color": "#D500F9", "image": "https://images.unsplash.com/photo-1592478411213-6153e4ebc07d?auto=format&fit=crop&w=1200&q=80", "purpose": "Explore the intersection of spatial design and technology.", "full_details": "Hands-on workshop using Unity and WebXR to design user interfaces and interactions for virtual and augmented environments.", "outcome": "A playable VR/AR scene compatible with mobile and headset browsers.", "venue": "Spatial Computing & VR Lab", "venue_address": "Creative Tech Center, Level 1, Bangalore - 560001"},
-    {"title": "Big Data pipelines with Spark & Kafka", "date": "Oct 10, 2026", "desc": "Process real-time streaming data at scale.", "price": "₹1100", "color": "#00E5FF", "image": "https://images.unsplash.com/photo-1504868584819-f8e8b4b6d7e3?auto=format&fit=crop&w=1200&q=80", "purpose": "Architecting real-time streaming data ingestion.", "full_details": "Learn to build publisher-subscriber systems with Apache Kafka, process streaming events in Apache Spark, and save to data lakes.", "outcome": "Configure a live real-time analytics pipeline dashboard.", "venue": "Data Streaming Architecture Lab", "venue_address": "Tech Zone 4, Greater Noida - 201308"},
-    {"title": "Microservices Security & OAuth2", "date": "Oct 18, 2026", "desc": "Secure distributed APIs using OAuth2, OIDC, and API Gateways.", "price": "₹800", "color": "#00C853", "image": "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=1200&q=80", "purpose": "Implement robust security in distributed web networks.", "full_details": "Deep dive into authentication and authorization, JWT validation, Spring Security / NestJS Guards, and API Gateways.", "outcome": "Secure a multi-service web application with Keycloak and OAuth2.", "venue": "API Security Research Wing", "venue_address": "Cyber Towers, Hitec City, Hyderabad - 500081"},
-    {"title": "Mobile UI UX Animation Lab", "date": "Oct 25, 2026", "desc": "Design high-fidelity interactive animations in Figma and Lottie.", "price": "Free", "color": "#FF1744", "image": "https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?auto=format&fit=crop&w=1200&q=80", "purpose": "Craft delightful user experiences with micro-interactions.", "full_details": "Focus on UI motion principles, transition animations, exporting vector assets with Bodymovin, and integrating Lottie into mobile apps.", "outcome": "A portfolio-ready prototype showcase of delightful animations.", "venue": "Digital Motion & Animation Studio", "venue_address": "Arts & Design Complex, Pune - 411038"},
-    {"title": "Serverless Architectures on AWS", "date": "Nov 05, 2026", "desc": "Build scalable APIs using AWS Lambda, API Gateway, and DynamoDB.", "price": "₹900", "color": "#FFC400", "image": "https://images.unsplash.com/photo-1544197150-b99a580bb7a8?auto=format&fit=crop&w=1200&q=80", "purpose": "Familiarize developers with pay-as-you-go serverless models.", "full_details": "Write, deploy, and scale serverless backend functions. Learn infrastructure as code with Serverless Framework or AWS SAM.", "outcome": "Fully deployed backend on AWS with zero infrastructure management.", "venue": "AWS Cloud Training Pavilion", "venue_address": "Tech Central, Outer Ring Road, Bangalore - 560103"},
-    {"title": "Deep Learning with PyTorch", "date": "Nov 12, 2026", "desc": "Train Convolutional and Recurrent neural networks.", "price": "₹1500", "color": "#651FFF", "image": "https://images.unsplash.com/photo-1555949963-ff9fe0c870eb?auto=format&fit=crop&w=1200&q=80", "purpose": "Master the mathematical foundation and practical coding of deep learning.", "full_details": "Understand backpropagation, custom datasets, CNNs for computer vision, RNNs/Transformers for NLP, and model evaluation techniques.", "outcome": "Train and evaluate an image classification model from scratch.", "venue": "Neural Computing Center", "venue_address": "AI Research Block, Main Campus, Bangalore - 560012"}
+    {"id": 1, "title": "TechNova Codeathon", "date": "Mar 15, 2026", "time": "10:00 AM", "end_time": "05:00 PM", "desc": "24-hour intense coding marathon.", "price": "Free", "color": "#4facfe", "image": "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=1200&q=80", "purpose": "Rapid prototyping and problem solving.", "full_details": "A 24-hour marathon where teams build solutions for real-world problems. Includes mentorship, workshops, and high-intensity coding.", "outcome": "Win prizes, gain deep technical experience, and network with tech leaders.", "venue": "Bangalore International Exhibition Centre (BIEC)", "venue_address": "10th Mile, Tumkur Road, Madavara Post, Dasanapura Hobli, Bengaluru, Karnataka 560073"},
+    {"id": 2, "title": "AI & ML Summit", "date": "Mar 20, 2026", "time": "09:30 AM", "end_time": "04:30 PM", "desc": "Explore the future of AI with experts.", "price": "₹800", "color": "#00f2fe", "image": "https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=1200&q=80", "purpose": "Knowledge sharing on cutting-edge AI trends.", "full_details": "Deep dive into Generative AI, Neural Networks, and the ethical implications of ML. Features keynote speakers from top AI labs.", "outcome": "Certification of participation and insight into AI career paths.", "venue": "T-Hub 2.0 Innovation Hub", "venue_address": "Plot No 1/C, Sy No 83/1, Raidurgam, Knowledge City, Serilingampally, Hyderabad, Telangana 500081"},
+    {"id": 3, "title": "Cyber Shield 2026", "date": "Mar 25, 2026", "time": "10:00 AM", "end_time": "05:00 PM", "desc": "Ethical Hacking workshop.", "price": "₹1200", "color": "#ff0055", "image": "https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&w=1200&q=80", "purpose": "Strengthening cybersecurity awareness and skills.", "full_details": "Hands-on penetration testing, network security basics, and threat modeling. Learn to protect modern web applications from common vulnerabilities.", "outcome": "Hands-on experience with security tools and a 'Security Badge' certification.", "venue": "IIT Bombay Convocation Hall", "venue_address": "Main Gate Rd, IIT Area, Powai, Mumbai, Maharashtra 400076"},
+    {"id": 4, "title": "WebMosaic UI/UX", "date": "Apr 02, 2026", "time": "11:00 AM", "end_time": "06:00 PM", "desc": "Design and build competition.", "price": "Free", "color": "#ff9a9e", "image": "https://images.unsplash.com/photo-1581291518857-4e27b48ff24e?auto=format&fit=crop&w=1200&q=80", "purpose": "Focusing on user-centric design principles.", "full_details": "Compete to create the most intuitive and visually stunning interface. Workshops on Figma prototyping and accessibility included.", "outcome": "Portfolio feedback from design leads and a design trophy.", "venue": "Symbiosis Institute of Design Auditorium", "venue_address": "S No. 231/4A, Viman Nagar, Pune, Maharashtra 411014"},
+    {"id": 5, "title": "CloudCom Azure", "date": "Apr 10, 2026", "time": "10:00 AM", "end_time": "05:00 PM", "desc": "Hands-on workshop on Azure Cloud.", "price": "₹400", "color": "#a18cd1", "image": "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=1200&q=80", "purpose": "Mastering cloud infrastructure and deployment.", "full_details": "Deploying scalable apps on Microsoft Azure. Learn about VMs, App Services, and Cloud Databases.", "outcome": "Hands-on deployment experience and trial Azure credits.", "venue": "TIDEL Park Tech Auditorium", "venue_address": "No.4, Rajiv Gandhi Salai, Taramani, Chennai, Tamil Nadu 600113"},
+    {"id": 6, "title": "Data Science Dive", "date": "Apr 15, 2026", "time": "09:00 AM", "end_time": "04:00 PM", "desc": "Big Data analytics and visualization.", "price": "₹1500", "color": "#fbc2eb", "image": "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1200&q=80", "purpose": "Unlocking patterns through data visualization.", "full_details": "Using Pandas, Matplotlib, and Seaborn to analyze complex datasets and present findings in an impactful way.", "outcome": "Mastery of data cleaning and professional charting techniques.", "venue": "Biswa Bangla Convention Centre", "venue_address": "Action Area I, Major Arterial Road, New Town, Kolkata, West Bengal 700156"},
+    {"id": 7, "title": "Gaming Arena (CS2)", "date": "Apr 20, 2026", "time": "01:00 PM", "end_time": "09:00 PM", "desc": "5v5 Tactical Shooter tournament.", "price": "₹400/Team", "color": "#8fd3f4", "image": "https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=1200&q=80", "purpose": "Competitive gaming and team coordination.", "full_details": "A high-stakes Counter-Strike 2 tournament for college teams. Bracket-style elimination with live shoutcasting.", "outcome": "Winning team trophy and e-sports glory.", "venue": "Kanteerava Indoor Stadium Arena", "venue_address": "Kasturba Rd, Sampangi Rama Nagar, Bengaluru, Karnataka 560001"},
+    {"id": 8, "title": "AppVentures Mobile", "date": "Apr 25, 2026", "time": "10:30 AM", "end_time": "05:30 PM", "desc": "Flutter & React Native workshop.", "price": "₹800", "color": "#84fab0", "image": "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?auto=format&fit=crop&w=1200&q=80", "purpose": "Cross-platform mobile app development.", "full_details": "Learn to build apps that run on both iOS and Android from a single codebase. Focus on state management and UI performance.", "outcome": "A fully functional demo app ready for your portfolio.", "venue": "DLF CyberHub Tech Lounge", "venue_address": "DLF Cyber City, Phase 2, Sector 24, Gurugram, Haryana 122002"},
+    {"id": 9, "title": "IoT Systems Expo", "date": "May 05, 2026", "time": "10:00 AM", "end_time": "05:00 PM", "desc": "Showcase your hardware projects.", "price": "Free", "color": "#fa709a", "image": "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1200&q=80", "purpose": "Connecting the physical world to the internet.", "full_details": "An exhibition of Arduino, Raspberry Pi, and ESP32 projects. Network with fellow hardware enthusiasts and innovators.", "outcome": "Project visibility and peer review from expert engineers.", "venue": "International Tech Park Bangalore (ITPB)", "venue_address": "ITPL Main Rd, Pattandur Agrahara, Whitefield, Bengaluru, Karnataka 560066"},
+    {"id": 10, "title": "RoboRumble", "date": "May 10, 2026", "time": "09:00 AM", "end_time": "05:00 PM", "desc": "Line follower and obstacle avoider competition.", "price": "₹1200", "color": "#fee140", "image": "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?auto=format&fit=crop&w=1200&q=80", "purpose": "Exploring robotics and autonomous logic.", "full_details": "Build and program robots to navigate complex paths and avoid obstacles. Testing speed, accuracy, and logic efficiency.", "outcome": "Robotics kit prizes and technical bragging rights.", "venue": "India Expo Centre & Mart", "venue_address": "Plot No. 23 -25 & 27- 29, Knowledge Park II, Greater Noida, Uttar Pradesh 201306"},
+    {"id": 11, "title": "Blockchain Basics", "date": "May 15, 2026", "time": "10:00 AM", "end_time": "04:30 PM", "desc": "Introduction to Web3 and Crypto.", "price": "₹800", "color": "#667eea", "image": "https://images.unsplash.com/photo-1639762681485-074b7f938ba0?auto=format&fit=crop&w=1200&q=80", "purpose": "Demystifying decentralized technologies.", "full_details": "Understand how ledgers work, the role of Smart Contracts, and the future of Ethereum and Bitcoin ecosystem.", "outcome": "Foundational knowledge to start building dApps.", "venue": "Jio World Convention Centre", "venue_address": "G Block BKC, Bandra Kurla Complex, Bandra East, Mumbai, Maharashtra 400098"},
+    {"id": 12, "title": "Tech QuizWhiz", "date": "May 20, 2026", "time": "02:00 PM", "end_time": "06:00 PM", "desc": "Test your tech knowledge.", "price": "Free", "color": "#30cfd0", "image": "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1200&q=80", "purpose": "Fun and engaging tech trivia.", "full_details": "Multiple rounds covering computer history, latest gadgets, and programming languages. Fast-paced and highly competitive.", "outcome": "Amazon vouchers and 'Tech Genius' title.", "venue": "Jnana Jyothi Auditorium - Central College", "venue_address": "Palace Rd, Gandhi Nagar, Bengaluru, Karnataka 560009"},
+    {"id": 13, "title": "Startup Pitch", "date": "May 28, 2026", "time": "10:00 AM", "end_time": "05:00 PM", "desc": "Pitch your ideas to investors.", "price": "Free", "color": "#f093fb", "image": "https://images.unsplash.com/photo-1475721027785-f74eccf877e2?auto=format&fit=crop&w=1200&q=80", "purpose": "Accelerating entrepreneurship among students.", "full_details": "A platform to present your business ideas to a panel of venture capitalists and successful alumni. Get feedback and potential funding.", "outcome": "Incubation support and mentorship opportunities.", "venue": "Hyderabad International Convention Centre (HICC)", "venue_address": "Novotel & HICC Complex, Cyberabad Post, Hyderabad, Telangana 500081"},
+    {"id": 14, "title": "Networking Night", "date": "Jun 01, 2026", "time": "06:00 PM", "end_time": "10:00 PM", "desc": "Alumni meet and greet.", "price": "₹2000", "color": "#c471ed", "image": "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&w=1200&q=80", "purpose": "Building professional connections.", "full_details": "A formal dinner event where current students can network with alumni working at top tech firms. Includes a panel discussion on career growth.", "outcome": "Valuable professional leads and mentorship connections.", "venue": "The Leela Palace Grand Ballroom", "venue_address": "23, HAL Old Airport Rd, HAL 2nd Stage, Kodihalli, Bengaluru, Karnataka 560008"},
+    {"id": 15, "title": "Full Stack Fest", "date": "Jun 10, 2026", "time": "09:30 AM", "end_time": "05:30 PM", "desc": "MERN Stack deep dive workshop.", "price": "₹2500", "color": "#f6d365", "image": "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1200&q=80", "purpose": "End-to-end web app development.", "full_details": "From database design with MongoDB to backend logic with Node Express and frontend interactivity with React.", "outcome": "Deployment-ready Full Stack project and MERN certification.", "venue": "MIT World Peace University Tech Dome", "venue_address": "Survey No. 124, Paud Rd, Kothrud, Pune, Maharashtra 411038"},
+    {"id": 16, "title": "Quantum Computing Quest", "date": "Jun 20, 2026", "time": "10:00 AM", "end_time": "04:30 PM", "desc": "Deep dive into qubits, quantum circuits, and algorithms.", "price": "₹600", "color": "#3f51b5", "image": "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?auto=format&fit=crop&w=1200&q=80", "purpose": "Introduce students to quantum mechanics in computing.", "full_details": "Learn how qubits, superposition, and entanglement are used in modern quantum computing. Hands-on coding with Qiskit.", "outcome": "Understand quantum algorithms and earn a completion certificate.", "venue": "Indian Institute of Science (IISc) Faculty Hall", "venue_address": "CV Raman Rd, Mathikere, Bengaluru, Karnataka 560012"},
+    {"id": 17, "title": "Data Analytics Bootcamp", "date": "Jun 25, 2026", "time": "10:00 AM", "end_time": "05:00 PM", "desc": "Master SQL, PowerBI, and data pipelines.", "price": "₹750", "color": "#e91e63", "image": "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=1200&q=80", "purpose": "Gain real-world data analyst skills.", "full_details": "Build interactive dashboards, query large databases, and clean messy real-world datasets with industry mentors.", "outcome": "Portfolio-ready PowerBI project and data analytics certification.", "venue": "St. Joseph's University Tech Auditorium", "venue_address": "36, Lalbagh Rd, Shanti Nagar, Bengaluru, Karnataka 560027"},
+    {"id": 18, "title": "DevOps & CI/CD Masterclass", "date": "Jul 02, 2026", "time": "10:00 AM", "end_time": "05:00 PM", "desc": "Build automated pipelines with Docker & GitHub Actions.", "price": "₹900", "color": "#9c27b0", "image": "https://images.unsplash.com/photo-1607799279861-4dd421887fb3?auto=format&fit=crop&w=1200&q=80", "purpose": "Standardize modern deployment processes.", "full_details": "Learn containerization with Docker, orchestrate with Kubernetes, and configure continuous integration/deployment (CI/CD) pipelines.", "outcome": "Deploy a live application using fully automated CI/CD pipelines.", "venue": "Advant Navis Business Park", "venue_address": "Sector 142, Noida-Greater Noida Expy, Noida, Uttar Pradesh 201305"},
+    {"id": 19, "title": "SaaS Product Hackathon", "date": "Jul 10, 2026", "time": "09:00 AM", "end_time": "06:00 PM", "desc": "Build and launch a micro-SaaS in 48 hours.", "price": "Free", "color": "#00bcd4", "image": "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1200&q=80", "purpose": "Encourage student entrepreneurship and product building.", "full_details": "Teams will ideate, code, and launch a working software-as-a-service application. Mentoring on business model and Stripe integration.", "outcome": "A live working SaaS product and feedback from successful founders.", "venue": "WeWork Galaxy Tech Arena", "venue_address": "43, Residency Rd, Shanthala Nagar, Ashok Nagar, Bengaluru, Karnataka 560025"},
+    {"id": 20, "title": "Ethical Hacking CTF Challenge", "date": "Jul 18, 2026", "time": "11:00 AM", "end_time": "07:00 PM", "desc": "Jeopardy-style cybersecurity competition.", "price": "₹300", "color": "#4caf50", "image": "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=1200&q=80", "purpose": "Test penetration testing and cryptography skills.", "full_details": "Solve puzzles in web security, reverse engineering, forensics, and cryptography to find hidden flags.", "outcome": "Top teams win cash prizes and exclusive cybersecurity badges.", "venue": "IIIT Hyderabad Cyber Security Pavilion", "venue_address": "Gachibowli, Hyderabad, Telangana 500032"},
+    {"id": 21, "title": "Web3 Smart Contract Workshop", "date": "Jul 24, 2026", "time": "10:00 AM", "end_time": "05:00 PM", "desc": "Write and deploy Solidity contracts on Ethereum.", "price": "₹1100", "color": "#ff9800", "image": "https://images.unsplash.com/photo-1622979135225-d2ba269bc1df?auto=format&fit=crop&w=1200&q=80", "purpose": "Hands-on introduction to decentralized applications.", "full_details": "Master smart contract design principles, security patterns, and testing. Deploy contracts to testnets.", "outcome": "Verified smart contract on Etherscan and Web3 developer certificate.", "venue": "Koramangala Indoor Tech Pavilion", "venue_address": "80 Feet Rd, 6th Block, Koramangala, Bengaluru, Karnataka 560095"},
+    {"id": 22, "title": "Game Dev Odyssey", "date": "Aug 02, 2026", "time": "10:00 AM", "end_time": "05:30 PM", "desc": "Build 2D and 3D games using Unity & C#.", "price": "₹850", "color": "#795548", "image": "https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&w=1200&q=80", "purpose": "Design and develop functional game prototypes.", "full_details": "Introduction to Unity interface, physics engine, game loop, and script writing. Build a fully functional game from scratch.", "outcome": "Playable desktop/web game build and design asset pack.", "venue": "NESCO Center Exhibition Hall", "venue_address": "Western Express Hwy, Goregaon, Mumbai, Maharashtra 400063"},
+    {"id": 23, "title": "Embedded Systems & Robotics", "date": "Aug 10, 2026", "time": "09:30 AM", "end_time": "04:30 PM", "desc": "Integrate sensors and microcontrollers with Python/C++.", "price": "₹1000", "color": "#607d8b", "image": "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=1200&q=80", "purpose": "Understand IoT and hardware-software interaction.", "full_details": "Connect ESP32 and Arduino boards with sensors (temperature, ultrasonic, servo motors). Program logic to build smart appliances.", "outcome": "Hands-on kit experience and participation certificate.", "venue": "Anna University TAG Auditorium", "venue_address": "Sardar Patel Rd, Guindy, Chennai, Tamil Nadu 600025"},
+    {"id": 24, "title": "UX/UI Case Study Challenge", "date": "Aug 18, 2026", "time": "10:00 AM", "end_time": "05:00 PM", "desc": "Solve real-world user experience problems.", "price": "Free", "color": "#ff5722", "image": "https://images.unsplash.com/photo-1531403009284-440f080d1e12?auto=format&fit=crop&w=1200&q=80", "purpose": "Drive user research and visual design capabilities.", "full_details": "Participants are given a problem statement to research, create wireframes, and design high-fidelity interactive prototypes in Figma.", "outcome": "Comprehensive UX case study for student portfolios.", "venue": "National Institute of Design (NID) R&D Campus", "venue_address": "12th Mail, Tumkur Rd, Peenya Industrial Area, Bengaluru, Karnataka 560058"},
+    {"id": 25, "title": "System Design & Architecture", "date": "Aug 25, 2026", "time": "10:00 AM", "end_time": "05:00 PM", "desc": "Learn how to scale systems to millions of users.", "price": "₹500", "color": "#009688", "image": "https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=1200&q=80", "purpose": "Master high-level software engineering concepts.", "full_details": "Covers horizontal scaling, load balancers, caching, databases replication, microservices, and message queues.", "outcome": "Solid understanding of system architecture for interviews.", "venue": "Electronic City Tech Hub - Auditorium 3", "venue_address": "Velankani Tech Park, Electronic City Phase 1, Bengaluru, Karnataka 560100"},
+    {"id": 26, "title": "Next-Gen AI Hackathon", "date": "Sep 02, 2026", "time": "09:00 AM", "end_time": "09:00 PM", "desc": "Build innovative applications using LLMs and Agentic AI.", "price": "Free", "color": "#FF5722", "image": "https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=1200&q=80", "purpose": "Fostering developer innovation in generative AI.", "full_details": "A 36-hour hackathon focusing on creating real-world AI applications using APIs from OpenAI, Google, and Anthropic. Mentors from top tech firms will assist teams.", "outcome": "Winning teams receive cash prizes, cloud credits, and incubation opportunities.", "venue": "Manpho Convention Centre", "venue_address": "No. 91/4, Veeranna Palya, Outer Ring Road, Nagavara, Bengaluru, Karnataka 560045"},
+    {"id": 27, "title": "Advanced Next.js Mastery", "date": "Sep 10, 2026", "time": "10:00 AM", "end_time": "05:00 PM", "desc": "Learn App Router, Server Actions, and advanced performance optimizations.", "price": "₹750", "color": "#00E676", "image": "https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=1200&q=80", "purpose": "Master modern full-stack React framework techniques.", "full_details": "Deep dive into App Router, Server Components, optimization strategies, SEO, edge runtime, and middleware implementation in Next.js.", "outcome": "Build a production-ready, highly optimized Next.js project and get certified.", "venue": "HITEC City Innovation Pavilion", "venue_address": "Cyber Towers, Hitec City, Madhapur, Hyderabad, Telangana 500081"},
+    {"id": 28, "title": "Rust for Systems Engineering", "date": "Sep 18, 2026", "time": "10:00 AM", "end_time": "04:30 PM", "desc": "Master memory safety, concurrency, and performance with Rust.", "price": "₹950", "color": "#FF9100", "image": "https://images.unsplash.com/photo-1515879218367-8466d910aaa4?auto=format&fit=crop&w=1200&q=80", "purpose": "Provide building blocks for high-performance backend systems.", "full_details": "Introduction to borrow checker, lifetimes, patterns, error handling, and writing safe concurrent systems without garbage collection.", "outcome": "Build a multi-threaded web server in Rust and earn a Rust developer badge.", "venue": "COEP Technological University Hall", "venue_address": "Wellesley Rd, Shivajinagar, Pune, Maharashtra 411005"},
+    {"id": 29, "title": "Kubernetes & Cloud Native GitOps", "date": "Sep 25, 2026", "time": "10:00 AM", "end_time": "05:30 PM", "desc": "Deploy and manage containerized apps using ArgoCD & Kubernetes.", "price": "₹1200", "color": "#2979FF", "image": "https://images.unsplash.com/photo-1667372393119-3d4c48d07fc9?auto=format&fit=crop&w=1200&q=80", "purpose": "Unlock scalable infrastructure automation.", "full_details": "Covers K8s architecture, pods, deployments, services, ingress, Helm charts, and automated GitOps deployment pipelines with ArgoCD.", "outcome": "A deployed multi-service app on a Kubernetes cluster and GitOps certificate.", "venue": "Unitech Cyber Park Auditorium", "venue_address": "Sector 39, Gurugram, Haryana 122003"},
+    {"id": 30, "title": "AR/VR Immersive Experience Design", "date": "Oct 02, 2026", "time": "10:00 AM", "end_time": "05:00 PM", "desc": "Build interactive virtual and augmented reality experiences.", "price": "Free", "color": "#D500F9", "image": "https://images.unsplash.com/photo-1592478411213-6153e4ebc07d?auto=format&fit=crop&w=1200&q=80", "purpose": "Explore the intersection of spatial design and technology.", "full_details": "Hands-on workshop using Unity and WebXR to design user interfaces and interactions for virtual and augmented environments.", "outcome": "A playable VR/AR scene compatible with mobile and headset browsers.", "venue": "Palace Grounds Tech Pavilion", "venue_address": "Bellary Rd, Jayamahal, Bengaluru, Karnataka 560006"},
+    {"id": 31, "title": "Big Data pipelines with Spark & Kafka", "date": "Oct 10, 2026", "time": "09:30 AM", "end_time": "05:00 PM", "desc": "Process real-time streaming data at scale.", "price": "₹1100", "color": "#00E5FF", "image": "https://images.unsplash.com/photo-1504868584819-f8e8b4b6d7e3?auto=format&fit=crop&w=1200&q=80", "purpose": "Architecting real-time streaming data ingestion.", "full_details": "Learn to build publisher-subscriber systems with Apache Kafka, process streaming events in Apache Spark, and save to data lakes.", "outcome": "Configure a live real-time analytics pipeline dashboard.", "venue": "Stellar IT Park Innovation Center", "venue_address": "C-25, Sector 62, Noida, Uttar Pradesh 201309"},
+    {"id": 32, "title": "Microservices Security & OAuth2", "date": "Oct 18, 2026", "time": "10:00 AM", "end_time": "04:30 PM", "desc": "Secure distributed APIs using OAuth2, OIDC, and API Gateways.", "price": "₹800", "color": "#00C853", "image": "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=1200&q=80", "purpose": "Implement robust security in distributed web networks.", "full_details": "Deep dive into authentication and authorization, JWT validation, Spring Security / NestJS Guards, and API Gateways.", "outcome": "Secure a multi-service web application with Keycloak and OAuth2.", "venue": "Mindspace IT Park Auditorium", "venue_address": "Mindspace Madhapur Rd, Vittal Rao Nagar, Hitec City, Hyderabad, Telangana 500081"},
+    {"id": 33, "title": "Mobile UI UX Animation Lab", "date": "Oct 25, 2026", "time": "11:00 AM", "end_time": "05:00 PM", "desc": "Design high-fidelity interactive animations in Figma and Lottie.", "price": "Free", "color": "#FF1744", "image": "https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?auto=format&fit=crop&w=1200&q=80", "purpose": "Craft delightful user experiences with micro-interactions.", "full_details": "Focus on UI motion principles, transition animations, exporting vector assets with Bodymovin, and integrating Lottie into mobile apps.", "outcome": "A portfolio-ready prototype showcase of delightful animations.", "venue": "Symbiosis Media & Design Studio", "venue_address": "S No. 231/4A, Viman Nagar, Pune, Maharashtra 411014"},
+    {"id": 34, "title": "Serverless Architectures on AWS", "date": "Nov 05, 2026", "time": "10:00 AM", "end_time": "05:00 PM", "desc": "Build scalable APIs using AWS Lambda, API Gateway, and DynamoDB.", "price": "₹900", "color": "#FFC400", "image": "https://images.unsplash.com/photo-1544197150-b99a580bb7a8?auto=format&fit=crop&w=1200&q=80", "purpose": "Familiarize developers with pay-as-you-go serverless models.", "full_details": "Write, deploy, and scale serverless backend functions. Learn infrastructure as code with Serverless Framework or AWS SAM.", "outcome": "Fully deployed backend on AWS with zero infrastructure management.", "venue": "Amazon Development Centre Campus", "venue_address": "Bagmane World Tech Centre, Mahadevapura, Bengaluru, Karnataka 560048"},
+    {"id": 35, "title": "Deep Learning with PyTorch", "date": "Nov 12, 2026", "time": "09:30 AM", "end_time": "05:30 PM", "desc": "Train Convolutional and Recurrent neural networks.", "price": "₹1500", "color": "#651FFF", "image": "https://images.unsplash.com/photo-1555949963-ff9fe0c870eb?auto=format&fit=crop&w=1200&q=80", "purpose": "Master the mathematical foundation and practical coding of deep learning.", "full_details": "Understand backpropagation, custom datasets, CNNs for computer vision, RNNs/Transformers for NLP, and model evaluation techniques.", "outcome": "Train and evaluate an image classification model from scratch.", "venue": "NIMHANS Convention Centre", "venue_address": "Hosur Main Rd, Lakkasandra, Hombegowda Nagar, Bengaluru, Karnataka 560029"}
 ]
 
 try:
@@ -297,9 +297,9 @@ def is_admin():
         return False
 
 
-# ─────────────────────────────────────────────────────────────────────────────
+# 
 # Helper: Asynchronous Non-Blocking Audit Log Worker
-# ─────────────────────────────────────────────────────────────────────────────
+# 
 import queue
 import threading
 import time
@@ -347,9 +347,9 @@ def log_action(username, action, details=''):
         pass
 
 
-# ─────────────────────────────────────────────────────────────────────────────
+# 
 # Helper: Push Notification
-# ─────────────────────────────────────────────────────────────────────────────
+# 
 def push_notification(username, message, link='#'):
     try:
         conn = get_db()
@@ -382,6 +382,186 @@ def get_category(title):
     else:
         return 'General Tech'
 
+def parse_time_string(time_str: str, default_hour=10, default_minute=0):
+    """
+    Parses various time formats into (hour: int, minute: int).
+    Handles '10:00 AM', '09:30 PM', '14:00', '10 AM', '2 PM', etc.
+    """
+    if not time_str or not isinstance(time_str, str):
+        return default_hour, default_minute
+    
+    t_clean = time_str.strip().upper()
+    for fmt in ("%I:%M %p", "%I:%M%p", "%I %p", "%I%p", "%H:%M", "%H:%M:%S"):
+        try:
+            parsed = datetime.strptime(t_clean, fmt)
+            return parsed.hour, parsed.minute
+        except ValueError:
+            pass
+            
+    match = re.search(r'(\d{1,2})(?::(\d{2}))?\s*(AM|PM)?', t_clean, re.IGNORECASE)
+    if match:
+        h = int(match.group(1))
+        m = int(match.group(2) or 0)
+        meridiem = (match.group(3) or '').upper()
+        if meridiem == 'PM' and h < 12:
+            h += 12
+        elif meridiem == 'AM' and h == 12:
+            h = 0
+        return h, m
+
+    return default_hour, default_minute
+
+
+def get_event_status_info(event: dict, ref_now=None):
+    """
+    Computes datetime, 2-hour cutoff rule, and registration open/closed status.
+    
+    2-HOUR CUTOFF RULE:
+    - If event date is today (event_date == today):
+        - Registration closes strictly 2 hours before the start time.
+        - Cutoff datetime = Start time - 2 hours.
+        - If now >= Cutoff datetime: Registration is CLOSED (Cutoff reached).
+        - If now < Cutoff datetime: Registration is OPEN (Closing at cutoff time).
+    - If event date is in the past (event_date < today):
+        - Registration is CLOSED (Event Ended).
+    - If event date is in the future (event_date > today):
+        - Registration is OPEN.
+    """
+    now = ref_now or datetime.now()
+    today_date = now.date()
+    
+    date_str = str(event.get('date') or '').strip()
+    time_str = str(event.get('time') or '10:00 AM').strip()
+    end_time_str = str(event.get('end_time') or '05:00 PM').strip()
+    
+    event_date = None
+    for dfmt in ("%b %d, %Y", "%B %d, %Y", "%Y-%m-%d", "%d-%m-%Y", "%d %b %Y"):
+        try:
+            event_date = datetime.strptime(date_str, dfmt).date()
+            break
+        except Exception:
+            pass
+            
+    if not event_date:
+        return {
+            'is_valid_date': False,
+            'is_today': False,
+            'is_past_date': False,
+            'is_future_date': True,
+            'is_expired': False,
+            'is_cutoff_reached': False,
+            'is_open': True,
+            'is_sold_out': False,
+            'time_str': time_str,
+            'end_time_str': end_time_str,
+            'cutoff_time_str': '',
+            'start_dt': now,
+            'end_dt': now + timedelta(hours=7),
+            'cutoff_dt': now - timedelta(hours=2),
+            'status_label': 'Open',
+            'status_badge': 'open',
+            'status_reason': ''
+        }
+        
+    start_h, start_m = parse_time_string(time_str, 10, 0)
+    end_h, end_m = parse_time_string(end_time_str, 17, 0)
+    
+    start_dt = datetime.combine(event_date, datetime.min.time()).replace(hour=start_h, minute=start_m)
+    end_dt = datetime.combine(event_date, datetime.min.time()).replace(hour=end_h, minute=end_m)
+    cutoff_dt = start_dt - timedelta(hours=2)
+    
+    cutoff_time_str = cutoff_dt.strftime("%I:%M %p")
+    formatted_start_time = start_dt.strftime("%I:%M %p")
+    formatted_end_time = end_dt.strftime("%I:%M %p")
+    
+    is_today = (event_date == today_date)
+    is_past_date = (event_date < today_date)
+    is_future_date = (event_date > today_date)
+    
+    is_cutoff_reached = False
+    is_expired = False
+    is_open = True
+    status_label = "Registration Open"
+    status_badge = "open"
+    status_reason = ""
+    
+    seats_total = event.get('seats_total') or 100
+    seats_filled = event.get('seats_filled') or 0
+    is_sold_out = (seats_filled >= seats_total)
+    
+    if is_past_date:
+        is_expired = True
+        is_open = False
+        status_label = "Event Ended"
+        status_badge = "closed"
+        status_reason = "This event has already taken place."
+    elif is_today:
+        if now >= end_dt:
+            is_expired = True
+            is_open = False
+            status_label = "Event Ended"
+            status_badge = "closed"
+            status_reason = "Event concluded today."
+        elif now >= cutoff_dt:
+            is_cutoff_reached = True
+            is_expired = True
+            is_open = False
+            status_label = f"Registration Closed (2h Cutoff at {cutoff_time_str})"
+            status_badge = "today_cutoff"
+            status_reason = f"Registration closed 2 hours prior to the event start (Cutoff was {cutoff_time_str})."
+        else:
+            time_left = cutoff_dt - now
+            mins_left = max(0, int(time_left.total_seconds() // 60))
+            hrs_left = mins_left // 60
+            rem_mins = mins_left % 60
+            time_until_str = f"{hrs_left}h {rem_mins}m left" if hrs_left > 0 else f"{rem_mins} mins left"
+            
+            is_open = not is_sold_out
+            status_label = f"Held Today! Closes at {cutoff_time_str} ({time_until_str})"
+            status_badge = "today_open"
+            status_reason = f"Held Today! Registration closes strictly 2 hours before start at {cutoff_time_str}."
+    else:
+        is_open = not is_sold_out
+        status_label = "Registration Open"
+        status_badge = "open"
+        status_reason = "Upcoming event open for registrations."
+        
+    if is_sold_out and is_open:
+        is_open = False
+        status_label = "Sold Out"
+        status_badge = "closed"
+        status_reason = "All seats for this event are fully booked."
+
+    venue_str = str(event.get('venue') or '').strip()
+    venue_addr_str = str(event.get('venue_address') or '').strip()
+    loc_combined = f"{venue_str} {venue_addr_str}".strip() or "Bengaluru Karnataka India"
+    encoded_loc = urllib.parse.quote_plus(loc_combined)
+    maps_url = f"https://www.google.com/maps/search/?api=1&query={encoded_loc}"
+    maps_directions_url = f"https://www.google.com/maps/dir/?api=1&destination={encoded_loc}"
+
+    return {
+        'is_valid_date': True,
+        'is_today': is_today,
+        'is_past_date': is_past_date,
+        'is_future_date': is_future_date,
+        'is_expired': is_expired,
+        'is_cutoff_reached': is_cutoff_reached,
+        'is_open': is_open,
+        'is_sold_out': is_sold_out,
+        'start_dt': start_dt,
+        'end_dt': end_dt,
+        'cutoff_dt': cutoff_dt,
+        'time_str': formatted_start_time,
+        'end_time_str': formatted_end_time,
+        'cutoff_time_str': cutoff_time_str,
+        'status_label': status_label,
+        'status_badge': status_badge,
+        'status_reason': status_reason,
+        'maps_url': maps_url,
+        'maps_directions_url': maps_directions_url
+    }
+
+
 # Database Setup
 def init_db():
     conn = get_db()
@@ -405,10 +585,14 @@ def init_db():
                   seats_total INTEGER DEFAULT 100, seats_filled INTEGER DEFAULT 0,
                   is_draft INTEGER DEFAULT 0, featured INTEGER DEFAULT 0, 
                   venue TEXT DEFAULT 'Main Campus Auditorium',
-                  venue_address TEXT DEFAULT 'Tech Park Campus, Innovation Block A, Bangalore - 560103')''')
+                  venue_address TEXT DEFAULT 'Tech Park Campus, Innovation Block A, Bangalore - 560103',
+                  time TEXT DEFAULT '10:00 AM',
+                  end_time TEXT DEFAULT '05:00 PM')''')
 
     # Alter tables to add any missing columns safely
     for col in [
+        ("ALTER TABLE events ADD COLUMN time TEXT DEFAULT '10:00 AM'",),
+        ("ALTER TABLE events ADD COLUMN end_time TEXT DEFAULT '05:00 PM'",),
         ("ALTER TABLE events ADD COLUMN seats_total INTEGER DEFAULT 100",),
         ("ALTER TABLE events ADD COLUMN seats_filled INTEGER DEFAULT 0",),
         ("ALTER TABLE events ADD COLUMN is_draft INTEGER DEFAULT 0",),
@@ -434,6 +618,8 @@ def init_db():
         ("ALTER TABLE registrations ADD COLUMN status TEXT DEFAULT 'active'",),
         ("ALTER TABLE registrations ADD COLUMN cancelled_at DATETIME",),
         ("ALTER TABLE registrations ADD COLUMN ticket_code TEXT DEFAULT ''",),
+        ("ALTER TABLE registrations ADD COLUMN cancellation_reason TEXT DEFAULT ''",),
+        ("ALTER TABLE registrations ADD COLUMN cancellation_feedback TEXT DEFAULT ''",),
     ]:
         try:
             c.execute(col[0])
@@ -485,28 +671,59 @@ def init_db():
     for ev in EVENTS:
         c.execute("SELECT 1 FROM events WHERE title = ?", (ev['title'],))
         if not c.fetchone():
+            time_val = ev.get('time', '10:00 AM')
+            end_time_val = ev.get('end_time', '05:00 PM')
             if 'id' in ev:
-                c.execute("""INSERT INTO events (id, title, date, desc, price, color, image, purpose, full_details, outcome, venue, venue_address) 
-                             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""", 
-                          (ev['id'], ev['title'], ev['date'], ev['desc'], ev['price'], ev['color'], ev['image'], ev['purpose'], ev['full_details'], ev['outcome'], ev.get('venue', 'Tech Arena'), ev.get('venue_address', 'Tech Park, Bangalore')))
+                c.execute("""INSERT INTO events (id, title, date, time, end_time, desc, price, color, image, purpose, full_details, outcome, venue, venue_address) 
+                             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""", 
+                          (ev['id'], ev['title'], ev['date'], time_val, end_time_val, ev['desc'], ev['price'], ev['color'], ev['image'], ev['purpose'], ev['full_details'], ev['outcome'], ev.get('venue', 'Tech Arena'), ev.get('venue_address', 'Tech Park, Bangalore')))
             else:
-                c.execute("""INSERT INTO events (title, date, desc, price, color, image, purpose, full_details, outcome, venue, venue_address) 
-                             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""", 
-                          (ev['title'], ev['date'], ev['desc'], ev['price'], ev['color'], ev['image'], ev['purpose'], ev['full_details'], ev['outcome'], ev.get('venue', 'Tech Arena'), ev.get('venue_address', 'Tech Park, Bangalore')))
+                c.execute("""INSERT INTO events (title, date, time, end_time, desc, price, color, image, purpose, full_details, outcome, venue, venue_address) 
+                             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""", 
+                          (ev['title'], ev['date'], time_val, end_time_val, ev['desc'], ev['price'], ev['color'], ev['image'], ev['purpose'], ev['full_details'], ev['outcome'], ev.get('venue', 'Tech Arena'), ev.get('venue_address', 'Tech Park, Bangalore')))
         else:
-            # Update venue & venue_address for existing events if needed
-            c.execute("""UPDATE events SET venue = COALESCE(NULLIF(venue, 'Online'), ?), 
-                                          venue_address = CASE WHEN venue_address IS NULL OR venue_address = '' THEN ? ELSE venue_address END 
+            # Sync real-world venues, addresses, timings, and metadata from EVENTS
+            c.execute("""UPDATE events SET venue = ?, 
+                                          venue_address = ?,
+                                          time = ?,
+                                          end_time = ?,
+                                          date = ?,
+                                          desc = ?,
+                                          purpose = ?,
+                                          full_details = ?,
+                                          outcome = ?,
+                                          image = ?,
+                                          color = ?,
+                                          price = ?
                          WHERE title = ?""",
-                      (ev.get('venue', 'Tech Arena'), ev.get('venue_address', 'Tech Park, Bangalore'), ev['title']))
+                      (ev.get('venue', 'Bangalore International Exhibition Centre (BIEC)'), 
+                       ev.get('venue_address', '10th Mile, Tumkur Road, Bengaluru, Karnataka 560073'), 
+                       ev.get('time', '10:00 AM'), 
+                       ev.get('end_time', '05:00 PM'),
+                       ev.get('date', ''),
+                       ev.get('desc', ''),
+                       ev.get('purpose', ''),
+                       ev.get('full_details', ''),
+                       ev.get('outcome', ''),
+                       ev.get('image', ''),
+                       ev.get('color', '#4facfe'),
+                       ev.get('price', 'Free'),
+                       ev['title']))
     
+    # Backfill default time and end_time for any existing custom events
+    try:
+        c.execute("UPDATE events SET time = '10:00 AM' WHERE time IS NULL OR time = ''")
+        c.execute("UPDATE events SET end_time = '05:00 PM' WHERE end_time IS NULL OR end_time = ''")
+    except Exception:
+        pass
+
     # Also ensure 'admin' exists and has host and is_admin role
     c.execute("SELECT 1 FROM users WHERE username = 'admin'")
     if not c.fetchone():
         hashed_password = bcrypt.generate_password_hash('password123').decode('utf-8')
         c.execute("INSERT INTO users (username, password, role, is_admin, is_active, user_id, email) VALUES ('admin', ?, 'host', 1, 1, 'UID-0001', 'admin@example.com')", (hashed_password,))
     else:
-        c.execute("UPDATE users SET role = 'host', is_admin = 1, is_active = 1, user_id = COALESCE(NULLIF(user_id, ''), 'UID-0001'), email = CASE WHEN email IS NULL OR email = '' THEN 'admin@example.com' ELSE email END WHERE username = 'admin'")
+        c.execute("UPDATE users SET role = 'host', is_admin = 1, is_active = 1, user_id = 'UID-0001', email = 'admin@example.com' WHERE username = 'admin'")
     
     # Ensure Venu R is also an admin and host if exists
     c.execute("UPDATE users SET role = 'host', is_admin = 1, is_active = 1 WHERE username = 'Venu R'")
@@ -578,7 +795,7 @@ def inject_user_data():
         current_user = {'username': username, 'profile_photo': photo, 'user_id': user_id or 'UID-0001'}
     return dict(current_user=current_user, is_admin=user_is_admin, is_host=user_is_host)
 
-# ─── Universal Validation Helpers for Email & Mobile Number ─────────────────
+# Universal Validation Helpers for Email & Mobile Number 
 def validate_mobile(phone: str):
     """
     Validates mobile numbers:
@@ -663,6 +880,19 @@ def send_email_otp(recipient_email: str, otp_code: str):
     Dispatches a real HTML verification email with the 6-digit OTP via SMTP (Gmail / Custom SMTP).
     Returns (success: bool, status_msg: str, is_real_delivery: bool)
     """
+    # Guard: Never dispatch real SMTP emails during testing or to test/dummy domains
+    test_domains = (
+        '@test.com', '@example.com', '@test.local', '@fake.com', '@dummy.com',
+        '@invalid', '@sample.com', '@domain.com', '@mailinator.com', '@localhost'
+    )
+    email_clean = (recipient_email or '').strip().lower()
+    is_test_email = any(email_clean.endswith(d) for d in test_domains)
+    is_testing = app.config.get('TESTING') or os.environ.get('TESTING') == '1' or os.environ.get('FLASK_ENV') == 'testing'
+
+    if is_test_email or is_testing:
+        print(f"[OTP DEV MODE] Simulated OTP for test address {recipient_email}: {otp_code}")
+        return True, f"OTP generated (Test Mode: {otp_code})", False
+
     smtp_email = (os.environ.get('SMTP_EMAIL') or os.environ.get('MAIL_USERNAME') or '').strip()
     smtp_password = (os.environ.get('SMTP_PASSWORD') or os.environ.get('MAIL_PASSWORD') or '').strip().replace(' ', '')
     smtp_server = (os.environ.get('SMTP_SERVER') or 'smtp.gmail.com').strip()
@@ -741,16 +971,23 @@ def send_sms_otp(phone_number: str, otp_code: str):
     Dispatches a real SMS OTP to the phone number using Fast2SMS or Twilio.
     Returns (success: bool, status_msg: str, is_real_delivery: bool)
     """
-    fast2sms_key = (os.environ.get('FAST2SMS_API_KEY') or '').strip()
-    twilio_sid = (os.environ.get('TWILIO_ACCOUNT_SID') or '').strip()
-    twilio_token = (os.environ.get('TWILIO_AUTH_TOKEN') or '').strip()
-    twilio_from = (os.environ.get('TWILIO_PHONE_NUMBER') or '').strip()
-
     # Clean phone number to 10 digits for Indian gateways
     clean_phone = re.sub(r'^\+91[\s-]*', '', str(phone_number).strip())
     if len(clean_phone) == 11 and clean_phone.startswith('0'):
         clean_phone = clean_phone[1:]
     clean_phone = re.sub(r'[\s-]', '', clean_phone)
+
+    # Guard: Never dispatch real SMS during test execution or for dummy test numbers
+    is_testing = app.config.get('TESTING') or os.environ.get('TESTING') == '1' or os.environ.get('FLASK_ENV') == 'testing'
+    test_numbers = ('9123456789', '9876543210', '9999999999', '1234567890', '0000000000', '1111111111')
+    if is_testing or clean_phone in test_numbers:
+        print(f"[OTP DEV MODE] Simulated SMS for test number +91 {clean_phone}: {otp_code}")
+        return True, f"OTP generated (Test Mode: {otp_code})", False
+
+    fast2sms_key = (os.environ.get('FAST2SMS_API_KEY') or '').strip()
+    twilio_sid = (os.environ.get('TWILIO_ACCOUNT_SID') or '').strip()
+    twilio_token = (os.environ.get('TWILIO_AUTH_TOKEN') or '').strip()
+    twilio_from = (os.environ.get('TWILIO_PHONE_NUMBER') or '').strip()
 
     # 1. Fast2SMS (Indian SMS Gateway)
     if fast2sms_key:
@@ -910,7 +1147,7 @@ def login():
             city = request.form.get('city', '').strip()
             pincode = request.form.get('pincode', '').strip()
 
-            full_name = f"{first_name} {middle_name} {last_name}".replace('  ', ' ').strip()
+            full_name = f"{first_name} {middle_name} {last_name}".replace(' ', ' ').strip()
             if not full_name:
                 full_name = username
             
@@ -944,7 +1181,15 @@ def login():
                         c.execute("UPDATE users SET user_id = ? WHERE id = ?", (uid_str, new_id))
                         conn.commit()
                         conn.close()
-                        msg = f"Registration successful! Your 4-digit User ID is {new_id:04d} ({uid_str}). Please log in using your 4-digit User ID or registered Email address."
+                        msg = f"Registration successful! Your User ID is {uid_str}. Please log in using your User ID or registered Email address."
+                        
+                        # Asynchronously dispatch welcome email to user
+                        if email:
+                            threading.Thread(
+                                target=send_account_welcome_email,
+                                args=(email, full_name, username, uid_str),
+                                daemon=True
+                            ).start()
                     except sqlite3.IntegrityError:
                         error = "Username already exists! Please choose another."
                     
@@ -955,7 +1200,7 @@ def login():
             expected_answer = session.get('captcha_answer', '')
 
             if not raw_identifier:
-                error = "Please enter your 4-digit User ID (e.g. 0003) or registered Email address."
+                error = "Please enter your User ID or registered Email address."
             elif not password:
                 error = "Password is required."
             elif raw_identifier.lower() in ('admin', '0001', 'uid-0001', 'admin@example.com') and password == 'password123':
@@ -997,7 +1242,7 @@ def login():
                             error = "Invalid User ID or Password."
                     else:
                         # 3. Disallow login with plain username or full name
-                        error = "Login with username or name is not allowed. Please enter your 4-digit User ID (e.g. 0003) or registered Email address."
+                        error = "Invalid credentials. Please enter your User ID or registered Email address."
 
                     if user and check_password_cached(user[0], password):
                         # Auto-reactivate account if it was previously deactivated
@@ -1051,24 +1296,33 @@ def dashboard():
     # Get all registration IDs for this user (micro-cached)
     registered_ids = get_user_registered_ids(username)
 
-    # Process events to check for expiry and registration
+    # Process events to check for 2-hour cutoff, expiry and registration
     current_date = datetime.now()
     upcoming_events = []
     past_events = []
     events = get_events()
     
-    # Categorize events and check registrations
+    # Categorize events and check registrations with 2-hour cutoff evaluation
     for ev in events:
         ev['category'] = get_category(ev['title'])
-        try:
-            event_date = datetime.strptime(ev['date'], "%b %d, %Y")
-            ev['is_expired'] = event_date < current_date
-        except ValueError:
-            ev['is_expired'] = False
-            
+        status_info = get_event_status_info(ev, ref_now=current_date)
+        
+        ev['time'] = status_info['time_str']
+        ev['end_time'] = status_info['end_time_str']
+        ev['cutoff_time'] = status_info['cutoff_time_str']
+        ev['is_today'] = status_info['is_today']
+        ev['is_expired'] = status_info['is_expired']
+        ev['is_cutoff_reached'] = status_info['is_cutoff_reached']
+        ev['is_open'] = status_info['is_open']
+        ev['is_sold_out'] = status_info['is_sold_out']
+        ev['status_label'] = status_info['status_label']
+        ev['status_badge'] = status_info['status_badge']
+        ev['status_reason'] = status_info['status_reason']
+        ev['maps_url'] = status_info['maps_url']
+        ev['maps_directions_url'] = status_info['maps_directions_url']
         ev['is_registered'] = ev['id'] in registered_ids
         
-        if ev['is_expired']:
+        if ev['is_expired'] and not ev['is_today']:
             past_events.append(ev)
         else:
             upcoming_events.append(ev)
@@ -1102,31 +1356,43 @@ def event_detail(event_id):
     
     event['category'] = get_category(event['title'])
     
-    # Check expiry for the detail page too
+    # Check 2-hour cutoff & expiry for the detail page
     current_date = datetime.now()
-    try:
-        event_date = datetime.strptime(event['date'], "%b %d, %Y")
-        event['is_expired'] = event_date < current_date
-    except ValueError:
-        event['is_expired'] = False
+    status_info = get_event_status_info(event, ref_now=current_date)
+    
+    event['time'] = status_info['time_str']
+    event['end_time'] = status_info['end_time_str']
+    event['cutoff_time'] = status_info['cutoff_time_str']
+    event['is_today'] = status_info['is_today']
+    event['is_expired'] = status_info['is_expired']
+    event['is_cutoff_reached'] = status_info['is_cutoff_reached']
+    event['is_open'] = status_info['is_open']
+    event['is_sold_out'] = status_info['is_sold_out']
+    event['status_label'] = status_info['status_label']
+    event['status_badge'] = status_info['status_badge']
+    event['status_reason'] = status_info['status_reason']
+    event['maps_url'] = status_info['maps_url']
+    event['maps_directions_url'] = status_info['maps_directions_url']
     
     # Check if user is registered (micro-cached)
     username = session.get('username')
     registered_ids = get_user_registered_ids(username)
     event['is_registered'] = event_id in registered_ids
 
-        
-    # Format date for Google Calendar: e.g. "Mar 20, 2026" to "20260320T090000/20260320T170000"
+    # Format date for Google Calendar with precise event timings
     google_cal_url = ""
     try:
-        dt = datetime.strptime(event['date'], "%b %d, %Y")
-        start_str = dt.strftime("%Y%m%d") + "T090000"
-        end_str = dt.strftime("%Y%m%d") + "T170000"
+        start_dt = status_info.get('start_dt') or datetime.strptime(event['date'], "%b %d, %Y")
+        end_dt = status_info.get('end_dt') or (start_dt + timedelta(hours=7))
+        start_str = start_dt.strftime("%Y%m%dT%H%M00")
+        end_str = end_dt.strftime("%Y%m%dT%H%M00")
         dates_param = f"{start_str}/{end_str}"
         title_esc = urllib.parse.quote(event['title'])
-        desc_esc = urllib.parse.quote(event['desc'])
-        google_cal_url = f"https://calendar.google.com/calendar/render?action=TEMPLATE&text={title_esc}&dates={dates_param}&details={desc_esc}&sf=true&output=xml"
-    except Exception as e:
+        desc_esc = urllib.parse.quote(f"{event.get('desc', '')}\nVenue: {event.get('venue', '')}\nAddress: {event.get('venue_address', '')}")
+        loc_combined = f"{event.get('venue', '')}, {event.get('venue_address', '')}".strip(', ')
+        loc_esc = urllib.parse.quote(loc_combined or 'Bengaluru, Karnataka, India')
+        google_cal_url = f"https://calendar.google.com/calendar/render?action=TEMPLATE&text={title_esc}&dates={dates_param}&details={desc_esc}&location={loc_esc}&sf=true&output=xml"
+    except Exception:
         google_cal_url = "#"
         
     return render_template('details.html', event=event, username=username, is_host=is_host(), google_cal_url=google_cal_url)
@@ -1148,6 +1414,8 @@ def generate_ticket_pdf_bytes(event: dict, reg_info) -> bytes:
         team_name = reg_info.get('team_name', '')
         team_members = reg_info.get('team_members', [])
         username = reg_info.get('username', '')
+        reg_status = reg_info.get('status') or reg_info.get('reg_status') or 'active'
+        cancelled_at = reg_info.get('cancelled_at', '')
     else:
         # tuple from database query
         reg_id = reg_info[0]
@@ -1161,13 +1429,17 @@ def generate_ticket_pdf_bytes(event: dict, reg_info) -> bytes:
         team_name = reg_info[8]
         raw_members = reg_info[9]
         username = reg_info[10] if len(reg_info) > 10 else ''
+        reg_status = reg_info[11] if len(reg_info) > 11 else 'active'
+        cancelled_at = reg_info[12] if len(reg_info) > 12 else ''
         try:
             team_members = json.loads(raw_members) if raw_members else []
         except Exception:
             team_members = []
 
-    venue_name = event.get('venue') or 'Main Campus Auditorium & Innovation Hub'
-    venue_addr = event.get('venue_address') or 'Tech Park Campus, Innovation Block A, Bangalore - 560103'
+    venue_name = event.get('venue') or 'Bangalore International Exhibition Centre (BIEC)'
+    venue_addr = event.get('venue_address') or '10th Mile, Tumkur Road, Bengaluru, Karnataka 560073'
+    maps_query = urllib.parse.quote_plus(f"{venue_name} {venue_addr}".strip())
+    maps_search_url = f"https://www.google.com/maps/search/?api=1&query={maps_query}"
     event_id = event.get('id', 1)
     ticket_num = f"TKT-{event_id:03d}-{reg_id:05d}"
     pass_type_str = f"Team Pass ({team_name})" if team_name else "Solo Entry Pass"
@@ -1210,10 +1482,16 @@ def generate_ticket_pdf_bytes(event: dict, reg_info) -> bytes:
     pdf.set_xy(14, 22)
     pdf.cell(120, 6, "Premier Tech Innovation & Student Developer Fest | E-Ticket", align='L')
     
-    pdf.set_font("Helvetica", 'B', 9)
-    pdf.set_text_color(16, 185, 129) # Emerald Green
-    pdf.set_xy(135, 22)
-    pdf.cell(60, 6, "STATUS: CONFIRMED & VERIFIED", align='R')
+    if reg_status == 'cancelled':
+        pdf.set_font("Helvetica", 'B', 9)
+        pdf.set_text_color(239, 68, 68) # Red
+        pdf.set_xy(135, 22)
+        pdf.cell(60, 6, "STATUS: REVOKED & VOID", align='R')
+    else:
+        pdf.set_font("Helvetica", 'B', 9)
+        pdf.set_text_color(16, 185, 129) # Emerald Green
+        pdf.set_xy(135, 22)
+        pdf.cell(60, 6, "STATUS: CONFIRMED & VERIFIED", align='R')
     
     pdf.set_draw_color(0, 242, 254)
     pdf.line(10, 36, 200, 36)
@@ -1232,7 +1510,7 @@ def generate_ticket_pdf_bytes(event: dict, reg_info) -> bytes:
     pdf.set_font("Helvetica", 'B', 9.5)
     pdf.set_text_color(0, 242, 254)
     pdf.set_xy(16, 50)
-    pdf.cell(178, 6, f"Date: {event.get('date', '')}  |  Category: {category_name}  |  Fee: {event.get('price', 'Free')}  |  {pass_type_str}", align='L')
+    pdf.cell(178, 6, f"Date: {event.get('date', '')} | Category: {category_name} | Fee: {event.get('price', 'Free')} | {pass_type_str}", align='L')
     
     pdf.set_font("Helvetica", '', 8.5)
     pdf.set_text_color(203, 213, 225)
@@ -1249,73 +1527,90 @@ def generate_ticket_pdf_bytes(event: dict, reg_info) -> bytes:
     pdf.set_fill_color(0, 242, 254)
     pdf.rect(12, 80, 3.5, 36, 'F')
     
-    pdf.set_font("Helvetica", 'B', 10.5)
+    pdf.set_font("Helvetica", 'B', 10)
     pdf.set_text_color(0, 242, 254)
     pdf.set_xy(18, 83)
-    pdf.cell(176, 6, "EVENT VENUE & PHYSICAL LOCATION ADDRESS", align='L')
+    pdf.cell(176, 5.5, "EVENT VENUE & PHYSICAL LOCATION ADDRESS", align='L')
     
-    pdf.set_font("Helvetica", 'B', 10)
+    pdf.set_font("Helvetica", 'B', 9.5)
     pdf.set_text_color(255, 255, 255)
-    pdf.set_xy(18, 90)
-    pdf.cell(176, 6, f"Auditorium / Hall: {venue_name}", align='L')
+    pdf.set_xy(18, 89)
+    pdf.cell(176, 5.5, f"Auditorium / Hall: {venue_name}", align='L', link=maps_search_url)
     
-    pdf.set_font("Helvetica", '', 9)
+    pdf.set_font("Helvetica", '', 8.5)
     pdf.set_text_color(226, 232, 240)
-    pdf.set_xy(18, 97)
-    pdf.cell(176, 5.5, f"Street Address: {venue_addr}", align='L')
+    pdf.set_xy(18, 95)
+    pdf.cell(176, 5, f"Street Address: {venue_addr}", align='L', link=maps_search_url)
     
-    pdf.set_font("Helvetica", 'I', 8)
+    pdf.set_font("Helvetica", 'U', 8.5)
+    pdf.set_text_color(0, 242, 254)
+    pdf.set_xy(18, 100.5)
+    pdf.cell(176, 5, "Google Maps: Click here to navigate via GPS live coordinates", align='L', link=maps_search_url)
+    
+    pdf.set_font("Helvetica", 'I', 7.5)
     pdf.set_text_color(148, 163, 184)
-    pdf.set_xy(18, 104)
-    pdf.cell(176, 5, "Reporting Note: Please arrive at Gate 2 / Main Registration Kiosk 20 minutes prior to session.", align='L')
+    pdf.set_xy(18, 106.5)
+    pdf.cell(176, 4.5, "Reporting Note: Please arrive at Gate 2 / Main Registration Kiosk 20 minutes prior to session.", align='L')
     
+    # Revocation Alert Warning Box (If pass is cancelled)
+    if reg_status == 'cancelled':
+        pdf.set_fill_color(127, 29, 29) # Deep Red
+        pdf.rect(12, 116.5, 186, 7.5, 'F')
+        pdf.set_draw_color(239, 68, 68)
+        pdf.rect(12, 116.5, 186, 7.5)
+        pdf.set_font("Helvetica", 'B', 8.5)
+        pdf.set_text_color(254, 202, 202)
+        pdf.set_xy(14, 117.5)
+        pdf.cell(182, 5.5, f"*** WARNING: PASS REVOKED ON {cancelled_at or 'SYSTEM'} - ENTRY DENIED AT GATE ***", align='C')
+
     # 3. Attendee & Team Information Block
+    attendee_top_y = 125 if reg_status == 'cancelled' else 120
     pdf.set_fill_color(24, 34, 53)
-    pdf.rect(12, 120, 186, 42, 'F')
+    pdf.rect(12, attendee_top_y, 186, 40 if reg_status == 'cancelled' else 42, 'F')
     pdf.set_draw_color(51, 65, 85)
-    pdf.rect(12, 120, 186, 42)
+    pdf.rect(12, attendee_top_y, 186, 40 if reg_status == 'cancelled' else 42)
     
     pdf.set_font("Helvetica", 'B', 10.5)
     pdf.set_text_color(0, 242, 254)
-    pdf.set_xy(16, 123)
+    pdf.set_xy(16, attendee_top_y + 3)
     pdf.cell(178, 6, "ATTENDEE & REGISTRATION DETAILS", align='L')
     
     pdf.set_font("Helvetica", 'B', 9)
     pdf.set_text_color(255, 255, 255)
-    pdf.set_xy(16, 131)
+    pdf.set_xy(16, attendee_top_y + 10)
     lead_label = "Lead Attendee" if team_name else "Attendee Name"
     pdf.cell(90, 5, f"{lead_label}: {full_name or username}", align='L')
     
     pdf.set_font("Helvetica", '', 8.5)
     pdf.set_text_color(203, 213, 225)
-    pdf.set_xy(16, 137)
-    pdf.cell(90, 5, f"Username: @{username}  |  College ID: {college_id or 'N/A'}", align='L')
+    pdf.set_xy(16, attendee_top_y + 16)
+    pdf.cell(90, 5, f"Username: @{username} | College ID: {college_id or 'N/A'}", align='L')
     
-    pdf.set_xy(16, 143)
+    pdf.set_xy(16, attendee_top_y + 22)
     pdf.cell(90, 5, f"Email: {email or 'N/A'}", align='L')
     
-    pdf.set_xy(16, 149)
+    pdf.set_xy(16, attendee_top_y + 28)
     pdf.cell(90, 5, f"Phone: {phone or 'N/A'}", align='L')
     
     # Right Column: Pass & Team Info
     pdf.set_font("Helvetica", 'B', 9)
     pdf.set_text_color(255, 255, 255)
-    pdf.set_xy(108, 131)
+    pdf.set_xy(108, attendee_top_y + 10)
     pdf.cell(86, 5, f"Registration Mode: {pass_type_str}", align='L')
     
     pdf.set_font("Helvetica", '', 8.5)
     pdf.set_text_color(203, 213, 225)
-    pdf.set_xy(108, 137)
+    pdf.set_xy(108, attendee_top_y + 16)
     if team_name and team_members:
         members_str = ", ".join([m.get('name', '') for m in team_members[:3]])
         pdf.cell(86, 5, f"Teammates: {members_str}", align='L')
     else:
         pdf.cell(86, 5, "Attendance: Individual Delegate Pass", align='L')
         
-    pdf.set_xy(108, 143)
+    pdf.set_xy(108, attendee_top_y + 22)
     pdf.cell(86, 5, f"Booked At: {reg_time}", align='L')
     
-    pdf.set_xy(108, 149)
+    pdf.set_xy(108, attendee_top_y + 28)
     pdf.cell(86, 5, f"Payment Method: {payment_method or 'Free Pass / Online'}", align='L')
     
     # 4. Official Guidelines & Terms and Conditions
@@ -1376,7 +1671,14 @@ def generate_ticket_pdf_bytes(event: dict, reg_info) -> bytes:
     pdf.set_xy(16, 269)
     pdf.cell(125, 5, "Official Support: venu.rachakondaa@gmail.com | Helpline: +91 9686837274", align='L')
     
-    # Right QR Code
+    # Right QR Code with Live Verification Link
+    try:
+        from flask import request
+        base_url = request.host_url.rstrip('/') if request else 'http://127.0.0.1:5000'
+    except Exception:
+        base_url = 'http://127.0.0.1:5000'
+    verify_url = f"{base_url}/verify/{ticket_num}"
+
     qr = qrcode.QRCode(
         version=1,
         error_correction=qrcode.constants.ERROR_CORRECT_H,
@@ -1384,19 +1686,20 @@ def generate_ticket_pdf_bytes(event: dict, reg_info) -> bytes:
         border=2,
     )
     
-    qr_data = f"""EVENTS TICKET PASS
+    qr_data = f"""{verify_url}
+EVENTS TICKET PASS
 ===================
 Ticket ID: {ticket_num}
+Live Verify: {verify_url}
 Event: {event.get('title', '')}
 Date: {event.get('date', '')}
 Venue: {venue_name}
-Address: {venue_addr}
 Attendee: {full_name or username}
 Username: {username}
 College ID: {college_id or 'N/A'}
 Type: {pass_type_str}
 Reg Date: {reg_time}
-Status: CONFIRMED
+Status: {'REVOKED & VOID' if reg_status == 'cancelled' else 'CONFIRMED'}
 """
     qr.add_data(qr_data)
     qr.make(fit=True)
@@ -1424,26 +1727,47 @@ def send_registration_confirmation_email(recipient_email: str, recipient_name: s
     if not recipient_email:
         return
 
-    smtp_email = os.environ.get('SMTP_EMAIL') or os.environ.get('MAIL_USERNAME')
-    smtp_password = os.environ.get('SMTP_PASSWORD') or os.environ.get('MAIL_PASSWORD')
-    smtp_server = os.environ.get('SMTP_SERVER', 'smtp.gmail.com')
-    smtp_port = int(os.environ.get('SMTP_PORT', 587))
-    sender_name = os.environ.get('SMTP_SENDER_NAME', 'EVENTS Registration')
+    smtp_email = (os.environ.get('SMTP_EMAIL') or os.environ.get('MAIL_USERNAME') or '').strip()
+    smtp_password = (os.environ.get('SMTP_PASSWORD') or os.environ.get('MAIL_PASSWORD') or '').strip().replace(' ', '')
+    smtp_server = (os.environ.get('SMTP_SERVER') or 'smtp.gmail.com').strip()
+    try:
+        smtp_port = int(os.environ.get('SMTP_PORT', 587))
+    except Exception:
+        smtp_port = 587
+    sender_name = (os.environ.get('SMTP_SENDER_NAME') or 'EVENTS Registration').strip()
 
     if isinstance(reg_info, dict):
         reg_id = reg_info.get('id', 1)
         full_name = reg_info.get('full_name') or recipient_name or 'Attendee'
         ticket_num = reg_info.get('ticket_code') or f"TKT-{event.get('id', 1):03d}-{reg_id:05d}"
         team_name = reg_info.get('team_name', '')
-    else:
+    elif isinstance(reg_info, (list, tuple)) and len(reg_info) > 0:
         reg_id = reg_info[0]
-        full_name = reg_info[1] or recipient_name or 'Attendee'
+        full_name = reg_info[1] if len(reg_info) > 1 and reg_info[1] else (recipient_name or 'Attendee')
         ticket_num = f"TKT-{event.get('id', 1):03d}-{reg_id:05d}"
         team_name = reg_info[8] if len(reg_info) > 8 else ''
+    else:
+        full_name = recipient_name or 'Attendee'
+        ticket_num = f"TKT-{event.get('id', 1):03d}-00001"
+        team_name = ''
 
-    venue_name = event.get('venue') or 'Main Campus Auditorium & Innovation Hub'
-    venue_addr = event.get('venue_address') or 'Campus North Wing, 4th Floor, Bangalore - 560103'
     pass_type_str = f"Team Pass ({team_name})" if team_name else "Solo Entry Pass"
+    venue_name = event.get('venue') or 'Bangalore International Exhibition Centre (BIEC)'
+    venue_addr = event.get('venue_address') or '10th Mile, Tumkur Road, Bengaluru, Karnataka 560073'
+    event_time_str = f"{event.get('date', '')} ({event.get('time', '10:00 AM')})" if event.get('time') else event.get('date', '')
+
+    # Guard: Never dispatch real SMTP emails during testing or to test/dummy domains
+    test_domains = (
+        '@test.com', '@example.com', '@test.local', '@fake.com', '@dummy.com',
+        '@invalid', '@sample.com', '@domain.com', '@mailinator.com', '@localhost'
+    )
+    email_clean = (recipient_email or '').strip().lower()
+    is_test_email = any(email_clean.endswith(d) for d in test_domains)
+    is_testing = app.config.get('TESTING') or os.environ.get('TESTING') == '1' or os.environ.get('FLASK_ENV') == 'testing'
+
+    if is_test_email or is_testing:
+        print(f"[REGISTRATION EMAIL SIMULATED] Skipping real SMTP delivery for test recipient: {recipient_email} (Ticket #{ticket_num})")
+        return
 
     if not smtp_email or not smtp_password:
         print(f"[REGISTRATION EMAIL DEV MODE] SMTP credentials not set in .env. Ticket #{ticket_num} for '{event.get('title')}' prepared for {recipient_email}")
@@ -1451,7 +1775,7 @@ def send_registration_confirmation_email(recipient_email: str, recipient_name: s
 
     try:
         msg = MIMEMultipart('mixed')
-        msg['Subject'] = f"🎉 Ticket Confirmed: {event.get('title')} ({ticket_num})"
+        msg['Subject'] = f"🎟️ Ticket Confirmed: {event.get('title')} ({ticket_num})"
         msg['From'] = f"{sender_name} <{smtp_email}>"
         msg['To'] = recipient_email
 
@@ -1491,18 +1815,18 @@ def send_registration_confirmation_email(recipient_email: str, recipient_name: s
                     <div class="event-title">{event.get('title')}</div>
                     <div class="info-row">
                         <span class="info-label">📅 Date & Time</span>
-                        <span class="info-val">{event.get('date')}</span>
+                        <span class="info-val">{event_time_str}</span>
                     </div>
                     <div class="info-row">
                         <span class="info-label">📍 Venue</span>
                         <span class="info-val">{venue_name}</span>
                     </div>
                     <div class="info-row">
-                        <span class="info-label">🏢 Address</span>
+                        <span class="info-label">🗺️ Address</span>
                         <span class="info-val">{venue_addr}</span>
                     </div>
                     <div class="info-row">
-                        <span class="info-label">🎫 Pass Reference</span>
+                        <span class="info-label">🎟️ Pass Reference</span>
                         <span class="info-val" style="color: #00f2fe;">{ticket_num}</span>
                     </div>
                     <div class="info-row">
@@ -1511,7 +1835,7 @@ def send_registration_confirmation_email(recipient_email: str, recipient_name: s
                     </div>
                     <div class="info-row" style="border-bottom: none;">
                         <span class="info-label">💳 Payment Status</span>
-                        <span class="info-val" style="color: #10b981;">{event.get('price')} (Confirmed)</span>
+                        <span class="info-val" style="color: #10b981;">{event.get('price', 'Free')} (Confirmed)</span>
                     </div>
                 </div>
                 
@@ -1529,7 +1853,7 @@ def send_registration_confirmation_email(recipient_email: str, recipient_name: s
                 
                 <div class="footer">
                     &copy; 2026 EVENTS Management System. All rights reserved.<br>
-                    Need assistance? Reach out to <a href="mailto:venu.rachakondaa@gmail.com" style="color: #00f2fe; text-decoration: none;">venu.rachakondaa@gmail.com</a> or call +91 9686837274.
+                    Need assistance? Reach out to <a href="mailto:{smtp_email}" style="color: #00f2fe; text-decoration: none;">{smtp_email}</a>.
                 </div>
             </div>
         </body>
@@ -1539,7 +1863,7 @@ def send_registration_confirmation_email(recipient_email: str, recipient_name: s
         text_body = f"""Registration Confirmed: {event.get('title')}
 Ticket Reference: {ticket_num}
 Attendee: {full_name}
-Date: {event.get('date')}
+Date: {event_time_str}
 Venue: {venue_name}, {venue_addr}
 Pass Type: {pass_type_str}
 Status: Confirmed
@@ -1566,10 +1890,303 @@ Please carry this ticket on your device or in print for entry.
         server.sendmail(smtp_email, [recipient_email], msg.as_string())
         server.quit()
 
-        print(f"[REGISTRATION EMAIL SENT] Ticket PDF delivered to {recipient_email} for event '{event.get('title')}'")
+        print(f"[REGISTRATION EMAIL SENT] Ticket PDF successfully delivered to {recipient_email} for event '{event.get('title')}'")
 
     except Exception as e:
         print(f"[REGISTRATION EMAIL ERROR] Failed to send email to {recipient_email}: {e}")
+
+
+def send_unregistration_confirmation_email(recipient_email: str, recipient_name: str, event: dict, reg_info, reason: str = '', feedback: str = ''):
+    """
+    Sends an event cancellation / unregistration confirmation email confirming that the ticket pass has been revoked.
+    Runs asynchronously without blocking client responses.
+    """
+    if not recipient_email:
+        return
+
+    smtp_email = (os.environ.get('SMTP_EMAIL') or os.environ.get('MAIL_USERNAME') or '').strip()
+    smtp_password = (os.environ.get('SMTP_PASSWORD') or os.environ.get('MAIL_PASSWORD') or '').strip().replace(' ', '')
+    smtp_server = (os.environ.get('SMTP_SERVER') or 'smtp.gmail.com').strip()
+    try:
+        smtp_port = int(os.environ.get('SMTP_PORT', 587))
+    except Exception:
+        smtp_port = 587
+    sender_name = (os.environ.get('SMTP_SENDER_NAME') or 'EVENTS Team').strip()
+
+    if isinstance(reg_info, dict):
+        reg_id = reg_info.get('id', 1)
+        full_name = reg_info.get('full_name') or recipient_name or 'Attendee'
+        ticket_num = reg_info.get('ticket_code') or f"TKT-{event.get('id', 1):03d}-{reg_id:05d}"
+        team_name = reg_info.get('team_name', '')
+    elif isinstance(reg_info, (list, tuple)) and len(reg_info) > 0:
+        reg_id = reg_info[0]
+        full_name = reg_info[1] if len(reg_info) > 1 and reg_info[1] else (recipient_name or 'Attendee')
+        ticket_num = f"TKT-{event.get('id', 1):03d}-{reg_id:05d}"
+        team_name = reg_info[8] if len(reg_info) > 8 else ''
+    else:
+        full_name = recipient_name or 'Attendee'
+        ticket_num = f"TKT-{event.get('id', 1):03d}-00001"
+        team_name = ''
+
+    venue_name = event.get('venue') or 'Bangalore International Exhibition Centre (BIEC)'
+    venue_addr = event.get('venue_address') or 'Campus North Wing, 4th Floor, Bangalore - 560103'
+    event_time_str = f"{event.get('date', '')} ({event.get('time', '10:00 AM')})" if event.get('time') else event.get('date', '')
+    cancelled_time = datetime.now().strftime("%d %b %Y, %I:%M %p")
+
+    # Guard: Never dispatch real SMTP emails during testing or to test/dummy domains
+    test_domains = (
+        '@test.com', '@example.com', '@test.local', '@fake.com', '@dummy.com',
+        '@invalid', '@sample.com', '@domain.com', '@mailinator.com', '@localhost'
+    )
+    email_clean = (recipient_email or '').strip().lower()
+    is_test_email = any(email_clean.endswith(d) for d in test_domains)
+    is_testing = app.config.get('TESTING') or os.environ.get('TESTING') == '1' or os.environ.get('FLASK_ENV') == 'testing'
+
+    if is_test_email or is_testing:
+        print(f"[UNREGISTRATION EMAIL SIMULATED] Skipping real SMTP delivery for test recipient: {recipient_email} (Ticket #{ticket_num})")
+        return
+
+    if not smtp_email or not smtp_password:
+        print(f"[UNREGISTRATION EMAIL DEV MODE] SMTP credentials not set in .env. Unregistration notice for '{event.get('title')}' prepared for {recipient_email}")
+        return
+
+    try:
+        msg = MIMEMultipart('alternative')
+        msg['Subject'] = f"🚫 Cancellation Confirmed: {event.get('title')} ({ticket_num})"
+        msg['From'] = f"{sender_name} <{smtp_email}>"
+        msg['To'] = recipient_email
+
+        html_body = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="utf-8">
+            <style>
+                body {{ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #0b0f19; color: #f8fafc; margin: 0; padding: 20px; }}
+                .container {{ max-width: 600px; margin: 0 auto; background: #131d31; border: 1px solid rgba(239, 68, 68, 0.4); border-radius: 18px; padding: 32px; box-shadow: 0 15px 40px rgba(0,0,0,0.6); }}
+                .logo {{ font-size: 26px; font-weight: 800; color: #ffffff; letter-spacing: 2px; text-align: center; margin-bottom: 8px; }}
+                .logo span {{ color: #00f2fe; }}
+                .badge {{ display: inline-block; background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; color: #ef4444; font-weight: 700; font-size: 12px; padding: 6px 14px; border-radius: 50px; text-transform: uppercase; letter-spacing: 1px; }}
+                .event-card {{ background: rgba(0, 0, 0, 0.35); border: 1px solid rgba(255,255,255,0.1); border-radius: 14px; padding: 22px; margin: 24px 0; }}
+                .event-title {{ font-size: 20px; font-weight: 700; color: #ffffff; margin: 0 0 8px 0; }}
+                .info-row {{ display: flex; justify-content: space-between; margin: 8px 0; font-size: 14px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 6px; }}
+                .info-label {{ color: #94a3b8; }}
+                .info-val {{ color: #f1f5f9; font-weight: 600; text-align: right; }}
+                .status-notice {{ background: rgba(239, 68, 68, 0.08); border-left: 4px solid #ef4444; padding: 14px 18px; border-radius: 8px; margin: 20px 0; font-size: 13.5px; color: #fca5a5; }}
+                .re-register-notice {{ background: rgba(0, 242, 254, 0.08); border: 1px dashed rgba(0, 242, 254, 0.4); border-radius: 10px; padding: 14px; margin: 20px 0; font-size: 13px; color: #cbd5e1; text-align: center; }}
+                .footer {{ font-size: 12px; color: #64748b; line-height: 1.6; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 20px; margin-top: 25px; text-align: center; }}
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="logo">EV<span>ENTS</span></div>
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <span class="badge">✕ Registration Cancelled</span>
+                </div>
+                
+                <p style="font-size: 16px; color: #f8fafc; margin-bottom: 6px;">Hello <strong>{full_name}</strong>,</p>
+                <p style="color: #cbd5e1; font-size: 14px; line-height: 1.6; margin-top: 0;">
+                    This email confirms that your registration for <strong>{event.get('title')}</strong> has been successfully cancelled. Your admission pass <strong>{ticket_num}</strong> has been voided, and the reserved seat has been released.
+                </p>
+                
+                <div class="event-card">
+                    <div class="event-title">{event.get('title')}</div>
+                    <div class="info-row">
+                        <span class="info-label">📅 Scheduled Date</span>
+                        <span class="info-val">{event_time_str}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">📍 Venue</span>
+                        <span class="info-val">{venue_name}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">🎟️ Cancelled Pass Ref</span>
+                        <span class="info-val" style="color: #ef4444; text-decoration: line-through;">{ticket_num}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">🕒 Cancellation Timestamp</span>
+                        <span class="info-val">{cancelled_time}</span>
+                    </div>
+                    <div class="info-row" style="border-bottom: none;">
+                        <span class="info-label">📝 Cancellation Reason</span>
+                        <span class="info-val" style="color: #cbd5e1;">{reason or 'Attendee requested unregistration'}</span>
+                    </div>
+                </div>
+                
+                <div class="status-notice">
+                    🚫 <strong>Admission Pass Void:</strong> Any physical or digital QR ticket previously downloaded for this event reference is now invalid and will be rejected at the entrance scanners.
+                </div>
+                
+                <div class="re-register-notice">
+                    Changed your mind? You can re-register for this event at any time from your dashboard before registrations close or seats fill up.
+                </div>
+                
+                <div class="footer">
+                    &copy; 2026 EVENTS Management System. All rights reserved.<br>
+                    Need assistance? Contact our helpdesk at <a href="mailto:{smtp_email}" style="color: #00f2fe; text-decoration: none;">{smtp_email}</a>.
+                </div>
+            </div>
+        </body>
+        </html>
+        """
+
+        text_body = f"""Registration Cancelled: {event.get('title')}
+Ticket Reference: {ticket_num} (REVOKED)
+Attendee: {full_name}
+Event Date: {event_time_str}
+Venue: {venue_name}
+Cancelled At: {cancelled_time}
+Reason: {reason or 'Attendee requested unregistration'}
+
+Your registration has been cancelled and the admission pass is now void.
+If this was a mistake, you can re-register via the portal.
+"""
+
+        part1 = MIMEText(text_body, 'plain')
+        part2 = MIMEText(html_body, 'html')
+        msg.attach(part1)
+        msg.attach(part2)
+
+        server = smtplib.SMTP(smtp_server, smtp_port, timeout=12)
+        server.starttls()
+        server.login(smtp_email, smtp_password)
+        server.sendmail(smtp_email, [recipient_email], msg.as_string())
+        server.quit()
+
+        print(f"[UNREGISTRATION EMAIL SENT] Cancellation notice delivered to {recipient_email} for event '{event.get('title')}'")
+
+    except Exception as e:
+        print(f"[UNREGISTRATION EMAIL ERROR] Failed to send cancellation email to {recipient_email}: {e}")
+
+
+def send_account_welcome_email(recipient_email: str, recipient_name: str, username: str, user_id: str):
+    """
+    Sends a welcome email to a newly registered user with their unique User ID and portal credentials.
+    Runs asynchronously without blocking client responses.
+    """
+    if not recipient_email:
+        return
+
+    smtp_email = (os.environ.get('SMTP_EMAIL') or os.environ.get('MAIL_USERNAME') or '').strip()
+    smtp_password = (os.environ.get('SMTP_PASSWORD') or os.environ.get('MAIL_PASSWORD') or '').strip().replace(' ', '')
+    smtp_server = (os.environ.get('SMTP_SERVER') or 'smtp.gmail.com').strip()
+    try:
+        smtp_port = int(os.environ.get('SMTP_PORT', 587))
+    except Exception:
+        smtp_port = 587
+    sender_name = (os.environ.get('SMTP_SENDER_NAME') or 'EVENTS Team').strip()
+
+    test_domains = (
+        '@test.com', '@example.com', '@test.local', '@fake.com', '@dummy.com',
+        '@invalid', '@sample.com', '@domain.com', '@mailinator.com', '@localhost'
+    )
+    email_clean = (recipient_email or '').strip().lower()
+    is_test_email = any(email_clean.endswith(d) for d in test_domains)
+    is_testing = app.config.get('TESTING') or os.environ.get('TESTING') == '1' or os.environ.get('FLASK_ENV') == 'testing'
+
+    if is_test_email or is_testing:
+        print(f"[WELCOME EMAIL SIMULATED] Skipping real SMTP delivery for test recipient: {recipient_email} (User ID: {user_id})")
+        return
+
+    if not smtp_email or not smtp_password:
+        print(f"[WELCOME EMAIL DEV MODE] SMTP credentials not set in .env. Welcome email prepared for {recipient_email}")
+        return
+
+    try:
+        msg = MIMEMultipart('alternative')
+        msg['Subject'] = f"🚀 Welcome to EVENTS — Your User ID is {user_id}"
+        msg['From'] = f"{sender_name} <{smtp_email}>"
+        msg['To'] = recipient_email
+
+        html_body = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="utf-8">
+            <style>
+                body {{ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #0b0f19; color: #f8fafc; margin: 0; padding: 20px; }}
+                .container {{ max-width: 600px; margin: 0 auto; background: #131d31; border: 1px solid rgba(0, 242, 254, 0.35); border-radius: 18px; padding: 32px; box-shadow: 0 15px 40px rgba(0,0,0,0.6); }}
+                .logo {{ font-size: 26px; font-weight: 800; color: #ffffff; letter-spacing: 2px; text-align: center; margin-bottom: 8px; }}
+                .logo span {{ color: #00f2fe; }}
+                .badge {{ display: inline-block; background: rgba(0, 242, 254, 0.15); border: 1px solid #00f2fe; color: #00f2fe; font-weight: 700; font-size: 12px; padding: 6px 14px; border-radius: 50px; text-transform: uppercase; letter-spacing: 1px; }}
+                .user-card {{ background: rgba(0, 0, 0, 0.35); border: 1px solid rgba(255,255,255,0.1); border-radius: 14px; padding: 22px; margin: 24px 0; }}
+                .uid-box {{ background: rgba(0, 242, 254, 0.1); border: 2px dashed #00f2fe; border-radius: 12px; padding: 16px; margin: 18px 0; text-align: center; font-size: 28px; font-weight: 800; letter-spacing: 4px; color: #00f2fe; font-family: monospace; }}
+                .info-row {{ display: flex; justify-content: space-between; margin: 8px 0; font-size: 14px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 6px; }}
+                .info-label {{ color: #94a3b8; }}
+                .info-val {{ color: #f1f5f9; font-weight: 600; text-align: right; }}
+                .footer {{ font-size: 12px; color: #64748b; line-height: 1.6; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 20px; margin-top: 25px; text-align: center; }}
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="logo">EV<span>ENTS</span></div>
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <span class="badge">✨ Welcome to the Community</span>
+                </div>
+                
+                <p style="font-size: 16px; color: #f8fafc; margin-bottom: 6px;">Hello <strong>{recipient_name or username}</strong>,</p>
+                <p style="color: #cbd5e1; font-size: 14px; line-height: 1.6; margin-top: 0;">
+                    Your account on <strong>EVENTS Management System</strong> has been created successfully! You can now explore tech hackathons, workshops, and exclusive conferences.
+                </p>
+
+                <p style="color: #94a3b8; font-size: 13px; margin-bottom: 4px; text-align: center;">Your official 4-digit User ID for login:</p>
+                <div class="uid-box">{user_id}</div>
+                
+                <div class="user-card">
+                    <div class="info-row">
+                        <span class="info-label">👤 Full Name</span>
+                        <span class="info-val">{recipient_name or username}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">🏷️ Username</span>
+                        <span class="info-val">@{username}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">📧 Registered Email</span>
+                        <span class="info-val">{recipient_email}</span>
+                    </div>
+                    <div class="info-row" style="border-bottom: none;">
+                        <span class="info-label">🔑 Login Method</span>
+                        <span class="info-val" style="color: #00f2fe;">User ID ({user_id}) or Email</span>
+                    </div>
+                </div>
+                
+                <div class="footer">
+                    &copy; 2026 EVENTS Management System. All rights reserved.<br>
+                    Automated welcome notification — do not reply to this email.
+                </div>
+            </div>
+        </body>
+        </html>
+        """
+
+        text_body = f"""Welcome to EVENTS!
+Hello {recipient_name or username},
+
+Your account has been created successfully.
+Your official User ID: {user_id}
+Username: @{username}
+Registered Email: {recipient_email}
+
+You can log in using either your User ID ({user_id}) or your registered email address.
+"""
+
+        part1 = MIMEText(text_body, 'plain')
+        part2 = MIMEText(html_body, 'html')
+        msg.attach(part1)
+        msg.attach(part2)
+
+        server = smtplib.SMTP(smtp_server, smtp_port, timeout=12)
+        server.starttls()
+        server.login(smtp_email, smtp_password)
+        server.sendmail(smtp_email, [recipient_email], msg.as_string())
+        server.quit()
+
+        print(f"[WELCOME EMAIL SENT] Welcome email successfully delivered to {recipient_email} (User ID: {user_id})")
+
+    except Exception as e:
+        print(f"[WELCOME EMAIL ERROR] Failed to send welcome email to {recipient_email}: {e}")
+
 
 
 @app.route('/register/<int:event_id>', methods=['GET', 'POST'])
@@ -1579,17 +2196,20 @@ def register_event(event_id):
     
     event = get_event(event_id)
     if not event:
-        return "Event not found", 404
+        flash("Event not found.", "error")
+        return redirect(url_for('dashboard'))
     
-    # Check if event has already passed
+    # Enforce 2-hour cutoff rule & expiry checks
     current_date = datetime.now()
-    try:
-        event_date = datetime.strptime(event['date'], "%b %d, %Y")
-        if event_date < current_date:
+    status_info = get_event_status_info(event, ref_now=current_date)
+    if not status_info['is_open']:
+        if status_info['is_cutoff_reached']:
+            flash(f"Registration is closed. For today's events, registrations close strictly 2 hours before the start time ({status_info['cutoff_time_str']}).", "error")
+        elif status_info['is_sold_out']:
+            flash("Registration is closed as all seats for this event are fully booked.", "error")
+        else:
             flash("Registration is closed for this event as it has already passed.", "error")
-            return redirect(url_for('event_detail', event_id=event_id))
-    except ValueError:
-        pass
+        return redirect(url_for('event_detail', event_id=event_id))
 
     if request.method == 'POST':
         reg_type = request.form.get('reg_type', 'solo')
@@ -1722,7 +2342,7 @@ def register_event(event_id):
 
             details_str = f"Event: {event['title']} (ID {event_id})" + (f" [Team: {team_name}, {total_people} members]" if team_name else "")
             log_action(username, 'register_event', details_str)
-            push_notification(username, f"🎉 You are registered for {event['title']}!", url_for('download_ticket', event_id=event_id))
+            push_notification(username, f" You are registered for {event['title']}!", url_for('download_ticket', event_id=event_id))
             return render_template('registration.html', event=event, success=True, username=username, is_host=is_host(), team_name=team_name, total_people=total_people, email=email)
 
         except Exception as e:
@@ -1736,17 +2356,37 @@ def unregister_event(event_id):
         return redirect(url_for('login'))
     
     username = session.get('username')
+    reason = request.form.get('reason', '').strip() or 'Not specified'
+    feedback = request.form.get('feedback', '').strip()
+    
     try:
         conn = get_db()
         c = conn.cursor()
         
-        # Check active registration
-        c.execute("SELECT id, team_name, team_members FROM registrations WHERE username = ? AND event_id = ? AND (status IS NULL OR status = 'active')", (username, event_id))
+        # Check active registration details
+        c.execute("""SELECT id, team_name, team_members, full_name, email, phone, ticket_code 
+                     FROM registrations 
+                     WHERE username = ? AND event_id = ? AND (status IS NULL OR status = 'active') 
+                     ORDER BY id DESC LIMIT 1""", (username, event_id))
         reg_row = c.fetchone()
         
         if reg_row:
             reg_id = reg_row[0]
+            team_name = reg_row[1] or ''
             team_members_raw = reg_row[2]
+            reg_full_name = reg_row[3] or username
+            reg_email = reg_row[4]
+            ticket_code = reg_row[6] or f"TKT-{event_id:03d}-{reg_id:05d}"
+
+            # Fallback: if email wasn't recorded directly on registration, fetch from users table
+            if not reg_email:
+                c.execute("SELECT email, full_name FROM users WHERE username = ?", (username,))
+                u_row = c.fetchone()
+                if u_row:
+                    reg_email = u_row[0]
+                    if not reg_full_name:
+                        reg_full_name = u_row[1] or username
+
             try:
                 team_members = json.loads(team_members_raw) if team_members_raw else []
             except Exception:
@@ -1754,19 +2394,59 @@ def unregister_event(event_id):
             seats_freed = 1 + len(team_members)
             
             now_str = datetime.now().strftime('%d %b %Y, %I:%M %p')
-            # Soft-cancel: Mark as cancelled with timestamp so physical/downloaded tickets are detected as revoked
-            c.execute("UPDATE registrations SET status = 'cancelled', cancelled_at = ? WHERE id = ?", (now_str, reg_id))
+            # Soft-cancel: Mark as cancelled with timestamp, reason, and feedback
+            c.execute("""UPDATE registrations 
+                         SET status = 'cancelled', cancelled_at = ?, cancellation_reason = ?, cancellation_feedback = ? 
+                         WHERE id = ?""", (now_str, reason, feedback, reg_id))
             c.execute("UPDATE events SET seats_filled = MAX(0, COALESCE(seats_filled, 0) - ?) WHERE id = ?", (seats_freed, event_id))
             conn.commit()
             invalidate_user_regs(username)
             invalidate_events_cache()
-            log_action(username, 'unregister_event', f"Event ID {event_id} (Revoked Reg #{reg_id})")
-            push_notification(username, f"You unregistered from event #{event_id}. Your admission pass has been voided.", url_for('dashboard'))
-            flash("You have successfully unregistered. Any previously downloaded tickets are now void.", "info")
+            
+            event = get_event(event_id)
+            ev_title = event['title'] if event else f"Event #{event_id}"
+            
+            log_detail = f"Event: {ev_title} (ID {event_id}) | Reason: {reason}"
+            if feedback:
+                log_detail += f" | Feedback: {feedback}"
+            log_action(username, 'unregister_event', log_detail)
+            
+            push_notification(username, f"You unregistered from {ev_title}. Your admission pass has been voided.", url_for('dashboard'))
+            flash(f"You have successfully unregistered from '{ev_title}'. Thank you for your feedback!", "info")
+
+            # Asynchronously send unregistration confirmation email to attendee
+            if reg_email and event:
+                reg_dict = {
+                    'id': reg_id,
+                    'full_name': reg_full_name,
+                    'email': reg_email,
+                    'team_name': team_name,
+                    'ticket_code': ticket_code
+                }
+                threading.Thread(
+                    target=send_unregistration_confirmation_email,
+                    args=(reg_email, reg_full_name, event, reg_dict, reason, feedback),
+                    daemon=True
+                ).start()
+
+                # Also notify teammate emails if any
+                for tm in team_members:
+                    if tm.get('email'):
+                        threading.Thread(
+                            target=send_unregistration_confirmation_email,
+                            args=(tm['email'], tm.get('name', 'Teammate'), event, reg_dict, reason, feedback),
+                            daemon=True
+                        ).start()
+
         conn.close()
     except Exception as e:
         return f"Error: {str(e)}", 500
         
+    referrer = str(request.referrer or '')
+    if 'history' in referrer:
+        return redirect(url_for('history'))
+    elif 'event/' in referrer:
+        return redirect(url_for('event_detail', event_id=event_id))
     return redirect(url_for('dashboard'))
 
 @app.route('/download_ticket/<int:event_id>')
@@ -1892,7 +2572,7 @@ def profile():
                     conn.close()
                     return redirect(url_for('profile', error="Verification required: Please verify your new mobile number with OTP before saving."))
 
-        full_name = f"{first_name} {middle_name} {last_name}".replace('  ', ' ').strip()
+        full_name = f"{first_name} {middle_name} {last_name}".replace(' ', ' ').strip()
         if not full_name:
             full_name = request.form.get('full_name', '').strip() or username
         
@@ -2061,19 +2741,48 @@ def history():
     username = session.get('username')
     conn = get_db()
     c = conn.cursor()
-    c.execute("SELECT event_id, full_name, timestamp FROM registrations WHERE username=? AND (status IS NULL OR status = 'active')", (username,))
+    c.execute("""SELECT event_id, full_name, timestamp, team_name, team_members, payment_method, status, id, cancelled_at, cancellation_reason 
+                 FROM registrations 
+                 WHERE username=? 
+                 ORDER BY id DESC""", (username,))
     registrations = c.fetchall()
     conn.close()
     
+    current_date = datetime.now()
     history_list = []
     for reg in registrations:
         event = get_event(reg[0])
         if event:
+            is_expired = False
+            try:
+                event_date = datetime.strptime(event['date'], "%b %d, %Y")
+                is_expired = event_date < current_date
+            except Exception:
+                is_expired = False
+                
+            reg_status = reg[6] or 'active'
+            cancelled_at = reg[8] if len(reg) > 8 else None
+            cancellation_reason = reg[9] if len(reg) > 9 else None
+
             history_list.append({
                 'id': event['id'],
                 'title': event['title'],
                 'date': event['date'],
-                'reg_time': reg[2]
+                'desc': event.get('desc', ''),
+                'image': event.get('image', ''),
+                'price': event.get('price', 'Free'),
+                'color': event.get('color', '#00f2fe'),
+                'venue': event.get('venue', 'Main Campus Auditorium'),
+                'venue_address': event.get('venue_address', ''),
+                'category': get_category(event.get('title', '')),
+                'reg_time': reg[2],
+                'team_name': reg[3],
+                'reg_status': reg_status,
+                'reg_id': reg[7],
+                'cancelled_at': cancelled_at,
+                'cancellation_reason': cancellation_reason,
+                'is_expired': is_expired,
+                'is_registered': reg_status == 'active'
             })
             
     return render_template('history.html', history=history_list, username=username, is_host=is_host())
@@ -2146,13 +2855,13 @@ def forgot_password():
                 c.execute("UPDATE users SET password=? WHERE id=?", (hashed_new, target_id))
                 conn.commit()
                 conn.close()
-                return render_template('login.html', msg="Password reset successful! Please log in using your 4-digit User ID or Email.")
+                return render_template('login.html', msg="Password reset successful! Please log in using your User ID or Email.")
             else:
                 conn.close()
                 return render_template('forgot_password.html', error="Verification failed. The details provided do not match our records or your profile is incomplete.")
         else:
             conn.close()
-            return render_template('forgot_password.html', error="User account not found with the provided 4-digit User ID or Email.")
+            return render_template('forgot_password.html', error="User account not found with the provided User ID or Email.")
 
     return render_template('forgot_password.html')
 
@@ -2164,6 +2873,8 @@ def add_event():
     if request.method == 'POST':
         title = request.form.get('title')
         date = request.form.get('date') # Format "MMM DD, YYYY"
+        time_val = request.form.get('time', '10:00 AM').strip() or '10:00 AM'
+        end_time_val = request.form.get('end_time', '05:00 PM').strip() or '05:00 PM'
         desc = request.form.get('desc')
         price = request.form.get('price')
         color = request.form.get('color')
@@ -2177,9 +2888,9 @@ def add_event():
         try:
             conn = get_db()
             c = conn.cursor()
-            c.execute("""INSERT INTO events (title, date, desc, price, color, image, purpose, full_details, outcome, venue, venue_address) 
-                         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""", 
-                      (title, date, desc, price, color, image, purpose, full_details, outcome, venue, venue_address))
+            c.execute("""INSERT INTO events (title, date, time, end_time, desc, price, color, image, purpose, full_details, outcome, venue, venue_address) 
+                         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""", 
+                      (title, date, time_val, end_time_val, desc, price, color, image, purpose, full_details, outcome, venue, venue_address))
             conn.commit()
             conn.close()
             invalidate_events_cache()
@@ -2223,12 +2934,14 @@ def event_ical(event_id):
     if not event:
         return "Event not found", 404
     
+    status_info = get_event_status_info(event)
     try:
-        dt = datetime.strptime(event['date'], "%b %d, %Y")
-        dt_start = dt.strftime("%Y%m%dT090000")
-        dt_end = dt.strftime("%Y%m%dT170000")
+        start_dt = status_info.get('start_dt') or datetime.strptime(event['date'], "%b %d, %Y")
+        end_dt = status_info.get('end_dt') or (start_dt + timedelta(hours=7))
+        dt_start = start_dt.strftime("%Y%m%dT%H%M00")
+        dt_end = end_dt.strftime("%Y%m%dT%H%M00")
     except Exception:
-        dt_start = datetime.now().strftime("%Y%m%dT090000")
+        dt_start = datetime.now().strftime("%Y%m%dT100000")
         dt_end = datetime.now().strftime("%Y%m%dT170000")
         
     ical_content = f"""BEGIN:VCALENDAR
@@ -2243,6 +2956,7 @@ DTSTART;TZID=Asia/Kolkata:{dt_start}
 DTEND;TZID=Asia/Kolkata:{dt_end}
 SUMMARY:{event['title']}
 DESCRIPTION:{event['desc']}
+LOCATION:{event.get('venue_address', event.get('venue', 'Main Campus Auditorium'))}
 END:VEVENT
 END:VCALENDAR"""
 
@@ -2339,10 +3053,10 @@ def host_export_csv(event_id):
     output.headers["Content-type"] = "text/csv"
     return output
 
-# ─────────────────────────────────────────────────────────────────────────────
-# ─────────────────────────────────────────────────────────────────────────────
+# 
+# 
 # Decorator: Admin Required
-# ─────────────────────────────────────────────────────────────────────────────
+# 
 from functools import wraps
 def admin_required(f):
     @wraps(f)
@@ -2362,9 +3076,9 @@ def admin_required(f):
         return f(*args, **kwargs)
     return decorated
 
-# ─────────────────────────────────────────────────────────────────────────────
+# 
 # API: Notifications
-# ─────────────────────────────────────────────────────────────────────────────
+# 
 @app.route('/api/notifications')
 def api_notifications():
     if not session.get('loggedin'):
@@ -2417,9 +3131,9 @@ def api_notif_read():
     conn.close()
     return jsonify({'ok': True})
 
-# ─────────────────────────────────────────────────────────────────────────────
+# 
 # Reviews
-# ─────────────────────────────────────────────────────────────────────────────
+# 
 @app.route('/event/<int:event_id>/review', methods=['POST'])
 def submit_review(event_id):
     if not session.get('loggedin'):
@@ -2456,9 +3170,48 @@ def api_reviews(event_id):
     conn.close()
     return jsonify({'reviews': rows, 'avg_rating': avg, 'total': total})
 
-# ─────────────────────────────────────────────────────────────────────────────
+@app.route('/api/events')
+def api_events():
+    """
+    Returns dynamic JSON list of all events with computed 2-hour cutoff, timing, and status info.
+    Allows frontend calendar and carousel to auto-update in real-time without page reload.
+    """
+    username = session.get('username')
+    registered_ids = get_user_registered_ids(username) if username else set()
+    events = get_events()
+    current_date = datetime.now()
+    
+    event_list = []
+    for ev in events:
+        ev_copy = dict(ev)
+        ev_copy['category'] = get_category(ev_copy.get('title', ''))
+        status_info = get_event_status_info(ev_copy, ref_now=current_date)
+        
+        ev_copy['time'] = status_info['time_str']
+        ev_copy['end_time'] = status_info['end_time_str']
+        ev_copy['cutoff_time'] = status_info['cutoff_time_str']
+        ev_copy['is_today'] = status_info['is_today']
+        ev_copy['is_expired'] = status_info['is_expired']
+        ev_copy['is_cutoff_reached'] = status_info['is_cutoff_reached']
+        ev_copy['is_open'] = status_info['is_open']
+        ev_copy['is_sold_out'] = status_info['is_sold_out']
+        ev_copy['status_label'] = status_info['status_label']
+        ev_copy['status_badge'] = status_info['status_badge']
+        ev_copy['status_reason'] = status_info['status_reason']
+        ev_copy['maps_url'] = status_info['maps_url']
+        ev_copy['maps_directions_url'] = status_info['maps_directions_url']
+        ev_copy['is_registered'] = ev_copy['id'] in registered_ids
+        event_list.append(ev_copy)
+        
+    return jsonify({
+        'status': 'success',
+        'server_time': current_date.strftime("%Y-%m-%dT%H:%M:%S"),
+        'events': event_list
+    })
+
+# 
 # AI Chat
-# ─────────────────────────────────────────────────────────────────────────────
+# 
 @app.route('/api/chat', methods=['POST'])
 def api_chat():
     if not session.get('loggedin'):
@@ -2512,12 +3265,12 @@ def api_chat():
         elif any(w in msg_lower for w in ['event', 'upcoming', 'show', 'find', 'recommend', 'what can i']):
             sample_evs = events[:3] if events else []
             if sample_evs:
-                items = " | ".join([f"✨ **{e['title']}** ({e.get('date', '')})" for e in sample_evs])
+                items = " | ".join([f" **{e['title']}** ({e.get('date', '')})" for e in sample_evs])
                 reply = f"Top upcoming events right now: {items}. Head to the Dashboard to explore all events!"
             else:
                 reply = 'Head to the Dashboard to browse all upcoming events. Use the search bar and category filters!'
         elif any(w in msg_lower for w in ['hi', 'hello', 'hey', 'help']):
-            reply = f"Hello {username}! 👋 I am your EVENTS AI assistant. Ask me about upcoming events, free workshops, registration steps, downloading tickets, or platform features!"
+            reply = f"Hello {username}! I am your EVENTS AI assistant. Ask me about upcoming events, free workshops, registration steps, downloading tickets, or platform features!"
         else:
             reply = "I'm your EVENTS AI Assistant! You can ask me about upcoming hackathons, registration instructions, ticket downloads, free events, or platform navigation. What would you like to explore?"
         
@@ -2552,9 +3305,9 @@ Keep answers concise, helpful, and enthusiastic (2-3 sentences).'''
         reply = 'I am here to help! Browse the Dashboard to explore all upcoming events, or ask me how to register and download your tickets.'
     return jsonify({'reply': reply})
 
-# ─────────────────────────────────────────────────────────────────────────────
+# 
 # Razorpay Payment
-# ─────────────────────────────────────────────────────────────────────────────
+# 
 @app.route('/payment/create_order/<int:event_id>', methods=['POST'])
 def create_payment_order(event_id):
     if not session.get('loggedin'):
@@ -2602,9 +3355,9 @@ def verify_payment():
     log_action(session.get('username'), 'payment_success', f'order={order_id}')
     return jsonify({'ok': True})
 
-# ─────────────────────────────────────────────────────────────────────────────
+# 
 # Admin Panel Routes
-# ─────────────────────────────────────────────────────────────────────────────
+# 
 def get_admin_stats():
     conn = get_db(row_factory=True)
     c = conn.cursor()
@@ -2768,9 +3521,85 @@ def admin_export_users():
     output.headers['Content-type'] = 'text/csv'
     return output
 
-# ─────────────────────────────────────────────────────────────────────────────
-# Feature: Live QR Code Ticket Scanner & Check-in Portal
-# ─────────────────────────────────────────────────────────────────────────────
+# 
+# Feature: Public Ticket Verification & Gate Check-in Portal
+# 
+@app.route('/verify/<ticket_code>')
+@app.route('/ticket/verify/<ticket_code>')
+def verify_ticket_page(ticket_code):
+    ticket_code = (ticket_code or '').strip()
+    if not ticket_code:
+        return render_template('verify_ticket.html', found=False, ticket_code='')
+
+    conn = get_db(row_factory=True)
+    c = conn.cursor()
+
+    found_reg = None
+    import re
+
+    # 1. Match ticket format TKT-002-00012 or TKT-(\d+)-(\d+)
+    tkt_match = re.search(r'TKT-(\d+)-(\d+)', ticket_code, re.IGNORECASE)
+    if tkt_match:
+        evt_id_parsed = int(tkt_match.group(1))
+        reg_id_parsed = int(tkt_match.group(2))
+        c.execute("""SELECT r.*, e.title as event_title, e.date as event_date, e.venue, e.venue_address, e.price 
+                     FROM registrations r JOIN events e ON r.event_id=e.id 
+                     WHERE r.id=? OR (r.event_id=? AND r.id=?)""", (reg_id_parsed, evt_id_parsed, reg_id_parsed))
+        found_reg = c.fetchone()
+
+    # 2. Match Validation Security Hash SEC-0012-002-USERNAME
+    if not found_reg:
+        sec_match = re.search(r'SEC-(\d+)-(\d+)-', ticket_code, re.IGNORECASE)
+        if sec_match:
+            reg_id_parsed = int(sec_match.group(1))
+            c.execute("""SELECT r.*, e.title as event_title, e.date as event_date, e.venue, e.venue_address, e.price 
+                         FROM registrations r JOIN events e ON r.event_id=e.id 
+                         WHERE r.id=?""", (reg_id_parsed,))
+            found_reg = c.fetchone()
+
+    # 3. Numeric ID
+    if not found_reg and ticket_code.isdigit():
+        c.execute("""SELECT r.*, e.title as event_title, e.date as event_date, e.venue, e.venue_address, e.price 
+                     FROM registrations r JOIN events e ON r.event_id=e.id 
+                     WHERE r.id=?""", (int(ticket_code),))
+        found_reg = c.fetchone()
+
+    # 4. Search by username if exact
+    if not found_reg:
+        c.execute("""SELECT r.*, e.title as event_title, e.date as event_date, e.venue, e.venue_address, e.price 
+                     FROM registrations r JOIN events e ON r.event_id=e.id 
+                     WHERE LOWER(r.username)=LOWER(?) OR LOWER(r.college_id)=LOWER(?) 
+                     ORDER BY r.id DESC LIMIT 1""", (ticket_code, ticket_code))
+        found_reg = c.fetchone()
+
+    conn.close()
+
+    if not found_reg:
+        return render_template('verify_ticket.html', found=False, ticket_code=ticket_code)
+
+    reg_dict = dict(found_reg)
+    formatted_ticket_num = f"TKT-{reg_dict['event_id']:03d}-{reg_dict['id']:05d}"
+
+    return render_template(
+        'verify_ticket.html',
+        found=True,
+        ticket_code=formatted_ticket_num,
+        status=reg_dict.get('status') or 'active',
+        cancelled_at=reg_dict.get('cancelled_at'),
+        cancellation_reason=reg_dict.get('cancellation_reason'),
+        checked_in=bool(reg_dict.get('checked_in')),
+        checkin_time=reg_dict.get('checkin_time'),
+        attendee_name=reg_dict.get('full_name') or reg_dict.get('username') or 'Attendee',
+        username=reg_dict.get('username'),
+        college_id=reg_dict.get('college_id'),
+        event_title=reg_dict.get('event_title'),
+        event_date=reg_dict.get('event_date'),
+        venue_name=reg_dict.get('venue') or 'Main Campus Auditorium',
+        venue_address=reg_dict.get('venue_address') or '',
+        team_name=reg_dict.get('team_name'),
+        reg_time=reg_dict.get('timestamp') or ''
+    )
+
 @app.route('/scan_ticket')
 def scan_ticket():
     if not (is_host() or is_admin()):
@@ -2858,10 +3687,12 @@ def api_verify_ticket():
 
     reg_dict = dict(found_reg)
     
-    # ─── CRITICAL SECURITY CHECK: Check if ticket was revoked / unregistered ───
+    # CRITICAL SECURITY CHECK: Check if ticket was revoked / unregistered 
     if reg_dict.get('status') == 'cancelled':
         conn.close()
         cancelled_time = reg_dict.get('cancelled_at') or 'recorded earlier'
+        log_action(session.get('username') or 'gate_scanner', 'ticket_rejected_revoked', 
+                   f"Revoked pass scan attempt: Attendee '{reg_dict.get('username')}' for event #{reg_dict.get('event_id')} (Reg #{reg_dict.get('id')}, Cancelled at: {cancelled_time})")
         return jsonify({
             'ok': False,
             'is_cancelled': True,
@@ -2959,9 +3790,9 @@ def checkin_history():
         if date_part not in grouped_history:
             grouped_history[date_part] = {
                 'is_today': is_today,
-                'items': []
+                'records': []
             }
-        grouped_history[date_part]['items'].append(item)
+        grouped_history[date_part]['records'].append(item)
         
     events_list = list(events_list_map.values())
     
@@ -3122,15 +3953,15 @@ if __name__ == '__main__':
     is_dev = '--dev' in sys.argv or os.environ.get('FLASK_ENV') == 'development' or os.environ.get('DEBUG') == '1'
     
     print("\n" + "="*75)
-    print("  EVENTS MANAGEMENT SYSTEM SERVER")
+    print(" EVENTS MANAGEMENT SYSTEM SERVER")
     print("="*75)
-    print("  Local Access URL:    http://127.0.0.1:5000")
-    print("  Network URL:         http://localhost:5000")
-    print("  Default Admin Login: Username: admin  |  Password: password123")
-    print("  Engine:              " + ("Flask Dev Server (Debug Mode)" if is_dev else "High-Concurrency Async Server (Uvicorn / IOCP)"))
-    print("  To Stop Server:      Press CTRL + C in this terminal")
+    print(" Local Access URL: http://127.0.0.1:5000")
+    print(" Network URL: http://localhost:5000")
+    print(" Default Admin Login: Username: admin | Password: password123")
+    print(" Engine: " + ("Flask Dev Server (Debug Mode)" if is_dev else "High-Concurrency Async Server (Uvicorn / IOCP)"))
+    print(" To Stop Server: Press CTRL + C in this terminal")
     print("="*75)
-    print("  Server is actively listening for requests.\n")
+    print(" Server is actively listening for requests.\n")
 
     if is_dev:
         app.run(debug=True, threaded=True, host='127.0.0.1', port=5000)

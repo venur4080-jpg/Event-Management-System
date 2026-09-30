@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Host Analytics | EVENTS</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="{{ url_for('static', filename='themes.js') }}"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         .analytics-container {
@@ -149,13 +150,14 @@
                     <div>EV<span>ENTS</span></div>
                 </div>
             </div>
-            <div class="nav-links" style="display: flex; align-items: center;">
-                <span style="margin-right: 20px; color: var(--text-muted); font-weight: 500;">Welcome, <strong style="color: white;">{{ username }}</strong></span>
-                <button class="theme-toggle-btn" id="themeToggle" title="Toggle Light/Dark Mode" type="button">🌓</button>
+            <div class="nav-links" style="display: flex; align-items: center; gap: 12px;">
+                <span style="margin-right: 10px; color: var(--text-muted); font-weight: 500;">Welcome, <strong style="color: white;">{{ username }}</strong></span>
+                <button class="theme-toggle-btn" id="themeToggle" title="Toggle Light/Dark Mode" type="button" style="margin-right: 0;">🌓</button>
+                <a href="{{ url_for('dashboard') }}" class="nav-btn-dash">🏠 Dashboard</a>
                 {% if is_admin or session.get('username') in ['admin', 'Venu R'] %}
-                <a href="{{ url_for('admin_dashboard') }}" style="margin-right:10px;margin-left:10px;color:var(--admin-accent,#f59e0b);font-weight:700;font-size:0.85rem;text-decoration:none;white-space:nowrap" title="Admin Panel">⚡ Admin</a>
+                <a href="{{ url_for('admin_dashboard') }}" style="color:var(--admin-accent,#f59e0b); font-weight:700; text-decoration:none;" title="Admin Panel">⚡ Admin</a>
                 {% endif %}
-                <button onclick="window.location.href='{{ url_for('logout') }}'">Logout</button>
+                <a href="{{ url_for('logout') }}" class="logout-btn-unique">⏻ Logout</a>
             </div>
         </div>
     </nav>
@@ -190,6 +192,13 @@
 
     <!-- Main Container -->
     <div class="analytics-container">
+        <!-- Back Button -->
+        <div style="margin-bottom: 1.5rem;">
+            <a href="{{ url_for('dashboard') }}" class="back-btn-unified">
+                <span class="arrow">←</span> Back to Dashboard
+            </a>
+        </div>
+
         <h1 class="hero-title" style="font-size: 2.8rem; margin-bottom: 2rem;">Host Analytics Dashboard</h1>
 
         <!-- Metrics Row -->
@@ -383,5 +392,6 @@
             });
         }
     </script>
+    <script src="{{ url_for('static', filename='animations.js') }}"></script>
 </body>
 </html>
