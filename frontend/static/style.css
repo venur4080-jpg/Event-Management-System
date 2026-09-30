@@ -2013,69 +2013,75 @@ input[type="password"]::-ms-clear {
 }
 
 .password-toggle-wrapper {
-    position: relative;
-    display: flex;
-    align-items: center;
-    width: 100%;
-    box-sizing: border-box;
+    position: relative !important;
+    display: block !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
 }
 
-.password-toggle-wrapper .input-field {
+.password-toggle-wrapper input,
+.password-toggle-wrapper .input-field,
+.password-toggle-wrapper input.input-field,
+.password-toggle-wrapper input[type="password"],
+.password-toggle-wrapper input[type="text"] {
+    display: block !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
     padding-right: 44px !important;
-    width: 100%;
-    box-sizing: border-box;
+    margin: 0 !important;
 }
 
 .password-toggle-btn {
-    position: absolute;
-    right: 8px;
-    top: 50%;
-    transform: translateY(-50%);
-    background: transparent;
-    border: none;
-    outline: none;
-    cursor: pointer;
-    padding: 6px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    color: #94a3b8;
-    transition: color 0.2s ease, transform 0.15s ease, background 0.2s ease;
-    z-index: 10;
-    user-select: none;
-    border-radius: 6px;
-    width: 32px;
-    height: 32px;
-    box-sizing: border-box;
-    line-height: 1;
+    position: absolute !important;
+    right: 8px !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    background: transparent !important;
+    border: none !important;
+    outline: none !important;
+    cursor: pointer !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    color: #94a3b8 !important;
+    transition: color 0.2s ease, transform 0.15s ease, background 0.2s ease !important;
+    z-index: 10 !important;
+    user-select: none !important;
+    border-radius: 6px !important;
+    width: 32px !important;
+    height: 32px !important;
+    box-sizing: border-box !important;
+    line-height: 1 !important;
 }
 
 .password-toggle-btn:hover {
-    color: var(--primary, #00f2fe);
-    background: rgba(255, 255, 255, 0.08);
+    color: var(--primary, #00f2fe) !important;
+    background: rgba(255, 255, 255, 0.08) !important;
 }
 
 .password-toggle-btn:active {
-    transform: translateY(-50%) scale(0.9);
+    transform: translateY(-50%) scale(0.9) !important;
 }
 
 .password-toggle-btn svg {
-    width: 20px;
-    height: 20px;
-    stroke: currentColor;
-    stroke-width: 1.8;
-    fill: none;
-    display: block;
-    pointer-events: none;
+    width: 20px !important;
+    height: 20px !important;
+    stroke: currentColor !important;
+    stroke-width: 1.8 !important;
+    fill: none !important;
+    display: block !important;
+    pointer-events: none !important;
 }
 
 body.light-mode .password-toggle-btn {
-    color: #64748b;
+    color: #64748b !important;
 }
 
 body.light-mode .password-toggle-btn:hover {
-    color: #0284c7;
-    background: rgba(0, 0, 0, 0.05);
+    color: #0284c7 !important;
+    background: rgba(0, 0, 0, 0.05) !important;
 }
 
 /* 

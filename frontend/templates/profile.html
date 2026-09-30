@@ -172,29 +172,34 @@
 
         /* Password Field Toggle Alignment */
         .password-toggle-wrapper {
-            position: relative;
-            display: flex;
-            align-items: center;
-            width: 100%;
+            position: relative !important;
+            display: block !important;
+            width: 100% !important;
+            box-sizing: border-box !important;
         }
         .password-toggle-wrapper input {
+            display: block !important;
+            width: 100% !important;
+            box-sizing: border-box !important;
             padding-right: 44px !important;
             height: 46px;
         }
         .password-toggle-btn {
-            position: absolute;
-            right: 8px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: transparent;
-            border: none;
+            position: absolute !important;
+            right: 8px !important;
+            top: 50% !important;
+            transform: translateY(-50%) !important;
+            background: transparent !important;
+            border: none !important;
             color: var(--text-muted);
-            padding: 6px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            padding: 0 !important;
+            cursor: pointer !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
             border-radius: 4px;
+            width: 32px;
+            height: 32px;
             transition: color 0.2s;
         }
         .password-toggle-btn:hover {
