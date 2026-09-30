@@ -2000,11 +2000,12 @@ body.light-mode #ob-prev {
 /* 
    13. Password Eyeball Visibility Toggle
     */
-/* Hide Microsoft Edge / IE native password reveal button to prevent duplicate eyeballs */
+/* Hide Microsoft Edge / IE / WebKit native password reveal button to prevent duplicate eyeballs */
 input::-ms-reveal,
 input::-ms-clear,
 input[type="password"]::-ms-reveal,
-input[type="password"]::-ms-clear {
+input[type="password"]::-ms-clear,
+input::-webkit-credentials-auto-fill-button {
     display: none !important;
     width: 0 !important;
     height: 0 !important;
@@ -2071,8 +2072,24 @@ input[type="password"]::-ms-clear {
     stroke: currentColor !important;
     stroke-width: 1.8 !important;
     fill: none !important;
-    display: block !important;
     pointer-events: none !important;
+    flex-shrink: 0 !important;
+}
+
+/* By default when password is masked: show open eye, hide closed eye */
+.password-toggle-btn .eye-open {
+    display: block;
+}
+.password-toggle-btn .eye-closed {
+    display: none;
+}
+
+/* When password is revealed: hide open eye, show closed slash-eye */
+.password-toggle-btn.is-revealed .eye-open {
+    display: none !important;
+}
+.password-toggle-btn.is-revealed .eye-closed {
+    display: block !important;
 }
 
 body.light-mode .password-toggle-btn {
