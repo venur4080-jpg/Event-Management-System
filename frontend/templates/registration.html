@@ -109,7 +109,6 @@
                 <div class="logo">EV<span>ENTS</span></div>
             </div>
             <div class="nav-links" style="display: flex; align-items: center; gap: 12px;">
-                <button class="theme-toggle-btn" id="themeToggle" title="Toggle Light/Dark Mode" type="button" style="margin-right: 0;">🌓</button>
                 <a href="{{ url_for('event_detail', event_id=event.id if event else 1) }}" class="nav-btn-dash">🏠 Event Details</a>
                 <a href="{{ url_for('logout') }}" class="logout-btn-unique">⏻ Logout</a>
             </div>

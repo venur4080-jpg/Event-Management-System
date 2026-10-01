@@ -185,7 +185,6 @@
                 <div class="logo">EV<span>ENTS</span></div>
             </div>
             <div class="nav-links" style="display: flex; align-items: center; gap: 12px;">
-                <button class="theme-toggle-btn" id="themeToggle" title="Toggle Light/Dark Mode" type="button" style="margin-right: 0;">🌓</button>
                 <a href="{{ url_for('dashboard') }}" class="nav-btn-dash">🏠 Dashboard</a>
                 <a href="{{ url_for('logout') }}" class="logout-btn-unique">⏻ Logout</a>
             </div>
@@ -507,14 +506,6 @@
             }
         };
 
-        // Theme Toggle Switch
-        const themeToggle = document.getElementById('themeToggle');
-        if (themeToggle) {
-            themeToggle.onclick = () => {
-                const isLight = document.body.classList.toggle('light-mode');
-                localStorage.setItem('theme', isLight ? 'light' : 'dark');
-            };
-        }
 
         // Countdown Timer Logic
         const eventDateStr = "{{ event.date }}";

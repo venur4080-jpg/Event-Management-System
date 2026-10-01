@@ -410,30 +410,7 @@
     });
   }
 
-  // ─── 6. Inject Navbar Nature Switcher Button ──────────────────────────────
-  function injectNavbarNatureButton() {
-    const navContainers = document.querySelectorAll('.navbar .nav-links, .navbar .nav-container');
-    if (!navContainers.length || document.getElementById('natureThemeBtn')) return;
-
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.id = 'natureThemeBtn';
-    btn.className = 'nature-theme-btn';
-    btn.title = 'Change Nature Background';
-    btn.innerHTML = `🌿 Nature BG`;
-    btn.onclick = window.openNatureModal;
-
-    // Prefer inserting before the themeToggle or logout button
-    const targetNav = document.querySelector('.navbar .nav-links') || navContainers[0];
-    const themeToggle = targetNav.querySelector('#themeToggle') || targetNav.querySelector('.logout-btn');
-    if (themeToggle) {
-      targetNav.insertBefore(btn, themeToggle);
-    } else {
-      targetNav.appendChild(btn);
-    }
-  }
-
-  // ─── 7. Global Window Handlers ────────────────────────────────────────────
+  // ─── 6. Global Window Handlers ────────────────────────────────────────────
   window.openNatureModal = function () {
     buildNatureModal();
     const currentTheme = localStorage.getItem('natureWallpaperTheme') || 'dynamic';
@@ -455,7 +432,7 @@
     }
   };
 
-  // ─── 8. Initialization ────────────────────────────────────────────────────
+  // ─── 7. Initialization ────────────────────────────────────────────────────
   function init() {
     injectThemeCoreStyles();
 
@@ -464,8 +441,6 @@
 
     const savedColor = localStorage.getItem('selectedColorTheme') || 'ocean';
     applyColorTheme(savedColor);
-
-    injectNavbarNatureButton();
   }
 
   // Run on initial load

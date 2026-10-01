@@ -26,9 +26,9 @@ const slides = [
     body: 'Click Register on any upcoming event. After registering you can download your PDF ticket instantly.'
   },
   {
-    icon: '🎨',
+    icon: '⚙️',
     title: 'Personalise Your Experience',
-    body: 'Pick a colour theme (Ocean, Sunset, or Neon) and toggle Dark / Light mode using the controls in the navbar.'
+    body: 'Customise your aesthetics, high-definition Nature Wallpapers, theme colours, and Dark / Light mode anytime in Settings.'
   },
   {
     icon: '✅',
