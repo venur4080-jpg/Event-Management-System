@@ -518,31 +518,16 @@
                     </div>
                 </div>
 
-                <!-- 2. Contact Details with OTP on Change -->
+                <!-- 2. Contact Details -->
                 <div class="profile-section-heading">
-                    <span>📱</span> Contact & Verification Details
+                    <span>📱</span> Contact Information
                 </div>
                 
                 <div class="grid-2">
-                    <!-- Email Address with OTP -->
-                    <div class="otp-group-wrapper">
-                        <div class="otp-group-header">
-                            <label>Email Address</label>
-                            <div class="otp-badge-container">
-                                <span id="emailVerifiedBadge" class="otp-verified-badge" style="{% if not user.email %}display: none;{% endif %}">✓ Verified</span>
-                                <button type="button" id="changeEmailBtn" class="change-contact-btn" onclick="enableEditContact('email')" style="{% if not user.email %}display: none;{% endif %}">✏️ Change / Re-verify</button>
-                            </div>
-                        </div>
-                        <div class="otp-row">
-                            <input type="email" name="email" id="profile_email" class="input-field" value="{{ user.email or '' }}" placeholder="yourname@example.com" data-original="{{ user.email or '' }}" oninput="handleContactInputChange('email')" onkeyup="handleContactInputChange('email')" onchange="handleContactInputChange('email')" onpaste="handleContactInputChange('email')" autocomplete="email">
-                            <button type="button" class="otp-action-btn" id="sendEmailOtpBtn" onclick="handleSendProfileOtp('email')" style="{% if user.email %}display: none;{% else %}display: inline-flex;{% endif %}">
-                                ✉️ Send OTP
-                            </button>
-                        </div>
-                        <div id="emailOtpDrawer" class="otp-input-drawer">
-                            <input type="text" id="emailOtpInput" class="input-field" placeholder="Enter 6-digit OTP" inputmode="numeric" pattern="[0-9]*" maxlength="6">
-                            <button type="button" class="otp-action-btn" onclick="handleVerifyProfileOtp('email')">Verify</button>
-                        </div>
+                    <!-- Email Address -->
+                    <div class="input-group">
+                        <label>Email Address</label>
+                        <input type="email" name="email" id="profile_email" class="input-field" value="{{ user.email or '' }}" placeholder="yourname@example.com" oninput="handleContactInputChange('email')" autocomplete="email">
                         <span id="emailOtpStatus" class="otp-status-text"></span>
                     </div>
 
@@ -915,39 +900,7 @@
             };
         }
 
-        // Email OTP Verification Logic for Profile Edit
-        let isEmailVerified = {{ 'true' if user.email else 'false' }};
-        let isEditingEmail = false;
-        let otpResendTimer = null;
-
-        function enableEditContact(type) {
-            if (type !== 'email') return;
-            isEditingEmail = true;
-            isEmailVerified = false;
-
-            const input = document.getElementById('profile_email');
-            const sendBtn = document.getElementById('sendEmailOtpBtn');
-            const badge = document.getElementById('emailVerifiedBadge');
-            const changeBtn = document.getElementById('changeEmailBtn');
-            const statusEl = document.getElementById('emailOtpStatus');
-
-            if (badge) badge.style.display = 'none';
-            if (changeBtn) changeBtn.style.display = 'none';
-            if (sendBtn) {
-                sendBtn.style.display = 'inline-flex';
-                sendBtn.disabled = false;
-                sendBtn.innerHTML = '✉️ Send OTP';
-            }
-            if (statusEl) {
-                statusEl.className = 'otp-status-text info';
-                statusEl.innerHTML = `✏️ <strong>Edit Mode:</strong> Click "Send OTP" to verify this email address.`;
-            }
-            if (input) {
-                input.focus();
-                input.select();
-            }
-        }
-
+        // Contact Information live validation handlers
         function handleContactInputChange(type) {
             if (type === 'mobile') {
                 const phoneInput = document.getElementById('profile_phone');
@@ -970,212 +923,23 @@
 
             // Email input handling
             const input = document.getElementById('profile_email');
-            const orig = (input.getAttribute('data-original') || '').trim();
             const curr = input.value.trim();
-            const sendBtn = document.getElementById('sendEmailOtpBtn');
-            const badge = document.getElementById('emailVerifiedBadge');
-            const changeBtn = document.getElementById('changeEmailBtn');
-            const drawer = document.getElementById('emailOtpDrawer');
             const statusEl = document.getElementById('emailOtpStatus');
 
-            // If input is cleared
             if (!curr) {
-                isEmailVerified = true;
-                isEditingEmail = false;
-                if (badge) badge.style.display = 'none';
-                if (changeBtn) changeBtn.style.display = 'none';
-                if (sendBtn) sendBtn.style.display = 'none';
-                if (drawer) { drawer.style.display = 'none'; drawer.classList.remove('active'); }
                 statusEl.textContent = '';
                 return;
             }
-
-            // If text matches original database value AND user didn't click Edit
-            if (!isEditingEmail && curr.toLowerCase() === orig.toLowerCase() && orig !== '') {
-                isEmailVerified = true;
-                if (badge) {
-                    badge.style.display = 'inline-flex';
-                    badge.textContent = '✓ Verified';
-                }
-                if (changeBtn) changeBtn.style.display = 'inline-block';
-                if (sendBtn) sendBtn.style.display = 'none';
-                if (drawer) { drawer.style.display = 'none'; drawer.classList.remove('active'); }
-                statusEl.textContent = '';
-                return;
-            }
-
-            // Value modified or user clicked Change / Re-verify
-            isEmailVerified = false;
-            if (badge) badge.style.display = 'none';
-            if (changeBtn) changeBtn.style.display = 'none';
 
             const check = validateEmailAddress(curr);
             if (!check.valid) {
-                if (sendBtn) {
-                    sendBtn.style.display = 'inline-flex';
-                    sendBtn.disabled = true;
-                    sendBtn.innerHTML = '✉️ Send OTP';
-                }
                 statusEl.className = 'otp-status-text error';
                 statusEl.textContent = '❌ ' + check.error;
             } else {
-                if (sendBtn) {
-                    sendBtn.style.display = 'inline-flex';
-                    sendBtn.disabled = false;
-                    sendBtn.innerHTML = '✉️ Send OTP';
-                }
-                statusEl.className = 'otp-status-text info';
-                statusEl.innerHTML = `✓ Valid format. Click <strong>"Send OTP"</strong> to verify <code>${curr}</code>.`;
+                statusEl.className = 'otp-status-text success';
+                statusEl.textContent = '✓ Valid email format (' + check.cleaned + ')';
             }
         }
-
-        async function handleSendProfileOtp(type) {
-            const inputId = 'profile_email';
-            const val = document.getElementById(inputId).value.trim();
-            const statusEl = document.getElementById('emailOtpStatus');
-            const drawerEl = document.getElementById('emailOtpDrawer');
-            const btnEl = document.getElementById('sendEmailOtpBtn');
-
-            if (!val) {
-                statusEl.className = 'otp-status-text error';
-                statusEl.textContent = 'Please enter a valid email address first.';
-                return;
-            }
-
-            const check = validateEmailAddress(val);
-            if (!check.valid) {
-                statusEl.className = 'otp-status-text error';
-                statusEl.textContent = '❌ ' + check.error;
-                return;
-            }
-
-            btnEl.disabled = true;
-            btnEl.innerHTML = 'Sending...';
-            statusEl.className = 'otp-status-text info';
-            statusEl.textContent = `Dispatching 6-digit OTP to ${val}...`;
-
-            try {
-                const res = await fetch('/api/send_otp', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ type: 'email', target: check.cleaned || val })
-                });
-                const data = await res.json();
-
-                if (data && data.ok) {
-                    drawerEl.style.display = 'flex';
-                    drawerEl.classList.add('active');
-                    statusEl.innerHTML = `✉️ 6-digit OTP sent to <strong>${val}</strong>! Please check your email inbox.`;
-                    
-                    // Countdown timer
-                    let countdown = 30;
-                    btnEl.disabled = true;
-                    btnEl.textContent = `Resend in ${countdown}s`;
-                    if (otpResendTimer) clearInterval(otpResendTimer);
-                    otpResendTimer = setInterval(() => {
-                        countdown--;
-                        if (countdown <= 0) {
-                            clearInterval(otpResendTimer);
-                            btnEl.disabled = false;
-                            btnEl.innerHTML = '✉️ Resend OTP';
-                        } else {
-                            btnEl.textContent = `Resend in ${countdown}s`;
-                        }
-                    }, 1000);
-
-                    const otpInput = document.getElementById('emailOtpInput');
-                    if (otpInput) {
-                        otpInput.value = '';
-                        setTimeout(() => otpInput.focus(), 100);
-                    }
-                } else {
-                    btnEl.disabled = false;
-                    btnEl.innerHTML = '✉️ Send OTP';
-                    statusEl.className = 'otp-status-text error';
-                    statusEl.textContent = (data && data.error) ? data.error : 'Failed to send OTP.';
-                }
-            } catch (err) {
-                btnEl.disabled = false;
-                btnEl.innerHTML = '✉️ Send OTP';
-                statusEl.className = 'otp-status-text error';
-                statusEl.textContent = 'Network error while contacting verification server.';
-            }
-        }
-
-        async function handleVerifyProfileOtp(type) {
-            const targetInput = document.getElementById('profile_email');
-            const target = targetInput.value.trim();
-            const otpInput = document.getElementById('emailOtpInput');
-            const otp = otpInput.value.trim();
-            const statusEl = document.getElementById('emailOtpStatus');
-            const drawerEl = document.getElementById('emailOtpDrawer');
-            const badgeEl = document.getElementById('emailVerifiedBadge');
-            const changeBtn = document.getElementById('changeEmailBtn');
-            const sendBtn = document.getElementById('sendEmailOtpBtn');
-
-            if (!otp || otp.length < 4) {
-                statusEl.className = 'otp-status-text error';
-                statusEl.textContent = 'Please enter the 6-digit OTP received.';
-                return;
-            }
-
-            try {
-                const res = await fetch('/api/verify_otp', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ type: 'email', target: target, otp: otp })
-                });
-                const data = await res.json();
-
-                if (data && data.ok) {
-                    isEmailVerified = true;
-                    isEditingEmail = false;
-
-                    if (otpResendTimer) clearInterval(otpResendTimer);
-
-                    drawerEl.style.display = 'none';
-                    drawerEl.classList.remove('active');
-                    if (sendBtn) sendBtn.style.display = 'none';
-                    
-                    targetInput.setAttribute('data-original', target);
-
-                    if (badgeEl) {
-                        badgeEl.style.display = 'inline-flex';
-                        badgeEl.textContent = '✓ Verified';
-                    }
-                    if (changeBtn) {
-                        changeBtn.style.display = 'inline-block';
-                    }
-                    statusEl.className = 'otp-status-text success';
-                    statusEl.innerHTML = `🎉 <strong>Email address successfully verified!</strong> Click <em>"Save Profile Changes"</em> to save.`;
-                } else {
-                    statusEl.className = 'otp-status-text error';
-                    statusEl.textContent = (data && data.error) ? data.error : 'Invalid OTP. Please check the code and try again.';
-                }
-            } catch (err) {
-                statusEl.className = 'otp-status-text error';
-                statusEl.textContent = 'Network error verifying OTP.';
-            }
-        }
-
-        // Auto-verify on 6-digit entry and Enter key
-        document.addEventListener('DOMContentLoaded', () => {
-            const el = document.getElementById('emailOtpInput');
-            if (el) {
-                el.addEventListener('input', () => {
-                    const val = el.value.trim();
-                    if (val.length === 6 && /^\d{6}$/.test(val)) {
-                        handleVerifyProfileOtp('email');
-                    }
-                });
-                el.addEventListener('keydown', (e) => {
-                    if (e.key === 'Enter') {
-                        e.preventDefault();
-                        handleVerifyProfileOtp('email');
-                    }
-                });
-            }
-        });
 
         function validateProfileForm() {
             const emailInput = document.getElementById('profile_email');
@@ -1183,9 +947,8 @@
             const emailStatus = document.getElementById('emailOtpStatus');
             const phoneStatus = document.getElementById('phoneOtpStatus');
             
-            const origEmail = (emailInput.getAttribute('data-original') || '').trim();
-            const currEmail = emailInput.value.trim();
-            const currPhone = phoneInput.value.trim();
+            const currEmail = emailInput ? emailInput.value.trim() : '';
+            const currPhone = phoneInput ? phoneInput.value.trim() : '';
 
             if (currEmail) {
                 const emailCheck = validateEmailAddress(currEmail);
@@ -1211,17 +974,6 @@
                     phoneInput.focus();
                     return false;
                 }
-            }
-
-            if (currEmail && (currEmail.toLowerCase() !== origEmail.toLowerCase() || isEditingEmail) && !isEmailVerified) {
-                if (emailStatus) {
-                    emailStatus.className = 'otp-status-text error';
-                    emailStatus.innerHTML = `⚠️ <strong>Verification Required:</strong> Please verify <code>${currEmail}</code> with OTP before saving.`;
-                }
-                alert(`⚠️ Verification Required: Please verify your email (${currEmail}) with OTP before saving.`);
-                enableEditContact('email');
-                emailInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                return false;
             }
 
             return true;

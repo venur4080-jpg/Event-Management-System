@@ -402,13 +402,13 @@ class EventManagementSystemTests(unittest.TestCase):
         self.assertEqual(resp_verify_revoked.status_code, 200)
         self.assertIn(b'TICKET REVOKED', resp_verify_revoked.data)
 
-    def test_08_profile_otp_verification_and_save(self):
-        """Test sending OTP, verifying OTP, and saving profile changes."""
-        test_user = 'otp_test_profile_user'
+    def test_08_profile_edit_and_save(self):
+        """Test saving profile changes directly with email and phone updates."""
+        test_user = 'test_profile_user'
         conn = sqlite3.connect('users.db', timeout=15)
         c = conn.cursor()
         c.execute("INSERT OR REPLACE INTO users (username, password, full_name, email, phone, is_admin) VALUES (?, ?, ?, ?, ?, ?)",
-                  (test_user, 'pass_hash', 'OTP Tester', 'initial@test.com', '9876543210', 0))
+                  (test_user, 'pass_hash', 'Profile Tester', 'initial@test.com', '9876543210', 0))
         conn.commit()
         conn.close()
 
@@ -420,31 +420,15 @@ class EventManagementSystemTests(unittest.TestCase):
         resp_profile = self.client.get('/profile')
         self.assertEqual(resp_profile.status_code, 200)
 
-        # 2. Send email OTP
-        new_email = 'newverified@gmail.com'
-        resp_send_email = self.client.post('/api/send_otp',
-                                           data=json.dumps({'type': 'email', 'target': new_email}),
-                                           content_type='application/json')
-        self.assertEqual(resp_send_email.status_code, 200)
-        data_email = resp_send_email.get_json()
-        self.assertTrue(data_email['ok'])
-
-        # 3. Verify email OTP (123456 or generated demo code)
-        demo_otp = data_email.get('demo_otp') or '123456'
-        resp_v_email = self.client.post('/api/verify_otp',
-                                        data=json.dumps({'type': 'email', 'target': new_email, 'otp': demo_otp}),
-                                        content_type='application/json')
-        self.assertEqual(resp_v_email.status_code, 200)
-        self.assertTrue(resp_v_email.get_json()['ok'])
-
-        # 4. Save Profile with verified email and updated mobile phone (no SMS OTP required)
+        # 2. Save Profile with updated email and mobile phone directly
+        new_email = 'newupdated@gmail.com'
         new_phone = '9123456789'
         resp_save = self.client.post('/profile', data={
-            'first_name': 'Verified',
+            'first_name': 'Updated',
             'last_name': 'User',
             'email': new_email,
             'phone': new_phone,
-            'college_id': 'COL-OTP-123',
+            'college_id': 'COL-PRO-123',
             'country': 'India',
             'state': 'Karnataka',
             'city': 'Bangalore',
@@ -461,7 +445,7 @@ class EventManagementSystemTests(unittest.TestCase):
         self.assertEqual(user_row[0], new_email)
         self.assertEqual(user_row[1], new_phone)
         self.assertEqual(user_row[2], 'Bangalore')
-        self.assertEqual(user_row[3], 'COL-OTP-123')
+        self.assertEqual(user_row[3], 'COL-PRO-123')
         # Clean up
         c.execute("DELETE FROM users WHERE username=?", (test_user,))
         conn.commit()

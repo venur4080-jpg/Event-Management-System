@@ -288,9 +288,9 @@
                     </div>
                 </div>
 
-                <!-- 3. Contact & OTP Verification -->
+                <!-- 3. Contact Details -->
                 <div class="form-section-header">
-                    <span>📞</span> Contact & Verification
+                    <span>📞</span> Contact Information
                 </div>
 
                 <!-- Mobile Number -->
@@ -300,20 +300,10 @@
                     <span id="phoneOtpStatus" class="otp-status-text"></span>
                 </div>
 
-                <!-- Email Address with OTP -->
-                <div class="otp-group-wrapper">
-                    <label style="display: block; margin-bottom: 0.4rem; color: var(--text-muted); font-size: 0.9rem;">Email Address (Verify with OTP) *</label>
-                    <div class="otp-row">
-                        <input type="email" name="email" id="reg_email" class="input-field" placeholder="Enter email address" required oninput="handleRegEmailInput(this)" autocomplete="email">
-                        <button type="button" class="otp-action-btn" id="sendEmailOtpBtn" onclick="handleSendOtp('email', 'reg_email')">
-                            Send OTP
-                        </button>
-                        <span id="emailVerifiedBadge" class="otp-verified-badge" style="display: none;">✓ Verified</span>
-                    </div>
-                    <div id="emailOtpDrawer" class="otp-input-drawer">
-                        <input type="text" id="emailOtpInput" class="input-field" placeholder="Enter 6-digit OTP" style="width: 160px;" maxlength="6">
-                        <button type="button" class="otp-action-btn" onclick="handleVerifyOtp('email', 'reg_email', 'emailOtpInput')">Verify</button>
-                    </div>
+                <!-- Email Address -->
+                <div class="input-group">
+                    <label>Email Address *</label>
+                    <input type="email" name="email" id="reg_email" class="input-field" placeholder="Enter email address" required oninput="handleRegEmailInput(this)" autocomplete="email">
                     <span id="emailOtpStatus" class="otp-status-text"></span>
                 </div>
 
@@ -401,10 +391,6 @@
         // Real-time live input validation handlers
         function handleRegPhoneInput(input) {
             const statusEl = document.getElementById('phoneOtpStatus');
-            const drawerEl = document.getElementById('phoneOtpDrawer');
-            if (drawerEl && drawerEl.classList.contains('active')) {
-                // If OTP drawer is open, keep it
-            }
             if (!input.value.trim()) {
                 statusEl.textContent = '';
                 return;
@@ -421,10 +407,6 @@
 
         function handleRegEmailInput(input) {
             const statusEl = document.getElementById('emailOtpStatus');
-            const drawerEl = document.getElementById('emailOtpDrawer');
-            if (drawerEl && drawerEl.classList.contains('active')) {
-                // If OTP drawer is open, keep it
-            }
             if (!input.value.trim()) {
                 statusEl.textContent = '';
                 return;
@@ -436,110 +418,6 @@
             } else {
                 statusEl.className = 'otp-status-text success';
                 statusEl.textContent = '✓ Valid email format (' + res.cleaned + ')';
-            }
-        }
-
-        // Email OTP Verification Logic
-        let isEmailVerified = false;
-
-        async function handleSendOtp(type, inputId) {
-            const val = document.getElementById(inputId).value.trim();
-            const statusEl = document.getElementById('emailOtpStatus');
-            const drawerEl = document.getElementById('emailOtpDrawer');
-            const btnEl = document.getElementById('sendEmailOtpBtn');
-
-            if (!val) {
-                statusEl.className = 'otp-status-text error';
-                statusEl.textContent = 'Please enter a valid email address first.';
-                return;
-            }
-
-            const emailCheck = validateEmailAddress(val);
-            if (!emailCheck.valid) {
-                statusEl.className = 'otp-status-text error';
-                statusEl.textContent = '❌ ' + emailCheck.error;
-                return;
-            }
-
-            btnEl.disabled = true;
-            btnEl.textContent = 'Sending...';
-            statusEl.className = 'otp-status-text info';
-            statusEl.textContent = 'Generating & dispatching Email OTP...';
-
-            try {
-                const res = await fetch('/api/send_otp', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ type: 'email', target: val })
-                });
-                const data = await res.json();
-
-                if (data && data.ok) {
-                    btnEl.disabled = false;
-                    btnEl.textContent = 'Resend OTP';
-                    statusEl.className = 'otp-status-text success';
-                    statusEl.textContent = data.message || 'Verification OTP sent to your email. Please check your inbox.';
-                    
-                    const otpInput = document.getElementById('emailOtpInput');
-                    if (otpInput) {
-                        otpInput.value = '';
-                        otpInput.focus();
-                    }
-                } else {
-                    btnEl.disabled = false;
-                    btnEl.textContent = 'Send OTP';
-                    statusEl.className = 'otp-status-text error';
-                    statusEl.textContent = (data && data.error) ? data.error : 'Failed to send OTP.';
-                }
-            } catch (err) {
-                btnEl.disabled = false;
-                btnEl.textContent = 'Send OTP';
-                statusEl.className = 'otp-status-text error';
-                statusEl.textContent = 'Network error while contacting verification server.';
-            }
-        }
-
-        async function handleVerifyOtp(type, targetInputId, otpInputId) {
-            const target = document.getElementById(targetInputId).value.trim();
-            const otp = document.getElementById(otpInputId).value.trim();
-            const statusEl = document.getElementById('emailOtpStatus');
-            const drawerEl = document.getElementById('emailOtpDrawer');
-            const badgeEl = document.getElementById('emailVerifiedBadge');
-            const sendBtn = document.getElementById('sendEmailOtpBtn');
-
-            if (!otp || otp.length < 4) {
-                statusEl.className = 'otp-status-text error';
-                statusEl.textContent = 'Please enter the 6-digit OTP received.';
-                return;
-            }
-
-            try {
-                const res = await fetch('/api/verify_otp', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ type: 'email', target: target, otp: otp })
-                });
-                const data = await res.json();
-
-                if (data && data.ok) {
-                    isEmailVerified = true;
-
-                    drawerEl.style.display = 'none';
-                    drawerEl.classList.remove('active');
-                    if (sendBtn) sendBtn.style.display = 'none';
-                    if (badgeEl) {
-                        badgeEl.style.display = 'inline-flex';
-                        badgeEl.textContent = '✓ Verified';
-                    }
-                    statusEl.className = 'otp-status-text success';
-                    statusEl.textContent = '✓ Email address successfully verified!';
-                } else {
-                    statusEl.className = 'otp-status-text error';
-                    statusEl.textContent = (data && data.error) ? data.error : 'Invalid OTP. Please try again.';
-                }
-            } catch (err) {
-                statusEl.className = 'otp-status-text error';
-                statusEl.textContent = 'Network error verifying OTP.';
             }
         }
 

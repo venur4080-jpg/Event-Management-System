@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, session, send_file, make_response, jsonify, flash
 import sys
+import time
 import random
 import string
 import re
@@ -12,6 +13,7 @@ import requests
 from datetime import datetime, timedelta
 import io
 import os
+import base64
 import csv
 import json
 import urllib.parse
@@ -956,11 +958,15 @@ def _dispatch_html_email(recipient_email: str, subject: str, html_content: str, 
     # 1. Tier 1: Resend HTTPS API (Port 443 - 100% open on all cloud platforms)
     if resend_key:
         try:
-            raw_from = (os.environ.get('EMAIL_FROM') or os.environ.get('RESEND_FROM') or '').strip()
-            if not raw_from or '@' not in raw_from or raw_from.upper() == 'EMAIL_FROM':
-                from_sender = "EVENTS <onboarding@resend.dev>"
+            from_email = (os.environ.get('EMAIL_FROM') or os.environ.get('RESEND_FROM') or 'onboarding@resend.dev').strip()
+            from_name = (os.environ.get('EMAIL_FROM_NAME') or sender_name or 'EVENTS').strip()
+            if not from_email or '@' not in from_email or from_email.upper() == 'EMAIL_FROM':
+                from_email = 'onboarding@resend.dev'
+
+            if '<' in from_email:
+                from_sender = from_email
             else:
-                from_sender = raw_from if ('<' in raw_from) else f"EVENTS <{raw_from}>"
+                from_sender = f"{from_name} <{from_email}>"
             
             payload = {
                 "from": from_sender,
@@ -1051,7 +1057,7 @@ def _dispatch_html_email(recipient_email: str, subject: str, html_content: str, 
 
 def send_email_otp(recipient_email: str, otp_code: str):
     """
-    Dispatches a real HTML verification email with the 6-digit OTP via HTTPS API / SMTP.
+    Dispatches a real HTML verification email with the OTP via HTTPS API / SMTP.
     Returns (success: bool, status_msg: str, is_real_delivery: bool)
     """
     # Guard: Never dispatch real emails during testing or to test/dummy domains
@@ -1067,8 +1073,15 @@ def send_email_otp(recipient_email: str, otp_code: str):
         print(f"[OTP TEST MODE] Simulated OTP for test address {recipient_email}: {otp_code}")
         return True, f"OTP generated (Test Mode: {otp_code})", False
 
+    try:
+        otp_expiry_minutes = int(os.environ.get('OTP_EXPIRY_MINUTES', '10'))
+    except (ValueError, TypeError):
+        otp_expiry_minutes = 10
+    if otp_expiry_minutes <= 0:
+        otp_expiry_minutes = 10
+
     subject = f"{otp_code} is your EVENTS Verification Code"
-    text_content = f"Your EVENTS verification code is: {otp_code}. Valid for 10 minutes. Do not share this OTP."
+    text_content = f"Your EVENTS verification code is: {otp_code}. Valid for {otp_expiry_minutes} minutes. Do not share this OTP."
     html_content = f"""
     <!DOCTYPE html>
     <html>
@@ -1089,9 +1102,9 @@ def send_email_otp(recipient_email: str, otp_code: str):
         <div class="email-container">
             <div class="logo">EV<span>ENTS</span></div>
             <div class="title">Verification Code</div>
-            <p style="color: #cbd5e1; font-size: 14px; margin-bottom: 5px;">Use the 6-digit OTP code below to verify your email address:</p>
+            <p style="color: #cbd5e1; font-size: 14px; margin-bottom: 5px;">Use the {len(otp_code)}-digit OTP code below to verify your email address:</p>
             <div class="otp-box">{otp_code}</div>
-            <div class="expiry-note">⏱ This code is valid for 10 minutes only.</div>
+            <div class="expiry-note">⏱ This code is valid for {otp_expiry_minutes} minutes only.</div>
             <p style="color: #94a3b8; font-size: 13px;">If you did not request this verification, please ignore this email.</p>
             <div class="footer">
                 &copy; 2026 EVENTS Management System. All rights reserved.<br>
@@ -1124,11 +1137,27 @@ def api_send_otp():
         return jsonify({'ok': False, 'error': clean_or_err}), 400
     target = clean_or_err
 
-    otp = f"{random.randint(100000, 999999)}"
+    try:
+        otp_length = int(os.environ.get('OTP_LENGTH', '6'))
+    except (ValueError, TypeError):
+        otp_length = 6
+    if otp_length < 4 or otp_length > 10:
+        otp_length = 6
+
+    try:
+        otp_expiry_minutes = int(os.environ.get('OTP_EXPIRY_MINUTES', '10'))
+    except (ValueError, TypeError):
+        otp_expiry_minutes = 10
+    if otp_expiry_minutes <= 0:
+        otp_expiry_minutes = 10
+
+    min_val = 10 ** (otp_length - 1)
+    max_val = (10 ** otp_length) - 1
+    otp = str(random.randint(min_val, max_val))
     _OTP_STORE[target.lower()] = {
         'otp': otp,
         'type': 'email',
-        'expires': time.time() + 600, # 10 minutes
+        'expires': time.time() + (otp_expiry_minutes * 60),
         'verified': False
     }
 
@@ -1977,19 +2006,10 @@ def send_unregistration_confirmation_email(recipient_email: str, recipient_name:
     is_testing = app.config.get('TESTING') or os.environ.get('TESTING') == '1' or os.environ.get('FLASK_ENV') == 'testing'
 
     if is_test_email or is_testing:
-        print(f"[UNREGISTRATION EMAIL SIMULATED] Skipping real SMTP delivery for test recipient: {recipient_email} (Ticket #{ticket_num})")
-        return
-
-    if not smtp_email or not smtp_password:
-        print(f"[UNREGISTRATION EMAIL DEV MODE] SMTP credentials not set in .env. Unregistration notice for '{event.get('title')}' prepared for {recipient_email}")
+        print(f"[UNREGISTRATION EMAIL SIMULATED] Skipping real delivery for test recipient: {recipient_email} (Ticket #{ticket_num})")
         return
 
     try:
-        msg = MIMEMultipart('alternative')
-        msg['Subject'] = f"🚫 Cancellation Confirmed: {event.get('title')} ({ticket_num})"
-        msg['From'] = f"{sender_name} <{smtp_email}>"
-        msg['To'] = recipient_email
-
         html_body = f"""
         <!DOCTYPE html>
         <html>
@@ -2556,19 +2576,13 @@ def profile():
         city = request.form.get('city', '').strip()
         pincode = request.form.get('pincode', '').strip()
         
-        # Check if email is valid & changed
+        # Check if email is valid
         if email:
             is_email_v, clean_email = validate_email_address(email)
             if not is_email_v:
                 conn.close()
                 return redirect(url_for('profile', error=clean_email))
             email = clean_email
-
-            if email.lower() != db_email:
-                otp_entry = _OTP_STORE.get(email.lower())
-                if not otp_entry or not otp_entry.get('verified'):
-                    conn.close()
-                    return redirect(url_for('profile', error="Verification required: Please verify your new email address with OTP before saving."))
 
         # Check if phone is valid (format check only, no OTP verification needed)
         if phone:
@@ -3289,7 +3303,7 @@ def generate_smart_ai_reply(user_message: str, username: str, events: list) -> s
 
     # 8. Profile & Settings
     if any(w in msg_lower for w in ['profile', 'account', 'photo', 'avatar', 'phone', 'email change', 'password']):
-        return "You can update your personal details, verify your phone/email with OTP, upload and crop your profile avatar, and view your 4-digit User ID in the **'My Profile'** page (click your avatar at top-right)!"
+        return "You can update your personal details, upload and crop your profile avatar, and view your 4-digit User ID in the **'My Profile'** page (click your avatar at top-right)!"
 
     # 9. Admin & Host Features
     if any(w in msg_lower for w in ['admin', 'host', 'analytics', 'scanner', 'checkin', 'verify pass']):
