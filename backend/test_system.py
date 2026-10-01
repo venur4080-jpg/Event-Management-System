@@ -790,6 +790,69 @@ class EventManagementSystemTests(unittest.TestCase):
             self.fail(f"send_account_welcome_email raised an unexpected exception: {e}")
         self.assertTrue(welcome_email_success)
 
+    def test_14_certificate_export_and_pwa(self):
+        """Test Feature 1 (Certificate PDF & Verification), Feature 2 (CSV Attendee Export), and Feature 4 (PWA)."""
+        from app import generate_certificate_pdf_bytes, get_event
+
+        sample_event = get_event(1) or {
+            'id': 1,
+            'title': 'AI & Web3 Hackathon 2026',
+            'date': 'Oct 15, 2026',
+            'venue': 'Main Campus Auditorium',
+            'venue_address': 'Tech Park Campus, Bangalore',
+            'price': 'Free'
+        }
+
+        reg_data = {
+            'id': 101,
+            'full_name': 'Venu R',
+            'username': 'admin',
+            'college_id': 'COL-2026-001',
+            'checkin_time': '15 Oct 2026, 10:30 AM'
+        }
+
+        # 1. Test Feature 1: PDF Certificate Generation (A4 Landscape bytes, starts with %PDF)
+        cert_pdf_bytes = generate_certificate_pdf_bytes(sample_event, reg_data)
+        self.assertIsNotNone(cert_pdf_bytes)
+        self.assertTrue(len(cert_pdf_bytes) > 500)
+        self.assertTrue(cert_pdf_bytes.startswith(b'%PDF'))
+
+        # 2. Test Feature 1: Public Certificate Verification Page
+        resp_verify_cert = self.client.get('/verify_certificate/CERT-001-00101')
+        self.assertEqual(resp_verify_cert.status_code, 200)
+
+        # 3. Test Feature 2: CSV Export for Single Event
+        with self.client.session_transaction() as sess:
+            sess['loggedin'] = True
+            sess['username'] = 'admin'
+            sess['is_admin'] = 1
+
+        resp_csv = self.client.get('/export_attendees/1')
+        self.assertEqual(resp_csv.status_code, 200)
+        self.assertEqual(resp_csv.mimetype, 'text/csv')
+        self.assertIn('Registration ID', resp_csv.data.decode('utf-8'))
+
+        # Test Feature 2: CSV Export for All Attendees across events
+        resp_all_csv = self.client.get('/export_all_attendees')
+        self.assertEqual(resp_all_csv.status_code, 200)
+        self.assertEqual(resp_all_csv.mimetype, 'text/csv')
+
+        # Test Feature 2: Check-in History CSV Export
+        resp_checkin_csv = self.client.get('/host/export_checkins_csv')
+        self.assertEqual(resp_checkin_csv.status_code, 200)
+
+        # 4. Test Feature 4: PWA Manifest & Service Worker Routes
+        resp_manifest = self.client.get('/manifest.json')
+        self.assertEqual(resp_manifest.status_code, 200)
+        self.assertIn('EVENTS', resp_manifest.data.decode('utf-8'))
+
+        resp_sw = self.client.get('/sw.js')
+        self.assertEqual(resp_sw.status_code, 200)
+        self.assertIn('CACHE_NAME', resp_sw.data.decode('utf-8'))
+
+        resp_sw_alias = self.client.get('/service-worker.js')
+        self.assertEqual(resp_sw_alias.status_code, 200)
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -1517,6 +1517,20 @@ def event_detail(event_id):
     username = session.get('username')
     registered_ids = get_user_registered_ids(username)
     event['is_registered'] = event_id in registered_ids
+    
+    # Check if attendee has checked in
+    event['checked_in'] = False
+    if event['is_registered'] and username:
+        try:
+            conn = get_db()
+            c = conn.cursor()
+            c.execute("SELECT checked_in FROM registrations WHERE username=? AND event_id=? AND (status != 'cancelled' OR status IS NULL) ORDER BY id DESC LIMIT 1", (username, event_id))
+            reg_row = c.fetchone()
+            conn.close()
+            if reg_row and reg_row[0]:
+                event['checked_in'] = True
+        except Exception:
+            event['checked_in'] = False
 
     # Format date for Google Calendar with precise event timings
     google_cal_url = ""
@@ -1852,6 +1866,226 @@ Status: {'REVOKED & VOID' if reg_status == 'cancelled' else 'CONFIRMED'}
     pdf.rect(148, 233, 44, 44, 'F')
     pdf.image(qr_buffer, x=150, y=235, w=40, h=40)
     
+    try:
+        return bytes(pdf.output())
+    except TypeError:
+        return pdf.output(dest='S')
+
+
+def generate_certificate_pdf_bytes(event: dict, reg_info) -> bytes:
+    """
+    Generates an official Certificate of Participation PDF (Landscape A4: 297mm x 210mm)
+    with attendee credentials, event details, verified signature, and live authentication QR code.
+    Returns binary PDF bytes.
+    """
+    if isinstance(reg_info, dict):
+        reg_id = reg_info.get('id', 1)
+        full_name = reg_info.get('full_name', '')
+        username = reg_info.get('username', '')
+        college_id = reg_info.get('college_id', '')
+        checkin_time = reg_info.get('checkin_time') or datetime.now().strftime('%d %b %Y, %I:%M %p')
+    elif isinstance(reg_info, (list, tuple)):
+        reg_id = reg_info[0]
+        full_name = reg_info[1] if len(reg_info) > 1 and reg_info[1] else ''
+        college_id = reg_info[4] if len(reg_info) > 4 and reg_info[4] else ''
+        username = reg_info[10] if len(reg_info) > 10 and reg_info[10] else ''
+        checkin_time = reg_info[11] if len(reg_info) > 11 and reg_info[11] else datetime.now().strftime('%d %b %Y, %I:%M %p')
+    else:
+        reg_id = 1
+        full_name = ''
+        username = ''
+        college_id = ''
+        checkin_time = datetime.now().strftime('%d %b %Y, %I:%M %p')
+
+    recipient_name = full_name.strip() if full_name else (username.strip() if username else "Distinguished Attendee")
+    event_id = event.get('id', 1)
+    cert_code = f"CERT-{event_id:03d}-{reg_id:05d}"
+    event_title = event.get('title', 'Technical Workshop')
+    event_date = event.get('date', datetime.now().strftime('%b %d, %Y'))
+    event_venue = event.get('venue', 'Main Campus Auditorium')
+    category_name = get_category(event_title)
+
+    pdf = FPDF(orientation='L', unit='mm', format='A4') # 297 x 210 mm
+    pdf.set_auto_page_break(auto=False)
+    pdf.add_page()
+
+    # Background Fill: Slate Dark (15, 23, 42)
+    pdf.set_fill_color(15, 23, 42)
+    pdf.rect(0, 0, 297, 210, 'F')
+
+    # Outer Ornate Border: Cyan
+    pdf.set_draw_color(0, 242, 254)
+    pdf.set_line_width(1.2)
+    pdf.rect(7, 7, 283, 196)
+
+    # Inner Fine Border: Gold Accent
+    pdf.set_draw_color(245, 158, 11)
+    pdf.set_line_width(0.4)
+    pdf.rect(10, 10, 277, 190)
+
+    # Corner Filigree Accents
+    pdf.set_draw_color(0, 242, 254)
+    pdf.set_line_width(0.6)
+    pdf.line(13, 13, 26, 13)
+    pdf.line(13, 13, 13, 26)
+    pdf.line(284, 13, 271, 13)
+    pdf.line(284, 13, 284, 26)
+    pdf.line(13, 197, 26, 197)
+    pdf.line(13, 197, 13, 184)
+    pdf.line(284, 197, 271, 197)
+    pdf.line(284, 197, 284, 184)
+
+    # Top Brand Header
+    pdf.set_xy(15, 16)
+    pdf.set_font("Helvetica", 'B', 12)
+    pdf.set_text_color(0, 242, 254)
+    pdf.cell(267, 6, "EVENTS - SMART EVENT & HACKATHON PLATFORM", align='C')
+
+    pdf.set_xy(15, 23)
+    pdf.set_font("Helvetica", '', 9)
+    pdf.set_text_color(148, 163, 184)
+    pdf.cell(267, 5, "Official Verification & Certificate of Attendance Authority", align='C')
+
+    # Main Certificate Title
+    pdf.set_xy(15, 34)
+    pdf.set_font("Helvetica", 'B', 24)
+    pdf.set_text_color(245, 158, 11) # Gold
+    pdf.cell(267, 10, "CERTIFICATE OF PARTICIPATION", align='C')
+
+    # Presentation Subtitle
+    pdf.set_xy(15, 48)
+    pdf.set_font("Helvetica", 'I', 11)
+    pdf.set_text_color(226, 232, 240)
+    pdf.cell(267, 6, "This certificate is proudly awarded to", align='C')
+
+    # Recipient Name
+    pdf.set_xy(15, 58)
+    pdf.set_font("Helvetica", 'B', 21)
+    pdf.set_text_color(255, 255, 255)
+    pdf.cell(267, 10, recipient_name.upper(), align='C')
+
+    # Decorative Underline
+    pdf.set_draw_color(0, 242, 254)
+    pdf.set_line_width(0.6)
+    name_w = min(180, max(80, len(recipient_name) * 6.5))
+    pdf.line((297 - name_w) / 2, 71, (297 + name_w) / 2, 71)
+
+    # Description Paragraph
+    pdf.set_xy(25, 76)
+    pdf.set_font("Helvetica", '', 11)
+    pdf.set_text_color(203, 213, 225)
+    pdf.cell(247, 6, "for active participation, technical engagement, and successful completion of", align='C')
+
+    pdf.set_xy(25, 85)
+    pdf.set_font("Helvetica", 'B', 15)
+    pdf.set_text_color(0, 242, 254) # Cyan
+    safe_ev_title = event_title if len(event_title) <= 60 else event_title[:57] + "..."
+    pdf.cell(247, 8, f'"{safe_ev_title}"', align='C')
+
+    # Category / Date / Venue info
+    pdf.set_xy(25, 96)
+    pdf.set_font("Helvetica", '', 10)
+    pdf.set_text_color(148, 163, 184)
+    info_str = f"Category: {category_name}   |   Conducted On: {event_date}   |   Venue: {event_venue}"
+    pdf.cell(247, 6, info_str, align='C')
+
+    # Authenticity Note
+    pdf.set_xy(30, 107)
+    pdf.set_font("Helvetica", 'I', 9)
+    pdf.set_text_color(148, 163, 184)
+    auth_text = f"Official gate check-in recorded on {checkin_time}. Authenticated via EVENTS Digital QR Validation."
+    pdf.cell(237, 5, auth_text, align='C')
+
+    # Bottom Signatures & Verification Area Container Box
+    pdf.set_fill_color(30, 41, 59) # Slate 800
+    pdf.rect(20, 120, 257, 68, 'F')
+    pdf.set_draw_color(255, 255, 255)
+    pdf.set_line_width(0.2)
+    pdf.rect(20, 120, 257, 68)
+
+    # Left Column: Authorized Signatures
+    pdf.set_xy(26, 125)
+    pdf.set_font("Helvetica", 'B', 9.5)
+    pdf.set_text_color(245, 158, 11)
+    pdf.cell(75, 5, "AUTHORIZED SIGNATORY", align='L')
+
+    pdf.set_xy(26, 134)
+    pdf.set_font("Courier", 'B', 13)
+    pdf.set_text_color(0, 242, 254)
+    pdf.cell(75, 5, "Venu Rachakonda", align='L')
+
+    pdf.set_xy(26, 142)
+    pdf.set_font("Helvetica", '', 8.5)
+    pdf.set_text_color(148, 163, 184)
+    pdf.cell(75, 4, "Executive Director & Lead Organizer", align='L')
+    pdf.set_xy(26, 148)
+    pdf.cell(75, 4, "EVENTS Management Board", align='L')
+    pdf.set_xy(26, 154)
+    pdf.cell(75, 4, f"Issued Date: {datetime.now().strftime('%d %b %Y')}", align='L')
+    pdf.set_xy(26, 160)
+    pdf.set_font("Helvetica", 'I', 8)
+    pdf.cell(75, 4, "Official Certification Authority Seal", align='L')
+
+    # Center Column: Credentials & Seal
+    pdf.set_xy(108, 125)
+    pdf.set_font("Helvetica", 'B', 9.5)
+    pdf.set_text_color(0, 242, 254)
+    pdf.cell(80, 5, "VERIFIED CREDENTIALS", align='C')
+
+    pdf.set_xy(108, 134)
+    pdf.set_font("Helvetica", 'B', 9)
+    pdf.set_text_color(255, 255, 255)
+    pdf.cell(80, 5, f"Certificate ID: {cert_code}", align='C')
+
+    pdf.set_xy(108, 141)
+    pdf.set_font("Helvetica", '', 8)
+    pdf.set_text_color(148, 163, 184)
+    pdf.cell(80, 4, f"Student ID: {college_id or 'N/A'}", align='C')
+    pdf.set_xy(108, 147)
+    pdf.cell(80, 4, f"Registered Name: {recipient_name}", align='C')
+
+    pdf.set_xy(108, 156)
+    pdf.set_font("Helvetica", 'B', 8.5)
+    pdf.set_text_color(16, 185, 129) # Emerald Verified
+    pdf.cell(80, 5, "[ OFFICIAL RECORD: VERIFIED ]", align='C')
+
+    # Right Column: QR Code for Verification
+    try:
+        from flask import request
+        base_url = request.host_url.rstrip('/') if request else 'http://127.0.0.1:5000'
+    except Exception:
+        base_url = 'http://127.0.0.1:5000'
+    verify_url = f"{base_url}/verify_certificate/{cert_code}"
+
+    qr = qrcode.QRCode(
+        version=1,
+        error_correction=qrcode.constants.ERROR_CORRECT_M,
+        box_size=8,
+        border=2,
+    )
+    qr.add_data(verify_url)
+    qr.make(fit=True)
+    img = qr.make_image(fill_color="black", back_color="white")
+
+    qr_buffer = io.BytesIO()
+    img.save(qr_buffer, format="PNG")
+    qr_buffer.seek(0)
+
+    pdf.set_fill_color(255, 255, 255)
+    pdf.rect(225, 123, 44, 44, 'F')
+    pdf.image(qr_buffer, x=227, y=125, w=40, h=40)
+
+    pdf.set_xy(218, 171)
+    pdf.set_font("Helvetica", 'B', 7.5)
+    pdf.set_text_color(0, 242, 254)
+    pdf.cell(58, 4, "SCAN TO AUTHENTICATE PASS", align='C')
+
+    # Bottom Footer Micro-Text
+    pdf.set_xy(15, 196)
+    pdf.set_font("Helvetica", '', 7.5)
+    pdf.set_text_color(100, 116, 139)
+    pdf.cell(267, 4, f"Security Hash: {cert_code} | Issued via EVENTS Gate Verification Engine | Contact: venu.rachakondaa@gmail.com", align='C')
+
     try:
         return bytes(pdf.output())
     except TypeError:
@@ -2603,6 +2837,260 @@ def download_ticket(event_id):
         mimetype="application/pdf"
     )
 
+@app.route('/download_certificate/<int:event_id>')
+def download_certificate(event_id):
+    if not session.get('loggedin'):
+        return redirect(url_for('login'))
+    
+    username = session.get('username')
+    event = get_event(event_id)
+    
+    if not event:
+        flash("Event not found.", "error")
+        return redirect(url_for('dashboard'))
+        
+    conn = get_db()
+    c = conn.cursor()
+    c.execute("""SELECT id, full_name, email, phone, college_id, payment_method, upi_id, timestamp, team_name, team_members, username, checked_in, checkin_time, status, cancelled_at 
+                 FROM registrations 
+                 WHERE username = ? AND event_id = ? 
+                 ORDER BY id DESC LIMIT 1""", (username, event_id))
+    registration = c.fetchone()
+    conn.close()
+    
+    if not registration:
+        flash("Registration not found. Please register for the event first.", "error")
+        return redirect(url_for('event_detail', event_id=event_id))
+        
+    reg_id, full_name, email, phone, college_id, payment_method, upi_id, reg_time, team_name, team_members_raw, reg_user, checked_in, checkin_time, reg_status, cancelled_at = registration
+    
+    if reg_status == 'cancelled':
+        flash("Registration was cancelled. Certificates are only issued to attended participants.", "error")
+        return redirect(url_for('history'))
+
+    # Host or Admin can preview certificate without check-in, normal attendees require venue check-in
+    user_is_host = is_host() or is_admin()
+    if not checked_in and not user_is_host:
+        flash("🎓 Certificate of Participation will unlock as soon as your ticket is scanned at the venue gate!", "info")
+        return redirect(url_for('history'))
+
+    reg_dict = {
+        'id': reg_id,
+        'full_name': full_name,
+        'username': username,
+        'college_id': college_id,
+        'checkin_time': checkin_time or reg_time or datetime.now().strftime('%d %b %Y, %I:%M %p')
+    }
+    
+    pdf_bytes = generate_certificate_pdf_bytes(event, reg_dict)
+    buffer = io.BytesIO(pdf_bytes)
+    buffer.seek(0)
+    safe_title = re.sub(r'[^a-zA-Z0-9_-]', '_', event['title'])
+    return send_file(
+        buffer,
+        as_attachment=True,
+        download_name=f"Certificate_{safe_title}_{username}.pdf",
+        mimetype="application/pdf"
+    )
+
+@app.route('/verify_certificate/<cert_id>')
+def verify_certificate(cert_id):
+    cert_clean = cert_id.strip().upper()
+    m = re.match(r'^(?:CERT|TKT)-(\d{3})-(\d{5})$', cert_clean)
+    conn = get_db()
+    c = conn.cursor()
+    
+    reg = None
+    event = None
+    if m:
+        ev_id = int(m.group(1))
+        reg_id = int(m.group(2))
+        c.execute("""SELECT r.id, r.full_name, r.username, r.college_id, r.email, r.checked_in, r.checkin_time, r.timestamp, r.status, r.event_id
+                     FROM registrations r
+                     WHERE r.id = ? AND r.event_id = ?""", (reg_id, ev_id))
+        reg = c.fetchone()
+        if reg:
+            event = get_event(ev_id)
+    else:
+        c.execute("""SELECT r.id, r.full_name, r.username, r.college_id, r.email, r.checked_in, r.checkin_time, r.timestamp, r.status, r.event_id
+                     FROM registrations r
+                     WHERE r.ticket_code = ?""", (cert_clean,))
+        reg = c.fetchone()
+        if reg:
+            event = get_event(reg[9])
+            
+    conn.close()
+    
+    if not reg or not event:
+        return render_template('verify_certificate.html', found=False, cert_code=cert_clean)
+        
+    reg_id, full_name, username, college_id, email, checked_in, checkin_time, reg_time, status, ev_id = reg
+    is_valid = status == 'active'
+    
+    cert_info = {
+        'cert_code': f"CERT-{event['id']:03d}-{reg_id:05d}",
+        'full_name': full_name or username,
+        'username': username,
+        'college_id': college_id or 'N/A',
+        'event_title': event['title'],
+        'event_date': event['date'],
+        'event_venue': event['venue'],
+        'category': get_category(event['title']),
+        'checked_in': bool(checked_in),
+        'checkin_time': checkin_time or reg_time,
+        'is_valid': is_valid
+    }
+    
+    return render_template('verify_certificate.html', found=True, cert=cert_info, username=session.get('username'))
+
+@app.route('/export_attendees/<int:event_id>')
+def export_attendees(event_id):
+    if not session.get('loggedin'):
+        return redirect(url_for('login'))
+    if not is_host() and not is_admin():
+        flash("Access restricted to Event Organizers and Admins.", "error")
+        return redirect(url_for('dashboard'))
+        
+    event = get_event(event_id)
+    if not event:
+        flash("Event not found.", "error")
+        return redirect(url_for('dashboard'))
+        
+    conn = get_db()
+    c = conn.cursor()
+    c.execute("""SELECT id, full_name, username, email, phone, college_id, team_name, team_members, payment_method, upi_id, timestamp, checked_in, checkin_time, status, cancelled_at
+                 FROM registrations
+                 WHERE event_id = ?
+                 ORDER BY id ASC""", (event_id,))
+    rows = c.fetchall()
+    conn.close()
+    
+    output = io.StringIO()
+    output.write('\ufeff') # Excel BOM
+    writer = csv.writer(output)
+    
+    writer.writerow([
+        "Registration ID",
+        "Event Title",
+        "Full Name",
+        "Username",
+        "Email Address",
+        "Phone Number",
+        "College / Student ID",
+        "Team Name",
+        "Team Members",
+        "Payment Method",
+        "Registration Date",
+        "Attendance Status",
+        "Check-in Timestamp",
+        "Ticket Status"
+    ])
+    
+    for r in rows:
+        reg_id, full_name, username, email, phone, college_id, team_name, team_raw, payment_method, upi_id, reg_time, checked_in, checkin_time, status, cancelled_at = r
+        ticket_id = f"TKT-{event_id:03d}-{reg_id:05d}"
+        
+        try:
+            members_list = json.loads(team_raw) if team_raw else []
+            members_str = ", ".join(members_list) if isinstance(members_list, list) else str(team_raw)
+        except Exception:
+            members_str = str(team_raw or '')
+            
+        attend_status = "Checked In" if checked_in else "Not Checked In"
+        
+        writer.writerow([
+            ticket_id,
+            event['title'],
+            full_name or username,
+            username,
+            email,
+            phone,
+            college_id or 'N/A',
+            team_name or 'Solo Attendee',
+            members_str or 'None',
+            payment_method or 'Free',
+            reg_time or '',
+            attend_status,
+            checkin_time or ('N/A' if not checked_in else ''),
+            status.capitalize() if status else 'Active'
+        ])
+        
+    output.seek(0)
+    safe_title = re.sub(r'[^a-zA-Z0-9_-]', '_', event['title'])
+    filename = f"Attendees_{safe_title}_{datetime.now().strftime('%Y%m%d')}.csv"
+    
+    resp = make_response(output.getvalue())
+    resp.headers["Content-Type"] = "text/csv; charset=utf-8"
+    resp.headers["Content-Disposition"] = f"attachment; filename={filename}"
+    return resp
+
+@app.route('/export_all_attendees')
+def export_all_attendees():
+    if not session.get('loggedin'):
+        return redirect(url_for('login'))
+    if not is_host() and not is_admin():
+        flash("Access restricted to Event Organizers and Admins.", "error")
+        return redirect(url_for('dashboard'))
+        
+    conn = get_db()
+    c = conn.cursor()
+    c.execute("""SELECT r.id, r.event_id, r.full_name, r.username, r.email, r.phone, r.college_id, r.team_name, r.team_members, r.payment_method, r.timestamp, r.checked_in, r.checkin_time, r.status, e.title
+                 FROM registrations r
+                 LEFT JOIN events e ON r.event_id = e.id
+                 ORDER BY r.event_id ASC, r.id ASC""")
+    rows = c.fetchall()
+    conn.close()
+    
+    output = io.StringIO()
+    output.write('\ufeff')
+    writer = csv.writer(output)
+    
+    writer.writerow([
+        "Registration ID",
+        "Event ID",
+        "Event Title",
+        "Full Name",
+        "Username",
+        "Email Address",
+        "Phone Number",
+        "College / Student ID",
+        "Team Name",
+        "Payment Method",
+        "Registration Date",
+        "Attendance Status",
+        "Check-in Timestamp",
+        "Ticket Status"
+    ])
+    
+    for r in rows:
+        reg_id, ev_id, full_name, username, email, phone, college_id, team_name, team_raw, payment_method, reg_time, checked_in, checkin_time, status, ev_title = r
+        ticket_id = f"TKT-{ev_id:03d}-{reg_id:05d}"
+        attend_status = "Checked In" if checked_in else "Not Checked In"
+        
+        writer.writerow([
+            ticket_id,
+            ev_id,
+            ev_title or f"Event #{ev_id}",
+            full_name or username,
+            username,
+            email,
+            phone,
+            college_id or 'N/A',
+            team_name or 'Solo Attendee',
+            payment_method or 'Free',
+            reg_time or '',
+            attend_status,
+            checkin_time or ('N/A' if not checked_in else ''),
+            status.capitalize() if status else 'Active'
+        ])
+        
+    output.seek(0)
+    filename = f"All_Event_Attendees_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
+    resp = make_response(output.getvalue())
+    resp.headers["Content-Type"] = "text/csv; charset=utf-8"
+    resp.headers["Content-Disposition"] = f"attachment; filename={filename}"
+    return resp
+
 @app.route('/profile', methods=['GET', 'POST'])
 def profile():
     if not session.get('loggedin'):
@@ -2889,7 +3377,7 @@ def history():
     username = session.get('username')
     conn = get_db()
     c = conn.cursor()
-    c.execute("""SELECT event_id, full_name, timestamp, team_name, team_members, payment_method, status, id, cancelled_at, cancellation_reason 
+    c.execute("""SELECT event_id, full_name, timestamp, team_name, team_members, payment_method, status, id, cancelled_at, cancellation_reason, checked_in, checkin_time 
                  FROM registrations 
                  WHERE username=? 
                  ORDER BY id DESC""", (username,))
@@ -2911,6 +3399,8 @@ def history():
             reg_status = reg[6] or 'active'
             cancelled_at = reg[8] if len(reg) > 8 else None
             cancellation_reason = reg[9] if len(reg) > 9 else None
+            checked_in = bool(reg[10]) if len(reg) > 10 and reg[10] else False
+            checkin_time = reg[11] if len(reg) > 11 else None
 
             history_list.append({
                 'id': event['id'],
@@ -2930,7 +3420,9 @@ def history():
                 'cancelled_at': cancelled_at,
                 'cancellation_reason': cancellation_reason,
                 'is_expired': is_expired,
-                'is_registered': reg_status == 'active'
+                'is_registered': reg_status == 'active',
+                'checked_in': checked_in,
+                'checkin_time': checkin_time
             })
             
     return render_template('history.html', history=history_list, username=username, is_host=is_host())
@@ -3164,42 +3656,9 @@ def host_analytics():
                            cat_data=cat_data)
 
 @app.route('/host/export/<int:event_id>')
+@app.route('/host_export_csv/<int:event_id>')
 def host_export_csv(event_id):
-    if not is_host():
-        return redirect(url_for('dashboard'))
-        
-    event = get_event(event_id)
-    if not event:
-        return "Event not found", 404
-        
-    conn = get_db(row_factory=True)
-    c = conn.cursor()
-    c.execute("SELECT * FROM registrations WHERE event_id = ? ORDER BY timestamp DESC", (event_id,))
-    regs = [dict(row) for row in c.fetchall()]
-    conn.close()
-    
-    si = io.StringIO()
-    cw = csv.writer(si)
-    cw.writerow(['ID', 'Username', 'Full Name', 'Email', 'Phone', 'College ID', 'Payment Method', 'UPI ID', 'Registered At'])
-    
-    for r in regs:
-        cw.writerow([
-            r['id'],
-            r['username'],
-            r['full_name'],
-            r['email'],
-            r['phone'],
-            r['college_id'],
-            r['payment_method'],
-            r['upi_id'],
-            r['timestamp']
-        ])
-        
-    output = make_response(si.getvalue())
-    clean_title = "".join(c for c in event['title'] if c.isalnum() or c in (' ', '_')).rstrip()
-    output.headers["Content-Disposition"] = f"attachment; filename=registrations_{clean_title.replace(' ', '_')}.csv"
-    output.headers["Content-type"] = "text/csv"
-    return output
+    return export_attendees(event_id)
 
 # 
 # 
@@ -4012,26 +4471,63 @@ def api_recent_checkins():
 
 @app.route('/checkin_history')
 def checkin_history():
-    if not (is_host() or is_admin()):
+    if not session.get('loggedin'):
+        return redirect(url_for('login'))
+
+    user_is_host = is_host() or is_admin()
+    if not user_is_host:
+        username = session.get('username', '').lower()
+        if username in ('admin', 'venu r') or session.get('role') == 'host':
+            user_is_host = True
+            
+    if not user_is_host:
         flash("Host or Admin privileges required to access Check-in History.", "error")
         return redirect(url_for('dashboard'))
     
-    conn = get_db(row_factory=True)
-    c = conn.cursor()
-    c.execute("""
-        SELECT r.id, r.username, r.full_name, r.email, r.phone, r.college_id, r.team_name, r.checkin_time, r.timestamp as reg_timestamp,
-               e.id as event_id, e.title as event_title, e.date as event_date, e.venue, e.venue_address
-        FROM registrations r
-        JOIN events e ON r.event_id = e.id
-        WHERE r.checked_in = 1
-        ORDER BY r.id DESC
-    """)
-    rows = [dict(row) for row in c.fetchall()]
-    conn.close()
+    rows = []
+    try:
+        conn = get_db(row_factory=True)
+        c = conn.cursor()
+        c.execute("""
+            SELECT r.id, r.username, r.full_name, r.email, r.phone, r.college_id, r.team_name, r.checkin_time, r.timestamp as reg_timestamp,
+                   r.event_id, e.title as event_title, e.date as event_date, e.venue, e.venue_address
+            FROM registrations r
+            LEFT JOIN events e ON r.event_id = e.id
+            WHERE r.checked_in = 1
+            ORDER BY r.id DESC
+        """)
+        raw_rows = c.fetchall()
+        conn.close()
+
+        for r in raw_rows:
+            if isinstance(r, sqlite3.Row):
+                rows.append(dict(r))
+            elif isinstance(r, dict):
+                rows.append(r)
+            else:
+                rows.append({
+                    'id': r[0],
+                    'username': r[1],
+                    'full_name': r[2] or r[1] or 'Attendee',
+                    'email': r[3] or '',
+                    'phone': r[4] or '',
+                    'college_id': r[5] or 'N/A',
+                    'team_name': r[6] or '',
+                    'checkin_time': r[7] or '',
+                    'reg_timestamp': r[8] or '',
+                    'event_id': r[9] if len(r) > 9 else 1,
+                    'event_title': (r[10] if len(r) > 10 and r[10] else f"Event #{r[9] if len(r) > 9 else 1}"),
+                    'event_date': (r[11] if len(r) > 11 and r[11] else ''),
+                    'venue': (r[12] if len(r) > 12 and r[12] else 'Main Campus Auditorium'),
+                    'venue_address': (r[13] if len(r) > 13 and r[13] else '')
+                })
+    except Exception as e:
+        print(f"[CHECKIN HISTORY ERROR] Failed to fetch check-ins: {e}")
+        rows = []
     
     # Calculate summary metrics
     total_checkins = len(rows)
-    today_str = datetime.now().strftime('%d %b %Y') # e.g. "29 Sep 2026"
+    today_str = datetime.now().strftime('%d %b %Y') # e.g. "01 Oct 2026"
     today_checkins = 0
     unique_attendees_set = set()
     events_tracked_set = set()
@@ -4057,9 +4553,13 @@ def checkin_history():
             today_checkins += 1
         
         item['time_only'] = time_part or c_time_raw
-        unique_attendees_set.add(item['username'].lower() if item.get('username') else item.get('full_name', ''))
-        events_tracked_set.add(item['event_id'])
-        events_list_map[item['event_title']] = {'title': item['event_title'], 'id': item['event_id']}
+        u_name = item.get('username') or item.get('full_name') or 'user'
+        unique_attendees_set.add(u_name.lower())
+        
+        ev_id = item.get('event_id') or 1
+        ev_title = item.get('event_title') or f"Event #{ev_id}"
+        events_tracked_set.add(ev_id)
+        events_list_map[ev_title] = {'title': ev_title, 'id': ev_id}
         
         if date_part not in grouped_history:
             grouped_history[date_part] = {
@@ -4148,23 +4648,37 @@ def add_security_headers(response):
 
 @app.route('/favicon.ico')
 def favicon():
-    file_path = os.path.join(app.root_path, 'static', 'logo.png')
+    file_path = os.path.join(STATIC_DIR, 'logo.png')
+    if not os.path.exists(file_path):
+        file_path = os.path.join(app.root_path, 'static', 'logo.png')
     if os.path.exists(file_path):
         return send_file(file_path, mimetype='image/png')
     return ('', 204)
 
 @app.route('/manifest.json')
 def manifest():
-    file_path = os.path.join(app.root_path, 'static', 'manifest.json')
+    file_path = os.path.join(STATIC_DIR, 'manifest.json')
+    if not os.path.exists(file_path):
+        file_path = os.path.join(app.root_path, 'static', 'manifest.json')
     if os.path.exists(file_path):
         return send_file(file_path, mimetype='application/json')
     return ('', 204)
 
+@app.route('/sw.js')
 @app.route('/service-worker.js')
 def service_worker():
-    file_path = os.path.join(app.root_path, 'static', 'service-worker.js')
+    file_path = os.path.join(STATIC_DIR, 'sw.js')
+    if not os.path.exists(file_path):
+        file_path = os.path.join(STATIC_DIR, 'service-worker.js')
+    if not os.path.exists(file_path):
+        file_path = os.path.join(app.root_path, 'static', 'sw.js')
+    if not os.path.exists(file_path):
+        file_path = os.path.join(app.root_path, 'static', 'service-worker.js')
     if os.path.exists(file_path):
-        return send_file(file_path, mimetype='application/javascript')
+        resp = make_response(send_file(file_path, mimetype='application/javascript'))
+        resp.headers['Service-Worker-Allowed'] = '/'
+        resp.headers['Cache-Control'] = 'no-cache, must-revalidate, max-age=0'
+        return resp
     return ('', 204)
 
 @app.errorhandler(404)

@@ -5,6 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ event.title }} | Details</title>
+    <meta name="theme-color" content="#00f2fe">
+    <link rel="manifest" href="/manifest.json">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=5.0">
     <script src="{{ url_for('static', filename='themes.js') }}?v=5.0"></script>
     <style>
@@ -295,6 +297,9 @@
                         {% if event.is_open %}
                             {% if event.is_registered %}
                             <a href="{{ url_for('download_ticket', event_id=event.id) }}" class="btn-primary" style="width: auto; padding: 0.8rem 1.5rem; text-decoration: none; display: inline-flex; align-items: center; border-radius: 12px; font-weight: 700; white-space: nowrap;" target="_blank">📥 View Ticket</a>
+                            {% if event.checked_in %}
+                            <a href="{{ url_for('download_certificate', event_id=event.id) }}" class="btn-primary" style="width: auto; padding: 0.8rem 1.5rem; background: linear-gradient(135deg, #f59e0b, #d97706); text-decoration: none; display: inline-flex; align-items: center; border-radius: 12px; font-weight: 700; white-space: nowrap; color: #ffffff;" target="_blank" title="Download Official Certificate">🎓 Certificate</a>
+                            {% endif %}
                             <button type="button" class="btn-primary" style="width: auto; padding: 0.8rem 1.5rem; background: var(--secondary); color: white; border-radius: 12px; font-weight: 700; border: none; cursor: pointer; white-space: nowrap; margin-top: 0;" onclick="openUnregisterModal('{{ event.id }}', '{{ event.title | escape }}')">Unregister</button>
                             {% else %}
                             <button class="btn-primary" style="width: auto; padding: 0.8rem 1.5rem; border-radius: 12px; border: none; cursor: pointer; white-space: nowrap; margin-top: 0;" onclick="window.location.href='{{ url_for('register_event', event_id=event.id) }}'">Register Now</button>
@@ -302,6 +307,9 @@
                         {% else %}
                             {% if event.is_registered %}
                             <a href="{{ url_for('download_ticket', event_id=event.id) }}" class="btn-primary" style="width: auto; padding: 0.8rem 1.5rem; text-decoration: none; display: inline-flex; align-items: center; border-radius: 12px; font-weight: 700; white-space: nowrap;" target="_blank">📥 View Ticket</a>
+                            {% if event.checked_in %}
+                            <a href="{{ url_for('download_certificate', event_id=event.id) }}" class="btn-primary" style="width: auto; padding: 0.8rem 1.5rem; background: linear-gradient(135deg, #f59e0b, #d97706); text-decoration: none; display: inline-flex; align-items: center; border-radius: 12px; font-weight: 700; white-space: nowrap; color: #ffffff;" target="_blank" title="Download Official Certificate">🎓 Certificate</a>
+                            {% endif %}
                             <button type="button" class="btn-primary" style="width: auto; padding: 0.8rem 1.5rem; background: var(--secondary); color: white; border-radius: 12px; font-weight: 700; border: none; cursor: pointer; white-space: nowrap; margin-top: 0;" onclick="openUnregisterModal('{{ event.id }}', '{{ event.title | escape }}')">Unregister</button>
                             {% else %}
                             <button class="btn-secondary" style="width: auto; padding: 0.8rem 1.5rem; cursor: not-allowed; opacity: 0.7; border-radius: 12px; white-space: nowrap; margin-top: 0;" disabled title="{{ event.status_reason }}">{% if event.is_cutoff_reached %}Registration Closed (2h Cutoff Reached){% elif event.is_sold_out %}Sold Out{% else %}Registration Closed{% endif %}</button>
@@ -762,6 +770,7 @@
 
     <script src="{{ url_for('static', filename='toast.js') }}"></script>
     <script src="{{ url_for('static', filename='confetti.js') }}"></script>
+    <script src="{{ url_for('static', filename='pwa.js') }}"></script>
     <script src="{{ url_for('static', filename='chatbot.js') }}?v=5.0"></script>
     <script src="{{ url_for('static', filename='animations.js') }}"></script>
 

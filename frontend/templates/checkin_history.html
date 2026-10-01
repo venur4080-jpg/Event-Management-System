@@ -232,12 +232,12 @@
                             </thead>
                             <tbody>
                                 {% for item in group.records %}
-                                <tr class="checkin-row" data-name="{{ item.full_name|lower }}" data-username="{{ item.username|lower }}" data-college="{{ item.college_id|lower }}" data-event="{{ item.event_title }}">
+                                <tr class="checkin-row" data-name="{{ (item.full_name or item.username or '')|lower }}" data-username="{{ (item.username or '')|lower }}" data-college="{{ (item.college_id or '')|lower }}" data-event="{{ item.event_title or 'Event' }}">
                                     <td>
                                         <div class="user-avatar-cell">
-                                            <img src="https://ui-avatars.com/api/?name={{ item.full_name or item.username }}&background=00f2fe&color=0f172a&bold=true" class="user-avatar-sm" alt="avatar">
+                                            <img src="https://ui-avatars.com/api/?name={{ (item.full_name or item.username or 'User') | urlencode }}&background=00f2fe&color=0f172a&bold=true" class="user-avatar-sm" alt="avatar">
                                             <div>
-                                                <strong style="color: #ffffff; font-size: 0.95rem;">{{ item.full_name or item.username }}</strong>
+                                                <strong style="color: #ffffff; font-size: 0.95rem;">{{ item.full_name or item.username or 'Attendee' }}</strong>
                                                 {% if item.email %}
                                                 <div style="font-size: 0.76rem; color: var(--text-muted);">{{ item.email }}</div>
                                                 {% endif %}

@@ -6,7 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard | EVENTS</title>
     <meta name="description"
-        content="Discover and register for hackathons, workshops, and seminars on the EVENTS dashboard.">
+    <meta name="theme-color" content="#00f2fe">
+    <link rel="manifest" href="/manifest.json">
     <!-- Fonts and CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=5.0">
     <style>
@@ -1697,6 +1698,7 @@
     <script src="{{ url_for('static', filename='toast.js') }}"></script>
     <script src="{{ url_for('static', filename='confetti.js') }}"></script>
     <script src="{{ url_for('static', filename='notifications.js') }}"></script>
+    <script src="{{ url_for('static', filename='pwa.js') }}"></script>
     <script src="{{ url_for('static', filename='chatbot.js') }}?v=5.0"></script>
 
     <!-- Flask flash messages via toast -->

@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Certificate Verification | EVENTS</title>
+    <link rel="icon" href="{{ url_for('static', filename='logo.png') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="{{ url_for('static', filename='themes.js') }}?v=5.0"></script>
+    <style>
+        .cert-verify-wrap {
+            max-width: 680px;
+            margin: 3.5rem auto;
+            padding: 0 1.5rem;
+        }
+        .cert-card {
+            background: var(--bg-card, rgba(30, 41, 59, 0.75));
+            border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.12));
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 2.5rem;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.45);
+            position: relative;
+            overflow: hidden;
+        }
+        body.light-mode .cert-card {
+            background: #ffffff;
+            border-color: rgba(0, 0, 0, 0.08);
+            box-shadow: 0 20px 45px rgba(0, 0, 0, 0.1);
+        }
+        .cert-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: linear-gradient(90deg, #f59e0b, #00f2fe, #10b981);
+        }
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 0.55rem 1.3rem;
+            border-radius: 50px;
+            font-size: 0.95rem;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            margin-bottom: 1.5rem;
+        }
+        .badge-verified {
+            background: rgba(16, 185, 129, 0.15);
+            color: #10b981;
+            border: 1px solid #10b981;
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.25);
+        }
+        .badge-unverified {
+            background: rgba(239, 68, 68, 0.15);
+            color: #ef4444;
+            border: 1px solid #ef4444;
+        }
+        .info-table {
+            width: 100%;
+            margin-top: 1.5rem;
+            border-collapse: collapse;
+        }
+        .info-table tr {
+            border-bottom: 1px solid var(--glass-border, rgba(255, 255, 255, 0.06));
+        }
+        body.light-mode .info-table tr {
+            border-bottom-color: rgba(0, 0, 0, 0.06);
+        }
+        .info-table td {
+            padding: 0.85rem 0.5rem;
+            font-size: 0.92rem;
+        }
+        .info-label {
+            color: var(--text-muted, #94a3b8);
+            font-weight: 600;
+            width: 40%;
+        }
+        .info-val {
+            color: var(--text-main, #ffffff);
+            font-weight: 700;
+            text-align: right;
+        }
+        body.light-mode .info-val {
+            color: #0f172a;
+        }
+    </style>
+</head>
+<body>
+    <div class="cert-verify-wrap">
+        <div style="margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
+            <a href="{{ url_for('dashboard') }}" class="back-btn-unified">
+                <span class="arrow">←</span> Back to Dashboard
+            </a>
+            <div class="logo" style="font-size: 1.3rem;">EV<span>ENTS</span></div>
+        </div>
+
+        <div class="cert-card">
+            {% if found and cert.is_valid %}
+                <div style="text-align: center;">
+                    <div class="status-badge badge-verified">
+                        <span>🛡️</span> AUTHENTICATED CERTIFICATE
+                    </div>
+                    <h1 style="font-family: var(--font-heading); font-size: 1.8rem; margin: 0 0 0.5rem 0; color: var(--text-main, #ffffff);">
+                        Certificate of Participation
+                    </h1>
+                    <p style="color: var(--text-muted); font-size: 0.92rem; margin: 0;">
+                        Official Attendance & Participation Verification Record
+                    </p>
+                </div>
+
+                <table class="info-table">
+                    <tr>
+                        <td class="info-label">Certificate ID</td>
+                        <td class="info-val" style="color: var(--primary); font-family: monospace; font-size: 1rem;">{{ cert.cert_code }}</td>
+                    </tr>
+                    <tr>
+                        <td class="info-label">Recipient Name</td>
+                        <td class="info-val" style="font-size: 1.05rem;">{{ cert.full_name }}</td>
+                    </tr>
+                    <tr>
+                        <td class="info-label">Student / College ID</td>
+                        <td class="info-val">{{ cert.college_id }}</td>
+                    </tr>
+                    <tr>
+                        <td class="info-label">Event Name</td>
+                        <td class="info-val" style="color: var(--primary);">{{ cert.event_title }}</td>
+                    </tr>
+                    <tr>
+                        <td class="info-label">Category</td>
+                        <td class="info-val">{{ cert.category }}</td>
+                    </tr>
+                    <tr>
+                        <td class="info-label">Event Date</td>
+                        <td class="info-val">{{ cert.event_date }}</td>
+                    </tr>
+                    <tr>
+                        <td class="info-label">Venue</td>
+                        <td class="info-val">{{ cert.event_venue }}</td>
+                    </tr>
+                    <tr>
+                        <td class="info-label">Check-in Verification</td>
+                        <td class="info-val" style="color: #10b981;">
+                            {% if cert.checked_in %}
+                                Verified Gate Check-in ({{ cert.checkin_time }})
+                            {% else %}
+                                Attendance Confirmed
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="info-label">Issuing Authority</td>
+                        <td class="info-val">EVENTS Management Board</td>
+                    </tr>
+                </table>
+
+                <div style="margin-top: 2rem; padding: 1.2rem; background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: 14px; text-align: center;">
+                    <p style="margin: 0; color: #10b981; font-size: 0.85rem; font-weight: 600;">
+                        ✓ This certificate has been digitally signed and validated through the EVENTS cryptographic gate registration authority.
+                    </p>
+                </div>
+            {% else %}
+                <div style="text-align: center;">
+                    <div class="status-badge badge-unverified">
+                        <span>⚠️</span> UNRECOGNIZED CERTIFICATE
+                    </div>
+                    <h2 style="font-family: var(--font-heading); color: var(--text-main, #ffffff); margin-bottom: 0.5rem;">
+                        Certificate Not Found
+                    </h2>
+                    <p style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.6; margin-bottom: 1.5rem;">
+                        The certificate reference code <code style="color: var(--primary); font-weight: 700;">{{ cert_code }}</code> was not found or has been revoked.
+                    </p>
+                    <a href="{{ url_for('dashboard') }}" class="btn-primary" style="display: inline-flex; align-items: center; justify-content: center; padding: 0.75rem 1.8rem; text-decoration: none; font-weight: 700;">
+                        Go to Dashboard
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>
