@@ -679,6 +679,14 @@ def init_db():
         ("ALTER TABLE users ADD COLUMN badges TEXT DEFAULT '[]'",),
         ("ALTER TABLE users ADD COLUMN is_admin INTEGER DEFAULT 0",),
         ("ALTER TABLE users ADD COLUMN user_id TEXT DEFAULT ''",),
+        ("ALTER TABLE users ADD COLUMN is_pending_deletion INTEGER DEFAULT 0",),
+        ("ALTER TABLE users ADD COLUMN scheduled_deletion_at DATETIME",),
+        ("ALTER TABLE users ADD COLUMN deletion_deadline DATETIME",),
+        ("ALTER TABLE users ADD COLUMN deletion_reason TEXT DEFAULT ''",),
+        ("ALTER TABLE users ADD COLUMN deletion_feedback TEXT DEFAULT ''",),
+        ("ALTER TABLE users ADD COLUMN deactivated_at DATETIME",),
+        ("ALTER TABLE users ADD COLUMN deactivation_reason TEXT DEFAULT ''",),
+        ("ALTER TABLE users ADD COLUMN deactivation_feedback TEXT DEFAULT ''",),
         ("ALTER TABLE registrations ADD COLUMN checked_in INTEGER DEFAULT 0",),
         ("ALTER TABLE registrations ADD COLUMN checkin_time DATETIME",),
         ("ALTER TABLE registrations ADD COLUMN team_name TEXT DEFAULT ''",),
@@ -1299,7 +1307,8 @@ def login():
 
                     if '@' in raw_identifier:
                         # 1. Registered Email Address Login
-                        c.execute("""SELECT password, role, is_admin, is_active, full_name, profile_photo, id, user_id, username 
+                        c.execute("""SELECT password, role, is_admin, is_active, full_name, profile_photo, id, user_id, username,
+                                            COALESCE(is_pending_deletion, 0), deletion_deadline, scheduled_deletion_at 
                                      FROM users WHERE LOWER(email) = LOWER(?)""", (raw_identifier,))
                         user = c.fetchone()
                         if not user or not check_password_cached(user[0], password):
@@ -1309,12 +1318,14 @@ def login():
                         if raw_identifier.isdigit():
                             uid_num = int(raw_identifier)
                             formatted_uid = f"UID-{uid_num:04d}"
-                            c.execute("""SELECT password, role, is_admin, is_active, full_name, profile_photo, id, user_id, username 
+                            c.execute("""SELECT password, role, is_admin, is_active, full_name, profile_photo, id, user_id, username,
+                                                COALESCE(is_pending_deletion, 0), deletion_deadline, scheduled_deletion_at 
                                          FROM users WHERE user_id = ? OR id = ? OR user_id LIKE ? OR user_id = ?""", 
                                       (formatted_uid, uid_num, f"%{raw_identifier}", raw_identifier))
                         else:
                             formatted_uid = raw_identifier.upper()
-                            c.execute("""SELECT password, role, is_admin, is_active, full_name, profile_photo, id, user_id, username 
+                            c.execute("""SELECT password, role, is_admin, is_active, full_name, profile_photo, id, user_id, username,
+                                                COALESCE(is_pending_deletion, 0), deletion_deadline, scheduled_deletion_at 
                                          FROM users WHERE UPPER(user_id) = ?""", (formatted_uid,))
                         user = c.fetchone()
                         if not user or not check_password_cached(user[0], password):
@@ -1324,14 +1335,63 @@ def login():
                         error = "Invalid credentials. Please enter your User ID or registered Email address."
 
                     if user and check_password_cached(user[0], password):
-                        # Auto-reactivate account if it was previously deactivated
-                        if user[3] == 0:
-                            c.execute("UPDATE users SET is_active = 1 WHERE id = ?", (user[6],))
+                        user_id_val = user[6]
+                        matched_username = user[8] or user[4] or f"User-{user_id_val}"
+                        matched_uid = user[7] if (len(user) > 7 and user[7]) else f"UID-{user_id_val:04d}"
+                        user_display_name = user[4] or matched_username
+                        
+                        is_pending_del = bool(user[9]) if len(user) > 9 else False
+                        del_deadline_raw = user[10] if len(user) > 10 else None
+                        
+                        # Handle Pending Account Deletion (60-day recovery grace period)
+                        if is_pending_del:
+                            is_expired = False
+                            if del_deadline_raw:
+                                try:
+                                    # Parse deletion deadline
+                                    deadline_dt = None
+                                    for dfmt in ("%Y-%m-%d %H:%M:%S", "%Y-%m-%d", "%d %b %Y, %I:%M %p"):
+                                        try:
+                                            deadline_dt = datetime.strptime(str(del_deadline_raw).strip(), dfmt)
+                                            break
+                                        except Exception:
+                                            pass
+                                    if deadline_dt and datetime.now() > deadline_dt:
+                                        is_expired = True
+                                except Exception:
+                                    pass
+                                    
+                            if is_expired:
+                                # 60 days grace period expired - permanently wipe records
+                                c.execute("DELETE FROM users WHERE id = ?", (user_id_val,))
+                                c.execute("DELETE FROM registrations WHERE username = ?", (matched_username,))
+                                c.execute("DELETE FROM notifications WHERE username = ?", (matched_username,))
+                                conn.commit()
+                                conn.close()
+                                return render_template('login.html', error="Your 60-day account deletion grace period has elapsed. This account and its records were permanently removed.")
+                            else:
+                                # Within 60-day grace period: Auto-reactivate account & cancel deletion!
+                                c.execute("""UPDATE users 
+                                             SET is_pending_deletion = 0, is_active = 1, scheduled_deletion_at = NULL, 
+                                                 deletion_deadline = NULL, deletion_reason = '', deletion_feedback = '' 
+                                             WHERE id = ?""", (user_id_val,))
+                                conn.commit()
+                                log_action(matched_username, 'reactivate_account', 
+                                           f"Account deletion automatically cancelled upon user login within 60-day grace period. Account fully reactivated.")
+                                push_notification(matched_username, 
+                                                  "✨ Welcome back! Your scheduled account deletion was cancelled and your tickets and profile have been fully restored.", 
+                                                  url_for('dashboard'))
+                                flash(f"✨ Welcome back, {user_display_name}! Your scheduled account deletion was cancelled, and your account has been fully reactivated. All your event passes and profile data are safe.", "success")
+                        elif user[3] == 0:
+                            # Standard deactivated account: Auto-reactivate upon login
+                            c.execute("""UPDATE users 
+                                         SET is_active = 1, deactivated_at = NULL, deactivation_reason = '', deactivation_feedback = '' 
+                                         WHERE id = ?""", (user_id_val,))
                             conn.commit()
-                        
-                        matched_username = user[8] or user[4] or f"User-{user[6]}"
-                        matched_uid = user[7] if (len(user) > 7 and user[7]) else f"UID-{user[6]:04d}"
-                        
+                            log_action(matched_username, 'reactivate_account', "Deactivated account auto-reactivated upon successful login.")
+                            push_notification(matched_username, "✨ Welcome back! Your account has been reactivated successfully.", url_for('dashboard'))
+                            flash(f"✨ Welcome back, {user_display_name}! Your account has been reactivated successfully.", "success")
+
                         session['loggedin'] = True
                         session['username'] = matched_username
                         session['role'] = user[1] or 'user'
@@ -1340,7 +1400,7 @@ def login():
                         
                         photo = user[5]
                         if not photo:
-                            photo = 'https://ui-avatars.com/api/?name=' + (user[4] or matched_username)
+                            photo = 'https://ui-avatars.com/api/?name=' + user_display_name
                         elif not photo.startswith('http'):
                             photo = url_for('static', filename=photo)
                         session['profile_photo'] = photo
@@ -2699,23 +2759,35 @@ def deactivate_account():
         return redirect(url_for('login'))
     
     username = session.get('username')
+    reason = request.form.get('deactivation_reason', '').strip() or 'Taking a temporary break'
+    feedback = request.form.get('deactivation_feedback', '').strip()
     confirm_pwd = request.form.get('confirm_password', '')
     
     conn = get_db()
     c = conn.cursor()
-    c.execute("SELECT password FROM users WHERE username = ?", (username,))
+    c.execute("SELECT password, full_name FROM users WHERE username = ?", (username,))
     row = c.fetchone()
     
     if row and check_password_cached(row[0], confirm_pwd):
-        c.execute("UPDATE users SET is_active = 0 WHERE username = ?", (username,))
+        full_name = row[1] or username
+        now_str = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        c.execute("""UPDATE users 
+                     SET is_active = 0, deactivated_at = ?, deactivation_reason = ?, deactivation_feedback = ? 
+                     WHERE username = ?""", (now_str, reason, feedback, username))
         conn.commit()
         conn.close()
-        log_action(username, 'deactivate_account', 'User voluntarily deactivated their account.')
+        log_detail = f"Reason: {reason}" + (f" | Feedback: {feedback}" if feedback else "")
+        log_action(username, 'deactivate_account', f"User voluntarily deactivated account. {log_detail}")
         session.clear()
-        return render_template('login.html', msg="Your account has been deactivated. You can log in anytime to reactivate it.")
+        farewell_msg = (
+            f"✨ Thank you, {full_name}, for being a valued part of the EVENTS community! "
+            f"Your account is now temporarily paused and safe. Whenever you're ready to explore events again, "
+            f"simply log in with your credentials to instantly reactivate your account and resume where you left off."
+        )
+        return render_template('login.html', msg=farewell_msg)
     else:
         conn.close()
-        return redirect(url_for('profile', msg="Error: Password incorrect. Account deactivation cancelled."))
+        return redirect(url_for('profile', error="Password verification failed. Account deactivation cancelled."))
 
 @app.route('/account/delete', methods=['POST'])
 def delete_account():
@@ -2723,35 +2795,58 @@ def delete_account():
         return redirect(url_for('login'))
     
     username = session.get('username')
+    reason = request.form.get('deletion_reason', '').strip() or 'Account deletion requested'
+    feedback = request.form.get('deletion_feedback', '').strip()
+    confirm_text = request.form.get('confirm_delete_text', '').strip()
     confirm_pwd = request.form.get('confirm_password', '')
+    agreement_checked = request.form.get('confirm_agreement') == 'yes'
     
+    # 2-Step Verification Check 1: Must type confirmation phrase DELETE
+    if confirm_text.upper() != 'DELETE':
+        return redirect(url_for('profile', error="Security verification failed: You must type 'DELETE' exactly to confirm scheduled account deletion."))
+    
+    # 2-Step Verification Check 2: Agreement acknowledgement
+    if not agreement_checked:
+        return redirect(url_for('profile', error="Please acknowledge the 60-day recovery agreement checkbox before proceeding."))
+
     conn = get_db()
     c = conn.cursor()
-    c.execute("SELECT password, profile_photo FROM users WHERE username = ?", (username,))
+    c.execute("SELECT password, full_name FROM users WHERE username = ?", (username,))
     row = c.fetchone()
     
     if row and check_password_cached(row[0], confirm_pwd):
-        photo = row[1]
-        if photo and not photo.startswith('http'):
-            try:
-                full_path = os.path.join('static', photo)
-                if os.path.exists(full_path):
-                    os.remove(full_path)
-            except Exception:
-                pass
+        full_name = row[1] or username
+        now = datetime.now()
+        deadline = now + timedelta(days=60) # 2-month (60 days) grace period
         
-        c.execute("DELETE FROM users WHERE username = ?", (username,))
-        c.execute("DELETE FROM registrations WHERE username = ?", (username,))
-        c.execute("DELETE FROM notifications WHERE username = ?", (username,))
+        scheduled_at_str = now.strftime('%Y-%m-%d %H:%M:%S')
+        deadline_str = deadline.strftime('%Y-%m-%d %H:%M:%S')
+        display_deadline = deadline.strftime('%d %B %Y')
+        
+        # Mark account as pending deletion with 60-day recovery deadline
+        c.execute("""UPDATE users 
+                     SET is_pending_deletion = 1, is_active = 0, 
+                         scheduled_deletion_at = ?, deletion_deadline = ?, 
+                         deletion_reason = ?, deletion_feedback = ? 
+                     WHERE username = ?""", 
+                  (scheduled_at_str, deadline_str, reason, feedback, username))
         conn.commit()
         conn.close()
-        invalidate_user_regs(username)
-        log_action(username, 'delete_account', 'User permanently deleted their account.')
+        
+        log_detail = f"Reason: {reason} | 60-Day Deadline: {deadline_str}" + (f" | Feedback: {feedback}" if feedback else "")
+        log_action(username, 'schedule_delete_account', f"User scheduled account deletion. {log_detail}")
         session.clear()
-        return render_template('login.html', msg="Your account and all associated profile data have been permanently deleted.")
+        
+        deletion_msg = (
+            f"⏳ Account Scheduled for Deletion: Thank you, {full_name}, for having been a part of EVENTS! "
+            f"As requested, your account is scheduled for permanent deletion on {display_deadline} (in 2 months / 60 days). "
+            f"If you ever change your mind, simply log in before {display_deadline} to automatically cancel this request "
+            f"and reactivate your account with all your event bookings and profile data fully restored. We wish you all the best!"
+        )
+        return render_template('login.html', msg=deletion_msg)
     else:
         conn.close()
-        return redirect(url_for('profile', msg="Error: Password incorrect. Account deletion cancelled."))
+        return redirect(url_for('profile', error="Password verification failed. Account deletion request cancelled."))
 
 @app.route('/history')
 def history():

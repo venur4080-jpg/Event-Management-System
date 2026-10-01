@@ -3462,6 +3462,86 @@ body.light-mode .logout-btn-unique:hover {
     box-shadow: 0 0 10px rgba(0, 242, 254, 0.25);
 }
 
+/* ==========================================================================
+   20. Account Lifecycle (Deactivation, 60-Day Deletion & Recovery Theme)
+   ========================================================================== */
+.deact-modal-container, .delete-modal-container {
+    animation: modalScaleIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+}
+
+@keyframes modalScaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95) translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.step-pill {
+    transition: all 0.25s ease;
+    user-select: none;
+}
+
+.step-pill.active {
+    box-shadow: 0 0 16px rgba(244, 63, 94, 0.25);
+}
+
+.login-feedback-banner {
+    transition: all 0.3s ease;
+    animation: fadeInSlide 0.35s ease-out;
+}
+
+@keyframes fadeInSlide {
+    from {
+        opacity: 0;
+        transform: translateY(-6px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+body.light-mode .deact-modal-container {
+    background: #ffffff !important;
+    border-color: rgba(245, 158, 11, 0.5) !important;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.18) !important;
+}
+
+body.light-mode .delete-modal-container {
+    background: #ffffff !important;
+    border-color: rgba(244, 63, 94, 0.5) !important;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.2) !important;
+}
+
+body.light-mode .danger-zone-card {
+    background: rgba(239, 68, 68, 0.03) !important;
+    border-color: rgba(239, 68, 68, 0.18) !important;
+}
+
+body.light-mode .deact-modal-container h3,
+body.light-mode .delete-modal-container h3 {
+    color: #1e293b !important;
+}
+
+body.light-mode .deact-modal-container label,
+body.light-mode .delete-modal-container label {
+    color: #1e293b !important;
+}
+
+body.light-mode .deact-modal-container .input-field,
+body.light-mode .delete-modal-container .input-field {
+    background: #f8fafc !important;
+    border-color: #cbd5e1 !important;
+    color: #0f172a !important;
+}
+
+
 
 
 
