@@ -96,6 +96,7 @@
     history: 'forest',
     event: 'mountains',
     profile: 'ocean',
+    settings: 'aurora',
     register: 'sunrise',
     scanner: 'starry',
     verify: 'valley',
@@ -111,6 +112,7 @@
     if (path.includes('dashboard') || path === '/' || path === '') return 'dashboard';
     if (path.includes('history') || path.includes('booking')) return 'history';
     if (path.includes('event/')) return 'event';
+    if (path.includes('settings')) return 'settings';
     if (path.includes('profile')) return 'profile';
     if (path.includes('register/')) return 'register';
     if (path.includes('scan_ticket') || path.includes('scanner')) return 'scanner';

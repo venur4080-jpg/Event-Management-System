@@ -1,0 +1,1215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account Settings & Security | EVENTS</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=5.0">
+    <script src="{{ url_for('static', filename='themes.js') }}?v=5.0"></script>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@700;800&display=swap" rel="stylesheet">
+    <style>
+        .settings-container {
+            max-width: 860px;
+            margin: 1.5rem auto 4rem auto;
+            padding: 0 1rem;
+        }
+        .settings-card {
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 2.2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.35);
+            transition: border-color 0.3s ease;
+        }
+        body.light-mode .settings-card {
+            background: #ffffff !important;
+            border-color: rgba(0, 0, 0, 0.08) !important;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06) !important;
+        }
+        .settings-section-title {
+            font-size: 1.25rem;
+            font-family: var(--font-heading);
+            font-weight: 800;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 0.5rem;
+        }
+        body.light-mode .settings-section-title {
+            color: #0f172a !important;
+        }
+        .settings-section-desc {
+            color: var(--text-muted);
+            font-size: 0.88rem;
+            line-height: 1.5;
+            margin-bottom: 1.5rem;
+        }
+        .theme-toggle-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.2rem 1.4rem;
+            background: rgba(0, 0, 0, 0.25);
+            border: 1px solid var(--glass-border);
+            border-radius: 14px;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+        body.light-mode .theme-toggle-row {
+            background: #f8fafc !important;
+            border-color: rgba(0, 0, 0, 0.08) !important;
+        }
+        /* Custom Switch */
+        .switch-toggle-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .switch-btn {
+            position: relative;
+            display: inline-block;
+            width: 58px;
+            height: 30px;
+        }
+        .switch-btn input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .switch-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: #334155;
+            transition: .3s;
+            border-radius: 34px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+        .switch-slider:before {
+            position: absolute;
+            content: "🌙";
+            font-size: 14px;
+            line-height: 22px;
+            text-align: center;
+            height: 22px;
+            width: 22px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .3s;
+            border-radius: 50%;
+        }
+        input:checked + .switch-slider {
+            background-color: #00f2fe;
+        }
+        input:checked + .switch-slider:before {
+            transform: translateX(28px);
+            content: "☀️";
+        }
+        /* Nature Gallery Grid */
+        .nature-preview-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+            gap: 1.1rem;
+            margin-top: 1rem;
+        }
+        .nature-tile {
+            position: relative;
+            border-radius: 14px;
+            overflow: hidden;
+            cursor: pointer;
+            border: 2px solid rgba(255, 255, 255, 0.12);
+            height: 125px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 0.9rem;
+            box-sizing: border-box;
+            transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+            background: #0f172a;
+        }
+        body.light-mode .nature-tile {
+            border-color: rgba(0, 0, 0, 0.12);
+        }
+        .nature-tile:hover {
+            transform: translateY(-3px);
+            border-color: var(--primary);
+            box-shadow: 0 8px 24px rgba(0, 242, 254, 0.25);
+        }
+        .nature-tile.active {
+            border-color: #00f2fe !important;
+            box-shadow: 0 0 20px rgba(0, 242, 254, 0.5) !important;
+        }
+        .nature-tile-img {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.4s ease;
+            z-index: 1;
+        }
+        .nature-tile:hover .nature-tile-img {
+            transform: scale(1.08);
+        }
+        .nature-tile-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to top, rgba(15, 23, 42, 0.95) 0%, rgba(15, 23, 42, 0.3) 60%, rgba(0,0,0,0.1) 100%);
+            z-index: 2;
+        }
+        .nature-tile-content {
+            position: relative;
+            z-index: 3;
+        }
+        .nature-tile-title {
+            color: #ffffff;
+            font-size: 0.88rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-bottom: 2px;
+        }
+        .nature-tile-desc {
+            color: #94a3b8;
+            font-size: 0.72rem;
+            line-height: 1.3;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .nature-active-pill {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: #00f2fe;
+            color: #0f172a;
+            font-size: 0.68rem;
+            font-weight: 800;
+            padding: 2px 8px;
+            border-radius: 12px;
+            z-index: 3;
+            display: none;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .nature-tile.active .nature-active-pill {
+            display: block;
+        }
+
+        /* Color Themes Grid */
+        .color-themes-row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 1rem;
+        }
+        .color-theme-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(0, 0, 0, 0.25);
+            border: 1px solid var(--glass-border);
+            padding: 7px 14px;
+            border-radius: 10px;
+            color: #ffffff;
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s ease;
+        }
+        body.light-mode .color-theme-btn {
+            background: #f1f5f9;
+            color: #0f172a;
+        }
+        .color-theme-btn:hover {
+            border-color: var(--primary);
+            transform: translateY(-2px);
+        }
+        .color-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        /* Password Field Styling */
+        .password-toggle-wrapper {
+            position: relative !important;
+            display: block !important;
+            width: 100% !important;
+            box-sizing: border-box !important;
+        }
+        .password-toggle-wrapper input {
+            display: block !important;
+            width: 100% !important;
+            box-sizing: border-box !important;
+            padding-right: 44px !important;
+            height: 46px;
+        }
+        .password-toggle-btn {
+            position: absolute !important;
+            right: 8px !important;
+            top: 50% !important;
+            transform: translateY(-50%) !important;
+            background: transparent !important;
+            border: none !important;
+            color: var(--text-muted);
+            padding: 0 !important;
+            cursor: pointer !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            border-radius: 4px;
+            width: 32px;
+            height: 32px;
+            transition: color 0.2s;
+        }
+        .password-toggle-btn:hover {
+            color: var(--primary);
+        }
+
+        /* Input Controls Neutralization */
+        input::-ms-reveal,
+        input::-ms-clear,
+        input[type="password"]::-ms-reveal,
+        input[type="password"]::-ms-clear {
+            display: none !important;
+            width: 0 !important;
+            height: 0 !important;
+            visibility: hidden !important;
+            pointer-events: none !important;
+        }
+
+        .settings-grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 1.2rem;
+            align-items: start;
+        }
+        @media (max-width: 768px) {
+            .settings-grid-3 {
+                grid-template-columns: 1fr;
+            }
+        }
+        .user-id-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(0, 242, 254, 0.12);
+            border: 1px solid rgba(0, 242, 254, 0.35);
+            color: var(--primary);
+            font-size: 0.82rem;
+            font-weight: 700;
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-family: 'Courier New', monospace, inherit;
+        }
+        .username-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #f1f5f9;
+            font-size: 0.82rem;
+            font-weight: 600;
+            padding: 4px 14px;
+            border-radius: 20px;
+        }
+        body.light-mode .username-pill {
+            background: #e2e8f0;
+            color: #0f172a;
+            border-color: #cbd5e1;
+        }
+    </style>
+</head>
+<body>
+    <script>
+        if (localStorage.getItem('theme') === 'light') {
+            document.body.classList.add('light-mode');
+        }
+    </script>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div style="display: flex; align-items: center;">
+                <div class="hamburger" id="hamburger">☰</div>
+                <div class="logo">EV<span>ENTS</span></div>
+            </div>
+            <div class="nav-links" style="display: flex; align-items: center; gap: 12px;">
+                <button class="theme-toggle-btn" id="themeToggle" title="Toggle Light/Dark Mode" type="button" style="margin-right: 0;">🌓</button>
+                <a href="{{ url_for('dashboard') }}" class="nav-btn-dash">🏠 Dashboard</a>
+                <a href="{{ url_for('logout') }}" class="logout-btn-unique">⏻ Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-logo">EV<span>ENTS</span></div>
+            <div class="close-btn" id="closeSidebar">&times;</div>
+        </div>
+        <ul class="sidebar-links">
+            <li><a href="{{ url_for('dashboard') }}">🏠 Dashboard</a></li>
+            <li><a href="{{ url_for('profile') }}">👤 My Profile</a></li>
+            <li><a href="{{ url_for('history') }}">📋 My Bookings</a></li>
+            <li><a href="{{ url_for('settings') }}" class="active">⚙️ Settings</a></li>
+            {% if is_admin or session.get('username') in ['admin', 'Venu R'] %}
+            <li><a href="{{ url_for('admin_dashboard') }}" style="color:var(--admin-accent, #f59e0b); font-weight:700">⚡ Admin Panel</a></li>
+            {% endif %}
+            {% if is_host %}
+            <li><hr style="border: 0; border-top: 1px solid var(--glass-border); margin: 1rem 0;"></li>
+            <li style="padding: 0 1rem; color: var(--primary); font-size: 0.8rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">Host Management</li>
+            <li><a href="{{ url_for('scan_ticket') }}">📷 Live Ticket Scanner</a></li>
+            <li><a href="{{ url_for('checkin_history') }}">📅 Check-in History</a></li>
+            <li><a href="{{ url_for('add_event') }}">➕ Add New Event</a></li>
+            <li><a href="{{ url_for('host_analytics') }}">📈 Host Analytics</a></li>
+            {% endif %}
+            <li><hr style="border: 0; border-top: 1px solid var(--glass-border); margin: 1rem 0;"></li>
+            <li style="display: flex; align-items: center; font-size: 0.85rem; gap: 0.8rem; color: var(--text-muted); padding: 0.7rem 1.5rem; user-select: text;"><span style="font-size: 1.1rem;">📞</span> +91 9686837274</li>
+            <li><a href="https://mail.google.com/mail/?view=cm&fs=1&to=venu.rachakondaa@gmail.com" target="_blank" rel="noopener noreferrer" style="font-size: 0.85rem; gap: 0.8rem; color: var(--text-muted); word-break: break-all;"><span style="font-size: 1.1rem;">📧</span> venu.rachakondaa@gmail.com</a></li>
+            <li><hr style="border: 0; border-top: 1px solid var(--glass-border); margin: 1rem 0;"></li>
+            <li><a href="{{ url_for('logout') }}" style="color: var(--secondary);">🚪 Logout</a></li>
+        </ul>
+    </div>
+
+    <main class="container">
+        <!-- Back Button -->
+        <div style="max-width: 860px; margin: 2rem auto 0 auto;">
+            <a href="{{ url_for('dashboard') }}" class="back-btn-unified">
+                <span class="arrow">←</span> Back to Dashboard
+            </a>
+        </div>
+
+        <div class="settings-container">
+            <!-- User Header Summary -->
+            <div style="text-align: center; margin-bottom: 2rem;">
+                <h1 class="hero-title" style="font-size: 2.2rem; margin-bottom: 0.4rem;">⚙️ Account Settings</h1>
+                <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 0.6rem; flex-wrap: wrap;">
+                    <span class="user-id-pill">🆔 <strong>ID:</strong> {{ user.user_id }}</span>
+                    <span class="username-pill">👤 @{{ user.username }}</span>
+                    {% if is_admin or session.get('username') in ['admin', 'Venu R'] %}
+                    <span style="background: rgba(245, 158, 11, 0.2); border: 1px solid #f59e0b; color: #f59e0b; font-size: 0.75rem; font-weight: 800; padding: 3px 10px; border-radius: 20px; text-transform: uppercase;">Admin</span>
+                    {% endif %}
+                </div>
+                <p style="color: var(--text-muted); font-size: 0.95rem; max-width: 580px; margin: 0 auto;">
+                    Personalize your display aesthetics, nature themes, password credentials, and account lifecycle preferences.
+                </p>
+            </div>
+
+            {% if msg %}
+            <div style="background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); padding: 14px; border-radius: 12px; margin-bottom: 1.8rem; text-align: center; font-weight: 600;">
+                {{ msg }}
+            </div>
+            {% endif %}
+
+            {% if error %}
+            <div style="background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); padding: 14px; border-radius: 12px; margin-bottom: 1.8rem; text-align: center; font-weight: 600;">
+                {{ error }}
+            </div>
+            {% endif %}
+
+            <!-- SECTION 1: Appearance & Nature Wallpapers -->
+            <div class="settings-card">
+                <div class="settings-section-title">
+                    <span>🎨</span> Display Mode & Nature Wallpapers
+                </div>
+                <p class="settings-section-desc">
+                    Customize the interface look, switch between light/dark mode, and choose your favorite high-definition nature background.
+                </p>
+
+                <!-- Light / Dark Mode Switch -->
+                <div class="theme-toggle-row">
+                    <div>
+                        <h4 style="margin: 0 0 4px 0; color: #f1f5f9; font-size: 1rem;">Dark / Light Interface Mode</h4>
+                        <p id="modeStatusLabel" style="margin: 0; color: var(--text-muted); font-size: 0.84rem;">
+                            Currently using Dark Mode (Comfortable contrast for all environments)
+                        </p>
+                    </div>
+                    <div class="switch-toggle-wrapper">
+                        <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600;" id="modeText">Dark</span>
+                        <label class="switch-btn" title="Toggle Theme">
+                            <input type="checkbox" id="settingsThemeToggle" onchange="toggleSettingsTheme(this)">
+                            <span class="switch-slider"></span>
+                        </label>
+                        <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600;">Light</span>
+                    </div>
+                </div>
+
+                <!-- Nature Wallpaper Picker Grid -->
+                <div style="margin-top: 1.8rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem; flex-wrap: wrap; gap: 8px;">
+                        <h4 style="margin: 0; color: var(--primary); font-size: 0.95rem; text-transform: uppercase; letter-spacing: 0.8px; font-weight: 800;">
+                            🌿 Nature Wallpaper Collection
+                        </h4>
+                        <span style="color: var(--text-muted); font-size: 0.8rem;">Click any scenery to apply instantly</span>
+                    </div>
+
+                    <div class="nature-preview-grid" id="natureGalleryGrid">
+                        <!-- Dynamic by Page -->
+                        <div class="nature-tile" data-nature="dynamic" onclick="applySettingsNature('dynamic')">
+                            <img src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=400&q=80" alt="Dynamic" class="nature-tile-img">
+                            <div class="nature-tile-overlay"></div>
+                            <span class="nature-active-pill">Active</span>
+                            <div class="nature-tile-content">
+                                <div class="nature-tile-title"><span>🔄</span> Dynamic by Page</div>
+                                <div class="nature-tile-desc">Adaptive nature scenery per page</div>
+                            </div>
+                        </div>
+
+                        <!-- Aurora -->
+                        <div class="nature-tile" data-nature="aurora" onclick="applySettingsNature('aurora')">
+                            <img src="https://images.unsplash.com/photo-1531366936337-7c912a4589a7?auto=format&fit=crop&w=400&q=80" alt="Aurora" class="nature-tile-img">
+                            <div class="nature-tile-overlay"></div>
+                            <span class="nature-active-pill">Active</span>
+                            <div class="nature-tile-content">
+                                <div class="nature-tile-title"><span>🌌</span> Cosmic Aurora</div>
+                                <div class="nature-tile-desc">Northern lights & starry sky</div>
+                            </div>
+                        </div>
+
+                        <!-- Forest -->
+                        <div class="nature-tile" data-nature="forest" onclick="applySettingsNature('forest')">
+                            <img src="https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=400&q=80" alt="Forest" class="nature-tile-img">
+                            <div class="nature-tile-overlay"></div>
+                            <span class="nature-active-pill">Active</span>
+                            <div class="nature-tile-content">
+                                <div class="nature-tile-title"><span>🌲</span> Emerald Forest</div>
+                                <div class="nature-tile-desc">Misty redwoods & morning sun</div>
+                            </div>
+                        </div>
+
+                        <!-- Mountains -->
+                        <div class="nature-tile" data-nature="mountains" onclick="applySettingsNature('mountains')">
+                            <img src="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=400&q=80" alt="Mountains" class="nature-tile-img">
+                            <div class="nature-tile-overlay"></div>
+                            <span class="nature-active-pill">Active</span>
+                            <div class="nature-tile-content">
+                                <div class="nature-tile-title"><span>🏔️</span> Alpine Peaks</div>
+                                <div class="nature-tile-desc">Majestic snow-capped mountains</div>
+                            </div>
+                        </div>
+
+                        <!-- Ocean -->
+                        <div class="nature-tile" data-nature="ocean" onclick="applySettingsNature('ocean')">
+                            <img src="https://images.unsplash.com/photo-1518837695005-2083093ee35b?auto=format&fit=crop&w=400&q=80" alt="Ocean" class="nature-tile-img">
+                            <div class="nature-tile-overlay"></div>
+                            <span class="nature-active-pill">Active</span>
+                            <div class="nature-tile-content">
+                                <div class="nature-tile-title"><span>🌊</span> Pacific Ocean</div>
+                                <div class="nature-tile-desc">Turquoise waves & ocean swells</div>
+                            </div>
+                        </div>
+
+                        <!-- Sunrise -->
+                        <div class="nature-tile" data-nature="sunrise" onclick="applySettingsNature('sunrise')">
+                            <img src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=400&q=80" alt="Sunrise" class="nature-tile-img">
+                            <div class="nature-tile-overlay"></div>
+                            <span class="nature-active-pill">Active</span>
+                            <div class="nature-tile-content">
+                                <div class="nature-tile-title"><span>🌅</span> Yosemite Sunrise</div>
+                                <div class="nature-tile-desc">Golden mist over granite valley</div>
+                            </div>
+                        </div>
+
+                        <!-- Sakura -->
+                        <div class="nature-tile" data-nature="sakura" onclick="applySettingsNature('sakura')">
+                            <img src="https://images.unsplash.com/photo-1528164344705-475426879c0d?auto=format&fit=crop&w=400&q=80" alt="Sakura" class="nature-tile-img">
+                            <div class="nature-tile-overlay"></div>
+                            <span class="nature-active-pill">Active</span>
+                            <div class="nature-tile-content">
+                                <div class="nature-tile-title"><span>🌸</span> Zen Sakura</div>
+                                <div class="nature-tile-desc">Japanese cherry blossoms</div>
+                            </div>
+                        </div>
+
+                        <!-- Autumn -->
+                        <div class="nature-tile" data-nature="autumn" onclick="applySettingsNature('autumn')">
+                            <img src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=400&q=80" alt="Autumn" class="nature-tile-img">
+                            <div class="nature-tile-overlay"></div>
+                            <span class="nature-active-pill">Active</span>
+                            <div class="nature-tile-content">
+                                <div class="nature-tile-title"><span>🍂</span> Golden Autumn</div>
+                                <div class="nature-tile-desc">Warm foliage & twilight sunset</div>
+                            </div>
+                        </div>
+
+                        <!-- Starry -->
+                        <div class="nature-tile" data-nature="starry" onclick="applySettingsNature('starry')">
+                            <img src="https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=400&q=80" alt="Starry" class="nature-tile-img">
+                            <div class="nature-tile-overlay"></div>
+                            <span class="nature-active-pill">Active</span>
+                            <div class="nature-tile-content">
+                                <div class="nature-tile-title"><span>✨</span> Milky Way</div>
+                                <div class="nature-tile-desc">Deep night celestial starlight</div>
+                            </div>
+                        </div>
+
+                        <!-- Valley -->
+                        <div class="nature-tile" data-nature="valley" onclick="applySettingsNature('valley')">
+                            <img src="https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=400&q=80" alt="Valley" class="nature-tile-img">
+                            <div class="nature-tile-overlay"></div>
+                            <span class="nature-active-pill">Active</span>
+                            <div class="nature-tile-content">
+                                <div class="nature-tile-title"><span>🍃</span> Misty Valley</div>
+                                <div class="nature-tile-desc">Lush rolling green hills & fog</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Color Accent Themes -->
+                <div style="margin-top: 1.8rem; padding-top: 1.2rem; border-top: 1px solid var(--glass-border);">
+                    <h4 style="margin: 0 0 0.6rem 0; color: var(--text-muted); font-size: 0.85rem; font-weight: 600;">
+                        Color Accent Palettes
+                    </h4>
+                    <div class="color-themes-row">
+                        <button type="button" class="color-theme-btn" onclick="applySettingsColor('ocean')">
+                            <span class="color-dot" style="background: #00f2fe; box-shadow: 0 0 8px #00f2fe;"></span> Ocean Cyan
+                        </button>
+                        <button type="button" class="color-theme-btn" onclick="applySettingsColor('emerald')">
+                            <span class="color-dot" style="background: #10b981; box-shadow: 0 0 8px #10b981;"></span> Emerald Green
+                        </button>
+                        <button type="button" class="color-theme-btn" onclick="applySettingsColor('sunset')">
+                            <span class="color-dot" style="background: #fb923c; box-shadow: 0 0 8px #fb923c;"></span> Sunset Orange
+                        </button>
+                        <button type="button" class="color-theme-btn" onclick="applySettingsColor('neon')">
+                            <span class="color-dot" style="background: #a78bfa; box-shadow: 0 0 8px #a78bfa;"></span> Neon Violet
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 2: 🔒 Password & Security -->
+            <div class="settings-card">
+                <div class="settings-section-title">
+                    <span>🔒</span> Password & Security
+                </div>
+                <p class="settings-section-desc">
+                    Ensure your account stays secure by maintaining a strong, unique password.
+                </p>
+
+                <form action="{{ url_for('change_password') }}" method="POST">
+                    <div class="settings-grid-3">
+                        <div class="input-group">
+                            <label style="color: #f1f5f9; font-weight: 600; font-size: 0.88rem; margin-bottom: 0.4rem; display: block;">Current Password</label>
+                            <div class="password-toggle-wrapper">
+                                <input type="password" id="current_password" name="current_password" class="input-field" required placeholder="••••••••" autocomplete="current-password">
+                                <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('current_password', this)" title="Show password" tabindex="-1" aria-label="Toggle password visibility">
+                                    <svg class="eye-icon eye-open" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
+                                        <circle cx="12" cy="12" r="3"/>
+                                    </svg>
+                                    <svg class="eye-icon eye-closed" style="display: none;" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/>
+                                        <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/>
+                                        <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/>
+                                        <line x1="2" x2="22" y1="2" y2="22"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <label style="color: #f1f5f9; font-weight: 600; font-size: 0.88rem; margin-bottom: 0.4rem; display: block;">New Password</label>
+                            <div class="password-toggle-wrapper">
+                                <input type="password" id="new_password" name="new_password" class="input-field" required placeholder="••••••••" autocomplete="new-password">
+                                <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('new_password', this)" title="Show password" tabindex="-1" aria-label="Toggle password visibility">
+                                    <svg class="eye-icon eye-open" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
+                                        <circle cx="12" cy="12" r="3"/>
+                                    </svg>
+                                    <svg class="eye-icon eye-closed" style="display: none;" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/>
+                                        <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/>
+                                        <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/>
+                                        <line x1="2" x2="22" y1="2" y2="22"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <label style="color: #f1f5f9; font-weight: 600; font-size: 0.88rem; margin-bottom: 0.4rem; display: block;">Confirm New Password</label>
+                            <div class="password-toggle-wrapper">
+                                <input type="password" id="confirm_password" name="confirm_password" class="input-field" required placeholder="••••••••" autocomplete="new-password">
+                                <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('confirm_password', this)" title="Show password" tabindex="-1" aria-label="Toggle password visibility">
+                                    <svg class="eye-icon eye-open" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
+                                        <circle cx="12" cy="12" r="3"/>
+                                    </svg>
+                                    <svg class="eye-icon eye-closed" style="display: none;" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/>
+                                        <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/>
+                                        <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/>
+                                        <line x1="2" x2="22" y1="2" y2="22"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 1.2rem;">
+                        <button type="submit" class="unique-save-btn" style="max-width: 240px;">Update Password</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- SECTION 3: ⚠️ Danger Zone (Deactivation & Deletion) -->
+            <div class="danger-zone-card">
+                <div class="danger-zone-title">
+                    <span>⚠️ Danger Zone</span>
+                </div>
+                <p style="color: var(--text-muted); font-size: 0.88rem; margin-bottom: 1.2rem;">
+                    Take control of your account status. You can temporarily pause your account or schedule a permanent wipe with a 60-day recovery window.
+                </p>
+
+                <!-- Deactivate Option -->
+                <div class="danger-action-row">
+                    <div class="danger-action-info">
+                        <h4 style="color: #f1f5f9; font-size: 1rem; margin-bottom: 4px;">Deactivate Account</h4>
+                        <p style="color: var(--text-muted); font-size: 0.85rem; line-height: 1.5; margin: 0;">
+                            Temporarily disable your profile and notifications. Your bookings and event tickets stay safe, and you can reactivate instantly simply by logging back in.
+                        </p>
+                    </div>
+                    <button type="button" class="btn-warning-outline" onclick="openConfirmModal('deactivateModal')">
+                        ⏸️ Deactivate Account
+                    </button>
+                </div>
+
+                <!-- Delete Option -->
+                <div class="danger-action-row">
+                    <div class="danger-action-info">
+                        <h4 style="color: #f1f5f9; font-size: 1rem; margin-bottom: 4px;">Schedule Account Deletion</h4>
+                        <p style="color: var(--text-muted); font-size: 0.85rem; line-height: 1.5; margin: 0;">
+                            Permanently erase your account and all data. Protected by a <strong>60-day (2-month) grace period</strong> — log in before the deadline to automatically cancel deletion.
+                        </p>
+                    </div>
+                    <button type="button" class="btn-danger-solid" onclick="openConfirmModal('deleteModal')">
+                        🗑️ Delete Account
+                    </button>
+                </div>
+            </div>
+
+            <!-- SECTION 4: 🚪 Session & Logout -->
+            <div class="settings-card" style="border-color: rgba(255, 255, 255, 0.1);">
+                <div class="settings-section-title">
+                    <span>🚪</span> Active Session & Logout
+                </div>
+                <p class="settings-section-desc">
+                    You are currently signed in as <strong>@{{ user.username }}</strong>. Sign out if you are on a shared or public computer.
+                </p>
+                <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+                    <div>
+                        <span style="display: inline-flex; align-items: center; gap: 6px; color: #10b981; font-size: 0.85rem; font-weight: 700;">
+                            <span style="width: 8px; height: 8px; border-radius: 50%; background: #10b981; display: inline-block;"></span> Active Session
+                        </span>
+                        <div style="color: var(--text-muted); font-size: 0.8rem; margin-top: 2px;">
+                            Account ID: {{ user.user_id }} • Signed in via secure authentication
+                        </div>
+                    </div>
+                    <a href="{{ url_for('logout') }}" class="btn-secondary" style="margin: 0; width: auto; padding: 0.75rem 1.6rem; color: #f87171; border-color: rgba(248, 113, 113, 0.4); text-decoration: none; display: inline-flex; align-items: center; gap: 8px; font-weight: 700;">
+                        <span>⏻</span> Sign Out from This Device
+                    </a>
+                </div>
+            </div>
+
+            <div style="text-align: center; margin-top: 2rem;">
+                <a href="{{ url_for('profile') }}" style="color: var(--primary); font-size: 0.9rem; text-decoration: none; font-weight: 600; margin-right: 1.5rem;">👤 Go to My Profile</a>
+                <a href="{{ url_for('dashboard') }}" style="color: var(--text-muted); font-size: 0.9rem; text-decoration: none;">🏠 Back to Dashboard</a>
+            </div>
+        </div>
+    </main>
+
+    <!-- Deactivate Account Modal (With Feedback & Options) -->
+    <div id="deactivateModal" class="modal" style="display: none; position: fixed; z-index: 1100; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.85); backdrop-filter: blur(14px);">
+        <div class="confirm-modal-box deact-modal-container" style="border: 1px solid rgba(245, 158, 11, 0.4); max-width: 540px; margin: 6% auto; border-radius: 20px; padding: 2.2rem; background: #0f172a; box-shadow: 0 25px 60px rgba(0,0,0,0.7);">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.2rem;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div style="width: 42px; height: 42px; border-radius: 12px; background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.4); display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">
+                        ⏸️
+                    </div>
+                    <div>
+                        <h3 style="color: #f59e0b; margin: 0; font-size: 1.25rem; font-family: var(--font-heading);">
+                            Deactivate Account
+                        </h3>
+                        <span style="color: var(--text-muted); font-size: 0.8rem;">Temporary account pause • Instant reactivation anytime</span>
+                    </div>
+                </div>
+                <button type="button" onclick="closeConfirmModal('deactivateModal')" style="background: none; border: none; color: var(--text-muted); font-size: 1.5rem; cursor: pointer; line-height: 1;">&times;</button>
+            </div>
+
+            <!-- Information Banner -->
+            <div style="background: rgba(245, 158, 11, 0.08); border-left: 3px solid #f59e0b; border-radius: 8px; padding: 12px 14px; margin-bottom: 1.3rem;">
+                <p style="color: #fde68a; font-size: 0.85rem; line-height: 1.55; margin: 0;">
+                    <strong>💡 Good to know:</strong> Deactivating temporarily pauses your profile. Your registered event passes, tickets, and bookings remain <strong>100% safe</strong>. You can reactivate anytime simply by logging back in with your User ID or Email.
+                </p>
+            </div>
+
+            <form action="{{ url_for('deactivate_account') }}" method="POST" onsubmit="return validateDeactivationForm()">
+                <!-- Reason Selection -->
+                <div class="input-group" style="margin-bottom: 1rem;">
+                    <label style="color: #f1f5f9; font-weight: 600; font-size: 0.88rem; margin-bottom: 0.4rem; display: block;">
+                        Why are you deactivating? <span style="color: #f59e0b;">*</span>
+                    </label>
+                    <select name="deactivation_reason" id="deact_reason" class="input-field" required style="width: 100%; cursor: pointer;">
+                        <option value="" disabled selected>Select a primary reason...</option>
+                        <option value="Taking a temporary break from events">Taking a temporary break from events</option>
+                        <option value="Too many notifications and promotional emails">Too many notifications and promotional emails</option>
+                        <option value="Using a different / duplicate account">Using a different / duplicate account</option>
+                        <option value="Privacy or data preferences">Privacy or data preferences</option>
+                        <option value="Platform difficult to navigate / technical issues">Platform difficult to navigate / technical issues</option>
+                        <option value="Other reason">Other reason</option>
+                    </select>
+                </div>
+
+                <!-- Feedback Textarea -->
+                <div class="input-group" style="margin-bottom: 1.2rem;">
+                    <label style="color: #f1f5f9; font-weight: 600; font-size: 0.88rem; margin-bottom: 0.4rem; display: flex; justify-content: space-between;">
+                        <span>Your Feedback / Suggestions</span>
+                        <span style="color: var(--text-muted); font-size: 0.78rem; font-weight: 400;">Optional</span>
+                    </label>
+                    <textarea name="deactivation_feedback" id="deact_feedback" class="input-field" rows="3" placeholder="Tell us how we could make EVENTS better for you..." style="resize: vertical; min-height: 65px; line-height: 1.4; padding: 10px;"></textarea>
+                </div>
+
+                <!-- Confirm Password -->
+                <div class="input-group" style="margin-bottom: 1.5rem;">
+                    <label style="color: #f1f5f9; font-weight: 600; font-size: 0.88rem; margin-bottom: 0.4rem; display: block;">
+                        Confirm Your Current Password <span style="color: #f59e0b;">*</span>
+                    </label>
+                    <div class="password-toggle-wrapper">
+                        <input type="password" id="deactivate_pwd" name="confirm_password" class="input-field" required placeholder="Enter current password to verify" autocomplete="current-password">
+                        <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('deactivate_pwd', this)" title="Show password" tabindex="-1" aria-label="Toggle password visibility">
+                            <svg class="eye-icon eye-open" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
+                                <circle cx="12" cy="12" r="3"/>
+                            </svg>
+                            <svg class="eye-icon eye-closed" style="display: none;" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/>
+                                <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/>
+                                <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/>
+                                <line x1="2" x2="22" y1="2" y2="22"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 12px; justify-content: flex-end; align-items: center;">
+                    <button type="button" class="btn-secondary" style="margin: 0; width: auto; padding: 0.65rem 1.4rem;" onclick="closeConfirmModal('deactivateModal')">Cancel</button>
+                    <button type="submit" class="btn-warning-outline" style="margin: 0; padding: 0.65rem 1.4rem; display: inline-flex; align-items: center; gap: 6px;">
+                        <span>⏸️</span> Deactivate My Account
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Delete Account Modal (2-Step Verification & 60-Day Grace Period Wizard) -->
+    <div id="deleteModal" class="modal" style="display: none; position: fixed; z-index: 1100; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.88); backdrop-filter: blur(16px);">
+        <div class="confirm-modal-box delete-modal-container" style="border: 1px solid rgba(244, 63, 94, 0.45); max-width: 580px; margin: 5% auto; border-radius: 20px; padding: 2.2rem; background: #0f172a; box-shadow: 0 25px 60px rgba(0,0,0,0.75);">
+            <!-- Modal Header -->
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.2rem;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div style="width: 42px; height: 42px; border-radius: 12px; background: rgba(244, 63, 94, 0.15); border: 1px solid rgba(244, 63, 94, 0.4); display: flex; align-items: center; justify-content: center; font-size: 1.4rem;">
+                        🛡️
+                    </div>
+                    <div>
+                        <h3 style="color: #fb7185; margin: 0; font-size: 1.25rem; font-family: var(--font-heading);">
+                            Schedule Account Deletion
+                        </h3>
+                        <span style="color: var(--text-muted); font-size: 0.8rem;">Includes 60-Day (2-Month) Protected Recovery Window</span>
+                    </div>
+                </div>
+                <button type="button" onclick="closeConfirmModal('deleteModal')" style="background: none; border: none; color: var(--text-muted); font-size: 1.5rem; cursor: pointer; line-height: 1;">&times;</button>
+            </div>
+
+            <!-- Step Wizard Progress Indicator -->
+            <div class="delete-step-indicator" style="display: flex; gap: 8px; margin-bottom: 1.4rem;">
+                <div id="stepPill1" class="step-pill active" style="flex: 1; padding: 8px 12px; border-radius: 8px; background: rgba(244, 63, 94, 0.2); border: 1px solid #fb7185; text-align: center; font-size: 0.8rem; font-weight: 700; color: #fecdd3; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                    <span style="background: #fb7185; color: #0f172a; width: 18px; height: 18px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 0.72rem; font-weight: 800;">1</span>
+                    Feedback & Terms
+                </div>
+                <div id="stepPill2" class="step-pill" style="flex: 1; padding: 8px 12px; border-radius: 8px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.12); text-align: center; font-size: 0.8rem; font-weight: 600; color: var(--text-muted); display: flex; align-items: center; justify-content: center; gap: 6px;">
+                    <span style="background: rgba(255, 255, 255, 0.15); color: #ffffff; width: 18px; height: 18px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 0.72rem; font-weight: 800;">2</span>
+                    2-Step Verification
+                </div>
+            </div>
+
+            <form action="{{ url_for('delete_account') }}" method="POST" id="accountDeleteForm" onsubmit="return validateDeletionForm()">
+                <!-- STEP 1: Feedback, Reason & 60-Day Notice -->
+                <div id="deleteStep1">
+                    <!-- 60-Day Safety Recovery Card -->
+                    <div style="background: linear-gradient(135deg, rgba(244, 63, 94, 0.08) 0%, rgba(245, 158, 11, 0.06) 100%); border: 1px solid rgba(244, 63, 94, 0.35); border-radius: 12px; padding: 14px 16px; margin-bottom: 1.3rem; box-shadow: 0 4px 20px rgba(0,0,0,0.25);">
+                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                            <span style="font-size: 1.1rem;">⏳</span>
+                            <h4 style="color: #fda4af; margin: 0; font-size: 0.95rem; font-weight: 700;">2-Month (60 Days) Recovery Grace Period</h4>
+                        </div>
+                        <p style="color: #cbd5e1; font-size: 0.84rem; line-height: 1.55; margin: 0 0 8px 0;">
+                            Your account is <strong>not deleted immediately</strong>. It will be scheduled for permanent deletion in <strong>2 months (60 days)</strong> on:
+                        </p>
+                        <div style="background: rgba(0, 0, 0, 0.45); border: 1px dashed rgba(244, 63, 94, 0.5); border-radius: 8px; padding: 8px 12px; text-align: center; margin-bottom: 8px;">
+                            <span style="color: #94a3b8; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.5px;">Scheduled Permanent Wipe Deadline:</span>
+                            <div id="calculatedDeleteDate" style="color: #fb7185; font-size: 1.1rem; font-weight: 800; font-family: var(--font-heading); margin-top: 2px;">
+                                Calculating...
+                            </div>
+                        </div>
+                        <p style="color: #a7f3d0; font-size: 0.82rem; line-height: 1.5; margin: 0; display: flex; align-items: flex-start; gap: 6px;">
+                            <span>✨</span>
+                            <span><strong>Automatic Reactivation:</strong> If you log in anytime before this 60-day deadline, your account will be automatically reactivated and all your tickets, bookings, and profile data will be completely restored.</span>
+                        </p>
+                    </div>
+
+                    <!-- Reason Selection -->
+                    <div class="input-group" style="margin-bottom: 1rem;">
+                        <label style="color: #f1f5f9; font-weight: 600; font-size: 0.88rem; margin-bottom: 0.4rem; display: block;">
+                            Why do you wish to delete your account? <span style="color: #fb7185;">*</span>
+                        </label>
+                        <select name="deletion_reason" id="del_reason" class="input-field" required style="width: 100%; cursor: pointer;">
+                            <option value="" disabled selected>Select a reason...</option>
+                            <option value="No longer participating in campus / tech events">No longer participating in campus / tech events</option>
+                            <option value="Created a duplicate / alternate account">Created a duplicate / alternate account</option>
+                            <option value="Privacy and personal data removal request">Privacy and personal data removal request</option>
+                            <option value="Switching to an alternative event platform">Switching to an alternative event platform</option>
+                            <option value="Experienced technical bugs or service issues">Experienced technical bugs or service issues</option>
+                            <option value="Other reason">Other reason</option>
+                        </select>
+                    </div>
+
+                    <!-- Feedback Textarea -->
+                    <div class="input-group" style="margin-bottom: 1.4rem;">
+                        <label style="color: #f1f5f9; font-weight: 600; font-size: 0.88rem; margin-bottom: 0.4rem; display: flex; justify-content: space-between;">
+                            <span>Help us improve (Your Feedback)</span>
+                            <span style="color: var(--text-muted); font-size: 0.78rem; font-weight: 400;">Optional</span>
+                        </label>
+                        <textarea name="deletion_feedback" id="del_feedback" class="input-field" rows="3" placeholder="What could we have done better? We value your thoughts..." style="resize: vertical; min-height: 65px; line-height: 1.4; padding: 10px;"></textarea>
+                    </div>
+
+                    <div style="display: flex; gap: 12px; justify-content: flex-end; align-items: center;">
+                        <button type="button" class="btn-secondary" style="margin: 0; width: auto; padding: 0.65rem 1.4rem;" onclick="closeConfirmModal('deleteModal')">Cancel</button>
+                        <button type="button" class="btn-danger-solid" style="margin: 0; padding: 0.65rem 1.4rem; display: inline-flex; align-items: center; gap: 6px;" onclick="goToDeleteStep(2)">
+                            <span>Proceed to Step 2</span> →
+                        </button>
+                    </div>
+                </div>
+
+                <!-- STEP 2: 2-Step Security Verification -->
+                <div id="deleteStep2" style="display: none;">
+                    <div style="background: rgba(239, 68, 68, 0.08); border-left: 3px solid #ef4444; border-radius: 8px; padding: 10px 14px; margin-bottom: 1.2rem;">
+                        <p style="color: #fca5a5; font-size: 0.84rem; line-height: 1.5; margin: 0;">
+                            🔒 <strong>Security Verification:</strong> To protect your account from unintended deletion, please verify your password and confirm your decision below.
+                        </p>
+                    </div>
+
+                    <!-- Step 2.1: Password Verification -->
+                    <div class="input-group" style="margin-bottom: 1.1rem;">
+                        <label style="color: #f1f5f9; font-weight: 600; font-size: 0.88rem; margin-bottom: 0.4rem; display: block;">
+                            1. Enter Your Password <span style="color: #fb7185;">*</span>
+                        </label>
+                        <div class="password-toggle-wrapper">
+                            <input type="password" id="delete_pwd" name="confirm_password" class="input-field" placeholder="Enter your current password" autocomplete="current-password">
+                            <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('delete_pwd', this)" title="Show password" tabindex="-1" aria-label="Toggle password visibility">
+                                <svg class="eye-icon eye-open" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
+                                    <circle cx="12" cy="12" r="3"/>
+                                </svg>
+                                <svg class="eye-icon eye-closed" style="display: none;" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/>
+                                    <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/>
+                                    <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/>
+                                    <line x1="2" x2="22" y1="2" y2="22"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Step 2.2: Safety Confirmation Phrase -->
+                    <div class="input-group" style="margin-bottom: 1.1rem;">
+                        <label style="color: #f1f5f9; font-weight: 600; font-size: 0.88rem; margin-bottom: 0.4rem; display: block;">
+                            2. Type <span style="color: #fb7185; font-family: monospace; font-size: 0.95rem; background: rgba(244, 63, 94, 0.15); padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(244, 63, 94, 0.3);">DELETE</span> to confirm <span style="color: #fb7185;">*</span>
+                        </label>
+                        <input type="text" id="confirm_delete_text" name="confirm_delete_text" class="input-field" placeholder="Type DELETE in capital letters" autocomplete="off" style="font-family: monospace; letter-spacing: 2px; font-weight: 700; text-transform: uppercase;">
+                    </div>
+
+                    <!-- Step 2.3: Agreement Checkbox -->
+                    <div style="margin-bottom: 1.4rem; background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 8px; padding: 10px 12px;">
+                        <label style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer; margin: 0;">
+                            <input type="checkbox" name="confirm_agreement" id="confirm_agreement" value="yes" style="margin-top: 3px; cursor: pointer; accent-color: #fb7185; width: 17px; height: 17px; flex-shrink: 0;">
+                            <span style="color: #cbd5e1; font-size: 0.82rem; line-height: 1.5;">
+                                I understand that my account will be scheduled for permanent deletion, and I have <strong>60 days (2 months)</strong> to log back in to automatically cancel deletion and restore all my data.
+                            </span>
+                        </label>
+                    </div>
+
+                    <div style="display: flex; gap: 12px; justify-content: space-between; align-items: center;">
+                        <button type="button" class="btn-secondary" style="margin: 0; width: auto; padding: 0.65rem 1.2rem;" onclick="goToDeleteStep(1)">
+                            ← Back to Step 1
+                        </button>
+                        <button type="submit" class="btn-danger-solid" style="margin: 0; padding: 0.65rem 1.4rem; display: inline-flex; align-items: center; gap: 6px;">
+                            <span>🚨</span> Schedule Account Deletion
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const hamburger = document.getElementById('hamburger');
+        const sidebar = document.getElementById('sidebar');
+        const closeSidebar = document.getElementById('closeSidebar');
+
+        if (hamburger) hamburger.onclick = () => sidebar.classList.add('active');
+        if (closeSidebar) closeSidebar.onclick = () => sidebar.classList.remove('active');
+
+        // Close sidebar when clicking outside
+        document.onclick = (e) => {
+            if (sidebar && !sidebar.contains(e.target) && hamburger && !hamburger.contains(e.target)) {
+                sidebar.classList.remove('active');
+            }
+        };
+
+        // Eyeball Password Toggle Helper with SVG icons
+        function togglePasswordVisibility(inputId, btn) {
+            const input = document.getElementById(inputId);
+            if (!input) return;
+            const isPassword = input.type === 'password';
+            if (isPassword) {
+                input.type = 'text';
+                btn.classList.add('is-revealed');
+                btn.title = 'Hide password';
+                const openIcon = btn.querySelector('.eye-open');
+                const closedIcon = btn.querySelector('.eye-closed');
+                if (openIcon) openIcon.style.display = 'none';
+                if (closedIcon) closedIcon.style.display = 'block';
+            } else {
+                input.type = 'password';
+                btn.classList.remove('is-revealed');
+                btn.title = 'Show password';
+                const openIcon = btn.querySelector('.eye-open');
+                const closedIcon = btn.querySelector('.eye-closed');
+                if (openIcon) openIcon.style.display = 'block';
+                if (closedIcon) closedIcon.style.display = 'none';
+            }
+        }
+
+        // Settings Light/Dark Mode Switcher Logic
+        const settingsThemeToggle = document.getElementById('settingsThemeToggle');
+        const modeStatusLabel = document.getElementById('modeStatusLabel');
+        const modeText = document.getElementById('modeText');
+
+        function syncThemeSwitchState() {
+            const isLight = document.body.classList.contains('light-mode') || localStorage.getItem('theme') === 'light';
+            if (settingsThemeToggle) {
+                settingsThemeToggle.checked = isLight;
+            }
+            if (modeStatusLabel) {
+                modeStatusLabel.textContent = isLight 
+                    ? 'Currently using Light Mode (Bright, high-clarity daylight theme)'
+                    : 'Currently using Dark Mode (Comfortable contrast for all environments)';
+            }
+            if (modeText) {
+                modeText.textContent = isLight ? 'Light' : 'Dark';
+            }
+        }
+
+        function toggleSettingsTheme(chk) {
+            const isLight = chk.checked;
+            if (isLight) {
+                document.body.classList.add('light-mode');
+                localStorage.setItem('theme', 'light');
+            } else {
+                document.body.classList.remove('light-mode');
+                localStorage.setItem('theme', 'dark');
+            }
+            syncThemeSwitchState();
+        }
+
+        // Theme Toggle Switch on Navbar
+        const themeToggle = document.getElementById('themeToggle');
+        if (themeToggle) {
+            themeToggle.onclick = () => {
+                const isLight = document.body.classList.toggle('light-mode');
+                localStorage.setItem('theme', isLight ? 'light' : 'dark');
+                syncThemeSwitchState();
+            };
+        }
+
+        // Nature Wallpaper Handlers
+        function highlightActiveNatureTile(themeId) {
+            const current = themeId || localStorage.getItem('natureWallpaperTheme') || 'dynamic';
+            const tiles = document.querySelectorAll('.nature-tile');
+            tiles.forEach(t => {
+                if (t.getAttribute('data-nature') === current) {
+                    t.classList.add('active');
+                } else {
+                    t.classList.remove('active');
+                }
+            });
+        }
+
+        function applySettingsNature(themeId) {
+            if (window.applyNatureWallpaper) {
+                window.applyNatureWallpaper(themeId);
+            }
+            highlightActiveNatureTile(themeId);
+            if (window.showToast) {
+                const names = {
+                    dynamic: 'Dynamic by Page',
+                    aurora: 'Cosmic Aurora',
+                    forest: 'Emerald Forest',
+                    mountains: 'Alpine Peaks',
+                    ocean: 'Pacific Ocean',
+                    sunrise: 'Yosemite Sunrise',
+                    sakura: 'Zen Sakura',
+                    autumn: 'Golden Autumn',
+                    starry: 'Milky Way',
+                    valley: 'Misty Valley'
+                };
+                window.showToast(`🌿 Wallpaper updated: ${names[themeId] || themeId}`, 'success', 2000);
+            }
+        }
+
+        function applySettingsColor(themeName) {
+            if (window.applyColorTheme) {
+                window.applyColorTheme(themeName);
+            }
+            if (window.showToast) {
+                window.showToast(`🎨 Accent color updated to ${themeName.toUpperCase()}`, 'success', 2000);
+            }
+        }
+
+        // Modal helpers & Account Lifecycle Handlers
+        function updateCalculatedDeleteDate() {
+            const d = new Date();
+            d.setDate(d.getDate() + 60); // 2 months / 60 days
+            const options = { day: 'numeric', month: 'long', year: 'numeric' };
+            const formatted = d.toLocaleDateString('en-US', options);
+            const dateEl = document.getElementById('calculatedDeleteDate');
+            if (dateEl) {
+                dateEl.textContent = formatted + ' (in 60 days)';
+            }
+        }
+
+        function goToDeleteStep(step) {
+            const step1 = document.getElementById('deleteStep1');
+            const step2 = document.getElementById('deleteStep2');
+            const pill1 = document.getElementById('stepPill1');
+            const pill2 = document.getElementById('stepPill2');
+            const reasonSelect = document.getElementById('del_reason');
+
+            if (step === 2) {
+                if (!reasonSelect || !reasonSelect.value) {
+                    alert('⚠️ Please select a reason for account deletion before proceeding to verification.');
+                    if (reasonSelect) reasonSelect.focus();
+                    return;
+                }
+                if (step1) step1.style.display = 'none';
+                if (step2) step2.style.display = 'block';
+                if (pill1) {
+                    pill1.classList.remove('active');
+                    pill1.style.background = 'rgba(255, 255, 255, 0.05)';
+                    pill1.style.borderColor = 'rgba(255, 255, 255, 0.12)';
+                    pill1.style.color = 'var(--text-muted)';
+                }
+                if (pill2) {
+                    pill2.classList.add('active');
+                    pill2.style.background = 'rgba(244, 63, 94, 0.2)';
+                    pill2.style.borderColor = '#fb7185';
+                    pill2.style.color = '#fecdd3';
+                }
+            } else {
+                if (step2) step2.style.display = 'none';
+                if (step1) step1.style.display = 'block';
+                if (pill2) {
+                    pill2.classList.remove('active');
+                    pill2.style.background = 'rgba(255, 255, 255, 0.05)';
+                    pill2.style.borderColor = 'rgba(255, 255, 255, 0.12)';
+                    pill2.style.color = 'var(--text-muted)';
+                }
+                if (pill1) {
+                    pill1.classList.add('active');
+                    pill1.style.background = 'rgba(244, 63, 94, 0.2)';
+                    pill1.style.borderColor = '#fb7185';
+                    pill1.style.color = '#fecdd3';
+                }
+            }
+        }
+
+        function openConfirmModal(modalId) {
+            const m = document.getElementById(modalId);
+            if (m) {
+                m.style.display = 'block';
+                if (modalId === 'deleteModal') {
+                    updateCalculatedDeleteDate();
+                    goToDeleteStep(1);
+                    const delTxt = document.getElementById('confirm_delete_text');
+                    const delPwd = document.getElementById('delete_pwd');
+                    const agreeChk = document.getElementById('confirm_agreement');
+                    if (delTxt) delTxt.value = '';
+                    if (delPwd) delPwd.value = '';
+                    if (agreeChk) agreeChk.checked = false;
+                }
+            }
+        }
+
+        function closeConfirmModal(modalId) {
+            const m = document.getElementById(modalId);
+            if (m) m.style.display = 'none';
+        }
+
+        function validateDeactivationForm() {
+            const reason = document.getElementById('deact_reason');
+            const pwd = document.getElementById('deactivate_pwd');
+            if (!reason || !reason.value) {
+                alert('⚠️ Please select a reason for account deactivation.');
+                if (reason) reason.focus();
+                return false;
+            }
+            if (!pwd || !pwd.value.trim()) {
+                alert('⚠️ Please enter your password to confirm deactivation.');
+                if (pwd) pwd.focus();
+                return false;
+            }
+            return true;
+        }
+
+        function validateDeletionForm() {
+            const pwd = document.getElementById('delete_pwd');
+            const confirmTxt = document.getElementById('confirm_delete_text');
+            const agree = document.getElementById('confirm_agreement');
+
+            if (!pwd || !pwd.value.trim()) {
+                alert('⚠️ Step 1 of Verification: Please enter your password.');
+                if (pwd) pwd.focus();
+                return false;
+            }
+            if (!confirmTxt || confirmTxt.value.trim().toUpperCase() !== 'DELETE') {
+                alert('⚠️ Step 2 of Verification: Please type "DELETE" in capital letters to confirm.');
+                if (confirmTxt) confirmTxt.focus();
+                return false;
+            }
+            if (!agree || !agree.checked) {
+                alert('⚠️ Please check the acknowledgement box to confirm you understand the 60-day recovery window.');
+                if (agree) agree.focus();
+                return false;
+            }
+            return true;
+        }
+
+        // Initialize state on load
+        document.addEventListener('DOMContentLoaded', () => {
+            syncThemeSwitchState();
+            highlightActiveNatureTile(localStorage.getItem('natureWallpaperTheme') || 'dynamic');
+        });
+    </script>
+    <script src="{{ url_for('static', filename='animations.js') }}"></script>
+    <script src="{{ url_for('static', filename='chatbot.js') }}?v=5.0"></script>
+</body>
+</html>

@@ -2753,6 +2753,39 @@ def profile():
     
     return render_template('profile.html', user=user, is_host=is_host(), is_admin=is_admin(), msg=msg, error=error)
 
+@app.route('/settings')
+def settings():
+    if not session.get('loggedin'):
+        return redirect(url_for('login'))
+    
+    username = session.get('username')
+    conn = get_db()
+    c = conn.cursor()
+    c.execute("SELECT username, full_name, email, phone, college_id, profile_photo, id, user_id FROM users WHERE username=?", (username,))
+    user_data = c.fetchone()
+    conn.close()
+
+    if not user_data:
+        return "User profile not found", 404
+
+    msg = request.args.get('msg')
+    error = request.args.get('error')
+
+    uid_val = user_data[7] if (len(user_data) > 7 and user_data[7]) else f"UID-{user_data[6]:04d}"
+
+    user = {
+        'id': user_data[6],
+        'user_id': uid_val,
+        'username': user_data[0],
+        'full_name': user_data[1] or '',
+        'email': user_data[2] or '',
+        'phone': user_data[3] or '',
+        'college_id': user_data[4] or '',
+        'profile_photo': user_data[5] or 'https://ui-avatars.com/api/?name=' + user_data[0],
+    }
+
+    return render_template('settings.html', user=user, is_host=is_host(), is_admin=is_admin(), msg=msg, error=error)
+
 @app.route('/account/deactivate', methods=['POST'])
 def deactivate_account():
     if not session.get('loggedin'):
@@ -2787,7 +2820,7 @@ def deactivate_account():
         return render_template('login.html', msg=farewell_msg)
     else:
         conn.close()
-        return redirect(url_for('profile', error="Password verification failed. Account deactivation cancelled."))
+        return redirect(url_for('settings', error="Password verification failed. Account deactivation cancelled."))
 
 @app.route('/account/delete', methods=['POST'])
 def delete_account():
@@ -2803,11 +2836,11 @@ def delete_account():
     
     # 2-Step Verification Check 1: Must type confirmation phrase DELETE
     if confirm_text.upper() != 'DELETE':
-        return redirect(url_for('profile', error="Security verification failed: You must type 'DELETE' exactly to confirm scheduled account deletion."))
+        return redirect(url_for('settings', error="Security verification failed: You must type 'DELETE' exactly to confirm scheduled account deletion."))
     
     # 2-Step Verification Check 2: Agreement acknowledgement
     if not agreement_checked:
-        return redirect(url_for('profile', error="Please acknowledge the 60-day recovery agreement checkbox before proceeding."))
+        return redirect(url_for('settings', error="Please acknowledge the 60-day recovery agreement checkbox before proceeding."))
 
     conn = get_db()
     c = conn.cursor()
@@ -2846,7 +2879,7 @@ def delete_account():
         return render_template('login.html', msg=deletion_msg)
     else:
         conn.close()
-        return redirect(url_for('profile', error="Password verification failed. Account deletion request cancelled."))
+        return redirect(url_for('settings', error="Password verification failed. Account deletion request cancelled."))
 
 @app.route('/history')
 def history():
@@ -2913,7 +2946,7 @@ def change_password():
     confirm_password = request.form.get('confirm_password')
 
     if new_password != confirm_password:
-        return "Error: New passwords do not match", 400
+        return redirect(url_for('settings', error="New passwords do not match"))
 
     conn = get_db()
     c = conn.cursor()
@@ -2925,10 +2958,10 @@ def change_password():
         c.execute("UPDATE users SET password=? WHERE username=?", (hashed_new, username))
         conn.commit()
         conn.close()
-        return redirect(url_for('profile', msg="Password changed successfully!"))
+        return redirect(url_for('settings', msg="Password changed successfully!"))
     else:
         conn.close()
-        return "Error: Incorrect current password", 401
+        return redirect(url_for('settings', error="Incorrect current password"))
 
 @app.route('/forgot_password', methods=['GET', 'POST'])
 def forgot_password():
