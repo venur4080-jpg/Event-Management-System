@@ -475,15 +475,11 @@
                 </div>
                 <div class="grid-2">
                     <div class="input-group" style="margin-bottom: 0.8rem;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.45rem;">
-                            <label style="margin: 0; font-weight: 600; color: var(--text-muted); font-size: 0.9rem;">User ID (System Assigned)</label>
-                            <span class="locked-badge">🔒 System Default (Fixed)</span>
-                        </div>
+                        <label style="margin-bottom: 0.45rem; font-weight: 600; color: var(--text-muted); font-size: 0.9rem;">User ID (System Assigned)</label>
                         <div class="locked-field-wrapper">
                             <input type="text" class="input-field locked-input" value="{{ user.user_id }}" readonly disabled title="User ID is automatically assigned by system and cannot be changed">
                             <span class="lock-icon" title="Fixed System Identifier">🔒</span>
                         </div>
-                        <small style="color: var(--primary); font-size: 0.76rem; margin-top: 5px; display: block;">💡 Log in using last 4 digits (<code>{{ user.user_id[-4:] if user.user_id|length >= 4 else user.user_id }}</code>) or your registered Email.</small>
                     </div>
 
                     <div class="input-group" style="margin-bottom: 0.8rem;">
@@ -495,7 +491,6 @@
                             <input type="text" class="input-field locked-input" value="{{ user.username }}" readonly disabled title="Username is your unique public handle">
                             <span class="lock-icon" title="Unique Account Handle">👤</span>
                         </div>
-                        <small style="color: var(--text-muted); font-size: 0.76rem; margin-top: 5px; display: block;">Public profile handle (Login by username or name is disabled).</small>
                     </div>
                 </div>
 
