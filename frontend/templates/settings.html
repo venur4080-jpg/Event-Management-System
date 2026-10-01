@@ -242,6 +242,50 @@
             display: inline-block;
         }
 
+        /* Atmospheric Particle Chips */
+        .particle-mode-chip {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            color: var(--text-main);
+            padding: 0.45rem 0.9rem;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .particle-mode-chip:hover {
+            background: rgba(0, 242, 254, 0.15);
+            border-color: var(--primary);
+            color: var(--primary);
+            transform: translateY(-1px);
+        }
+        .particle-mode-chip.active {
+            background: var(--primary);
+            color: #0f172a;
+            border-color: var(--primary);
+            font-weight: 700;
+            box-shadow: 0 0 12px rgba(0, 242, 254, 0.4);
+        }
+        body.light-mode .particle-mode-chip {
+            background: #f1f5f9;
+            border-color: #cbd5e1;
+            color: #1e293b;
+        }
+        body.light-mode .particle-mode-chip:hover {
+            background: #e2e8f0;
+            border-color: var(--primary);
+            color: #0f172a;
+        }
+        body.light-mode .particle-mode-chip.active {
+            background: var(--primary);
+            color: #0f172a;
+            border-color: var(--primary);
+        }
+
         /* Password Field Styling */
         .password-toggle-wrapper {
             position: relative !important;
@@ -523,12 +567,12 @@
 
                         <!-- Sakura -->
                         <div class="nature-tile" data-nature="sakura" onclick="applySettingsNature('sakura')">
-                            <img src="https://images.unsplash.com/photo-1528164344705-475426879c0d?auto=format&fit=crop&w=400&q=80" alt="Sakura" class="nature-tile-img">
+                            <img src="https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=400&q=80" alt="Sakura" class="nature-tile-img">
                             <div class="nature-tile-overlay"></div>
                             <span class="nature-active-pill">Active</span>
                             <div class="nature-tile-content">
                                 <div class="nature-tile-title"><span>🌸</span> Zen Sakura</div>
-                                <div class="nature-tile-desc">Japanese cherry blossoms</div>
+                                <div class="nature-tile-desc">Japanese cherry blossoms & Mt. Fuji</div>
                             </div>
                         </div>
 
@@ -585,6 +629,63 @@
                         <button type="button" class="color-theme-btn" onclick="applySettingsColor('neon')">
                             <span class="color-dot" style="background: #a78bfa; box-shadow: 0 0 8px #a78bfa;"></span> Neon Violet
                         </button>
+                    </div>
+                </div>
+
+                <!-- Live Motion & Atmospheric Particle Controls -->
+                <div style="margin-top: 1.8rem; padding-top: 1.4rem; border-top: 1px solid var(--glass-border);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 1.2rem;">
+                        <div>
+                            <h4 style="margin: 0 0 4px 0; color: #f1f5f9; font-size: 1rem; display: flex; align-items: center; gap: 8px;">
+                                <span>🎬</span> Live Background Motion (Cinematic Ken Burns)
+                            </h4>
+                            <p id="liveMotionStatusLabel" style="margin: 0; color: var(--text-muted); font-size: 0.84rem;">
+                                Continuous smooth drone camera pan & zoom effect on nature wallpapers.
+                            </p>
+                        </div>
+                        <div class="switch-toggle-wrapper">
+                            <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600;" id="motionText">Live</span>
+                            <label class="switch-btn" title="Toggle Live Motion">
+                                <input type="checkbox" id="settingsLiveMotionToggle" onchange="toggleSettingsLiveMotion(this)">
+                                <span class="switch-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Atmospheric Nature Particles -->
+                    <div style="margin-top: 1rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.7rem; flex-wrap: wrap; gap: 8px;">
+                            <h4 style="margin: 0; color: var(--text-muted); font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; gap: 6px;">
+                                <span>✨</span> Atmospheric Nature Particles
+                            </h4>
+                            <span style="color: var(--text-muted); font-size: 0.78rem;">Interactive canvas overlay</span>
+                        </div>
+                        <div class="particle-modes-row" id="particleModesRow" style="display: flex; gap: 8px; flex-wrap: wrap;">
+                            <button type="button" class="particle-mode-chip" data-mode="auto" onclick="applySettingsParticleMode('auto')">
+                                ✨ Auto (Theme-Matched)
+                            </button>
+                            <button type="button" class="particle-mode-chip" data-mode="sakura" onclick="applySettingsParticleMode('sakura')">
+                                🌸 Sakura Petals
+                            </button>
+                            <button type="button" class="particle-mode-chip" data-mode="fireflies" onclick="applySettingsParticleMode('fireflies')">
+                                🌲 Golden Fireflies
+                            </button>
+                            <button type="button" class="particle-mode-chip" data-mode="starlight" onclick="applySettingsParticleMode('starlight')">
+                                🌌 Cosmic Starlight
+                            </button>
+                            <button type="button" class="particle-mode-chip" data-mode="leaves" onclick="applySettingsParticleMode('leaves')">
+                                🍂 Autumn Leaves
+                            </button>
+                            <button type="button" class="particle-mode-chip" data-mode="bubbles" onclick="applySettingsParticleMode('bubbles')">
+                                🌊 Ocean Bubbles
+                            </button>
+                            <button type="button" class="particle-mode-chip" data-mode="mist" onclick="applySettingsParticleMode('mist')">
+                                💨 Morning Mist
+                            </button>
+                            <button type="button" class="particle-mode-chip" data-mode="off" onclick="applySettingsParticleMode('off')">
+                                🚫 None
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1074,6 +1175,74 @@
             }
         }
 
+        // Live Motion & Atmospheric Particle Handlers
+        const settingsLiveMotionToggle = document.getElementById('settingsLiveMotionToggle');
+        const liveMotionStatusLabel = document.getElementById('liveMotionStatusLabel');
+        const motionText = document.getElementById('motionText');
+
+        function syncLiveMotionState() {
+            const isMotion = localStorage.getItem('liveMotionEnabled') !== 'false';
+            if (settingsLiveMotionToggle) {
+                settingsLiveMotionToggle.checked = isMotion;
+            }
+            if (liveMotionStatusLabel) {
+                liveMotionStatusLabel.textContent = isMotion
+                    ? 'Live Motion Active: Smooth drone-camera pan & zoom effect on nature wallpapers.'
+                    : 'Live Motion Paused: Static background wallpapers (reduced motion).';
+            }
+            if (motionText) {
+                motionText.textContent = isMotion ? 'Live' : 'Static';
+            }
+        }
+
+        function toggleSettingsLiveMotion(chk) {
+            const isMotion = chk.checked;
+            if (window.toggleLiveMotion) {
+                window.toggleLiveMotion(isMotion);
+            } else {
+                localStorage.setItem('liveMotionEnabled', isMotion ? 'true' : 'false');
+                if (isMotion) document.body.classList.add('live-motion-active');
+                else document.body.classList.remove('live-motion-active');
+            }
+            syncLiveMotionState();
+            if (window.showToast) {
+                window.showToast(isMotion ? '🎬 Live Background Motion Enabled' : '⏸️ Background Motion Paused', 'success', 2000);
+            }
+        }
+
+        function highlightActiveParticleChip(mode) {
+            const activeMode = mode || localStorage.getItem('liveParticleMode') || 'auto';
+            document.querySelectorAll('.particle-mode-chip').forEach(chip => {
+                if (chip.getAttribute('data-mode') === activeMode) {
+                    chip.classList.add('active');
+                } else {
+                    chip.classList.remove('active');
+                }
+            });
+        }
+
+        function applySettingsParticleMode(mode) {
+            if (window.setLiveParticleMode) {
+                window.setLiveParticleMode(mode);
+            } else {
+                localStorage.setItem('liveParticleMode', mode);
+            }
+            highlightActiveParticleChip(mode);
+            if (window.showToast) {
+                const names = {
+                    auto: 'Auto (Theme-Matched)',
+                    sakura: 'Sakura Petals',
+                    fireflies: 'Golden Fireflies',
+                    starlight: 'Cosmic Starlight',
+                    leaves: 'Autumn Leaves',
+                    bubbles: 'Ocean Bubbles',
+                    mist: 'Morning Mist',
+                    off: 'Disabled'
+                };
+                window.showToast(`✨ Particle layer updated: ${names[mode] || mode}`, 'success', 2000);
+            }
+        }
+
         // Modal helpers & Account Lifecycle Handlers
         function updateCalculatedDeleteDate() {
             const d = new Date();
@@ -1196,6 +1365,8 @@
         document.addEventListener('DOMContentLoaded', () => {
             syncThemeSwitchState();
             highlightActiveNatureTile(localStorage.getItem('natureWallpaperTheme') || 'dynamic');
+            syncLiveMotionState();
+            highlightActiveParticleChip(localStorage.getItem('liveParticleMode') || 'auto');
         });
     </script>
     <script src="{{ url_for('static', filename='animations.js') }}"></script>

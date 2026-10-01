@@ -1,5 +1,5 @@
 /**
- * themes.js – Nature Wallpaper & Color Theme Engine
+ * themes.js – Nature Wallpaper, Live Motion & Atmospheric Particle Engine
  * Event Management System
  */
 
@@ -60,9 +60,9 @@
       id: 'sakura',
       name: 'Zen Garden Sakura',
       icon: '🌸',
-      desc: 'Tranquil Japanese cherry blossoms & mountain lake',
-      url: 'https://images.unsplash.com/photo-1528164344705-475426879c0d?auto=format&fit=crop&w=2400&q=80',
-      thumb: 'https://images.unsplash.com/photo-1528164344705-475426879c0d?auto=format&fit=crop&w=400&q=80'
+      desc: 'Tranquil Japanese cherry blossoms & Mt. Fuji pagoda',
+      url: 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=2400&q=80',
+      thumb: 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=400&q=80'
     },
     autumn: {
       id: 'autumn',
@@ -155,6 +155,11 @@
 
     // Update Modal UI Active States if rendered
     updateNatureModalActiveState(themeId || 'dynamic');
+
+    // Re-spawn particles to match new wallpaper theme if in auto mode
+    if (currentParticleType === 'auto') {
+      spawnParticles();
+    }
   }
 
   // ─── 4. Color Accent Themes ───────────────────────────────────────────────
@@ -190,7 +195,345 @@
     localStorage.setItem('selectedColorTheme', themeName);
   }
 
-  // ─── 5. Nature Wallpaper Modal Switcher UI ────────────────────────────────
+  // ─── 5. Live Background & Atmospheric Particle Simulation Engine ───────────
+  let liveCanvas = null;
+  let liveCtx = null;
+  let animFrameId = null;
+  let particles = [];
+  let currentParticleType = 'auto'; // 'auto', 'sakura', 'fireflies', 'starlight', 'leaves', 'mist', 'bubbles', 'off'
+  let isTabVisible = true;
+
+  function getEffectiveParticleType() {
+    if (currentParticleType !== 'auto') return currentParticleType;
+    const currentTheme = localStorage.getItem('natureWallpaperTheme') || 'dynamic';
+    let effective = currentTheme;
+    if (effective === 'dynamic') {
+      effective = pageNatureDefaults[detectCurrentPage()] || 'aurora';
+    }
+    switch (effective) {
+      case 'sakura': return 'sakura';
+      case 'aurora':
+      case 'starry': return 'starlight';
+      case 'forest':
+      case 'valley': return 'fireflies';
+      case 'autumn': return 'leaves';
+      case 'ocean': return 'bubbles';
+      case 'sunrise':
+      case 'mountains': return 'mist';
+      default: return 'starlight';
+    }
+  }
+
+  function initLiveLayers() {
+    if (!document.getElementById('liveBgMotionLayer')) {
+      const motionLayer = document.createElement('div');
+      motionLayer.id = 'liveBgMotionLayer';
+      motionLayer.setAttribute('aria-hidden', 'true');
+      document.body.insertBefore(motionLayer, document.body.firstChild);
+    }
+    if (!document.getElementById('liveParticleCanvas')) {
+      liveCanvas = document.createElement('canvas');
+      liveCanvas.id = 'liveParticleCanvas';
+      liveCanvas.setAttribute('aria-hidden', 'true');
+      document.body.insertBefore(liveCanvas, document.body.firstChild);
+      liveCtx = liveCanvas.getContext('2d');
+      resizeCanvas();
+      window.addEventListener('resize', resizeCanvas, { passive: true });
+    } else {
+      liveCanvas = document.getElementById('liveParticleCanvas');
+      liveCtx = liveCanvas.getContext('2d');
+    }
+  }
+
+  function resizeCanvas() {
+    if (!liveCanvas) return;
+    liveCanvas.width = window.innerWidth;
+    liveCanvas.height = window.innerHeight;
+    spawnParticles();
+  }
+
+  function spawnParticles() {
+    if (!liveCanvas) return;
+    const type = getEffectiveParticleType();
+    particles = [];
+    if (type === 'off') return;
+
+    const w = liveCanvas.width;
+    const h = liveCanvas.height;
+    let count = 35;
+    if (type === 'starlight') count = 45;
+    if (type === 'sakura') count = 32;
+    if (type === 'fireflies') count = 28;
+    if (type === 'leaves') count = 24;
+    if (type === 'bubbles') count = 30;
+    if (type === 'mist') count = 18;
+
+    for (let i = 0; i < count; i++) {
+      particles.push(createParticle(type, w, h, true));
+    }
+  }
+
+  function createParticle(type, w, h, randomizeY = false) {
+    const startY = randomizeY ? Math.random() * h : (type === 'bubbles' ? h + 20 : -20);
+    const startX = Math.random() * w;
+
+    if (type === 'sakura') {
+      return {
+        type: 'sakura',
+        x: startX,
+        y: startY,
+        size: 8 + Math.random() * 8,
+        vx: (Math.random() - 0.2) * 1.2 + 0.6,
+        vy: 0.8 + Math.random() * 1.2,
+        rotation: Math.random() * Math.PI * 2,
+        rotSpeed: (Math.random() - 0.5) * 0.03,
+        swayPhase: Math.random() * Math.PI * 2,
+        swaySpeed: 0.02 + Math.random() * 0.02,
+        opacity: 0.4 + Math.random() * 0.45
+      };
+    } else if (type === 'fireflies') {
+      return {
+        type: 'fireflies',
+        x: startX,
+        y: startY,
+        size: 2.2 + Math.random() * 2.8,
+        vx: (Math.random() - 0.5) * 0.6,
+        vy: (Math.random() - 0.5) * 0.6,
+        pulsePhase: Math.random() * Math.PI * 2,
+        pulseSpeed: 0.03 + Math.random() * 0.04,
+        maxAlpha: 0.5 + Math.random() * 0.5,
+        color: Math.random() > 0.3 ? '250, 204, 21' : '52, 211, 153'
+      };
+    } else if (type === 'starlight') {
+      return {
+        type: 'starlight',
+        x: startX,
+        y: startY,
+        size: 1 + Math.random() * 2.5,
+        twinklePhase: Math.random() * Math.PI * 2,
+        twinkleSpeed: 0.02 + Math.random() * 0.04,
+        vx: (Math.random() - 0.5) * 0.15,
+        vy: (Math.random() - 0.5) * 0.15,
+        color: Math.random() > 0.4 ? '255, 255, 255' : (Math.random() > 0.5 ? '0, 242, 254' : '167, 139, 250')
+      };
+    } else if (type === 'leaves') {
+      return {
+        type: 'leaves',
+        x: startX,
+        y: startY,
+        size: 10 + Math.random() * 10,
+        vx: (Math.random() - 0.2) * 1.5 + 0.8,
+        vy: 1.0 + Math.random() * 1.5,
+        rotation: Math.random() * Math.PI * 2,
+        rotSpeed: (Math.random() - 0.5) * 0.04,
+        swayPhase: Math.random() * Math.PI * 2,
+        swaySpeed: 0.025 + Math.random() * 0.02,
+        color: Math.random() > 0.5 ? '245, 158, 11' : (Math.random() > 0.5 ? '239, 68, 68' : '217, 119, 6'),
+        opacity: 0.5 + Math.random() * 0.4
+      };
+    } else if (type === 'bubbles') {
+      return {
+        type: 'bubbles',
+        x: startX,
+        y: randomizeY ? Math.random() * h : h + 15,
+        size: 3 + Math.random() * 6,
+        vx: (Math.random() - 0.5) * 0.5,
+        vy: -0.6 - Math.random() * 1.0,
+        swayPhase: Math.random() * Math.PI * 2,
+        swaySpeed: 0.03 + Math.random() * 0.02,
+        opacity: 0.25 + Math.random() * 0.45
+      };
+    } else { // 'mist'
+      return {
+        type: 'mist',
+        x: startX,
+        y: startY,
+        size: 40 + Math.random() * 60,
+        vx: 0.3 + Math.random() * 0.4,
+        vy: (Math.random() - 0.5) * 0.2,
+        opacity: 0.08 + Math.random() * 0.12,
+        pulsePhase: Math.random() * Math.PI * 2
+      };
+    }
+  }
+
+  function drawParticles() {
+    if (!liveCanvas || !liveCtx) {
+      animFrameId = requestAnimationFrame(drawParticles);
+      return;
+    }
+
+    if (!isTabVisible) {
+      animFrameId = requestAnimationFrame(drawParticles);
+      return;
+    }
+
+    const type = getEffectiveParticleType();
+    if (type === 'off') {
+      liveCtx.clearRect(0, 0, liveCanvas.width, liveCanvas.height);
+      animFrameId = requestAnimationFrame(drawParticles);
+      return;
+    }
+
+    const w = liveCanvas.width;
+    const h = liveCanvas.height;
+    liveCtx.clearRect(0, 0, w, h);
+
+    for (let i = 0; i < particles.length; i++) {
+      const p = particles[i];
+
+      if (p.type === 'sakura') {
+        p.swayPhase += p.swaySpeed;
+        p.rotation += p.rotSpeed;
+        p.x += p.vx + Math.sin(p.swayPhase) * 0.8;
+        p.y += p.vy;
+
+        if (p.y > h + 20 || p.x > w + 20 || p.x < -20) {
+          particles[i] = createParticle('sakura', w, h, false);
+          continue;
+        }
+
+        liveCtx.save();
+        liveCtx.translate(p.x, p.y);
+        liveCtx.rotate(p.rotation);
+        liveCtx.beginPath();
+        liveCtx.moveTo(0, 0);
+        liveCtx.bezierCurveTo(-p.size / 2, -p.size / 2, -p.size, p.size / 3, 0, p.size);
+        liveCtx.bezierCurveTo(p.size, p.size / 3, p.size / 2, -p.size / 2, 0, 0);
+        liveCtx.fillStyle = `rgba(255, 183, 197, ${p.opacity})`;
+        liveCtx.shadowColor = 'rgba(244, 114, 182, 0.4)';
+        liveCtx.shadowBlur = 4;
+        liveCtx.fill();
+        liveCtx.restore();
+
+      } else if (p.type === 'fireflies') {
+        p.pulsePhase += p.pulseSpeed;
+        const alpha = Math.max(0.05, (Math.sin(p.pulsePhase) * 0.5 + 0.5) * p.maxAlpha);
+        p.x += p.vx + Math.sin(p.pulsePhase * 0.5) * 0.4;
+        p.y += p.vy + Math.cos(p.pulsePhase * 0.5) * 0.4;
+
+        if (p.x < -10) p.x = w + 10;
+        if (p.x > w + 10) p.x = -10;
+        if (p.y < -10) p.y = h + 10;
+        if (p.y > h + 10) p.y = -10;
+
+        liveCtx.save();
+        liveCtx.beginPath();
+        liveCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        liveCtx.fillStyle = `rgba(${p.color}, ${alpha})`;
+        liveCtx.shadowColor = `rgba(${p.color}, 0.8)`;
+        liveCtx.shadowBlur = p.size * 5;
+        liveCtx.fill();
+        liveCtx.restore();
+
+      } else if (p.type === 'starlight') {
+        p.twinklePhase += p.twinkleSpeed;
+        const alpha = Math.max(0.1, Math.sin(p.twinklePhase) * 0.45 + 0.55);
+        p.x += p.vx;
+        p.y += p.vy;
+
+        if (p.x < -10) p.x = w + 10;
+        if (p.x > w + 10) p.x = -10;
+        if (p.y < -10) p.y = h + 10;
+        if (p.y > h + 10) p.y = -10;
+
+        liveCtx.save();
+        liveCtx.beginPath();
+        liveCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        liveCtx.fillStyle = `rgba(${p.color}, ${alpha * 0.85})`;
+        liveCtx.shadowColor = `rgba(${p.color}, 0.9)`;
+        liveCtx.shadowBlur = 6;
+        liveCtx.fill();
+        liveCtx.restore();
+
+      } else if (p.type === 'leaves') {
+        p.swayPhase += p.swaySpeed;
+        p.rotation += p.rotSpeed;
+        p.x += p.vx + Math.sin(p.swayPhase) * 1.2;
+        p.y += p.vy;
+
+        if (p.y > h + 25 || p.x > w + 25 || p.x < -25) {
+          particles[i] = createParticle('leaves', w, h, false);
+          continue;
+        }
+
+        liveCtx.save();
+        liveCtx.translate(p.x, p.y);
+        liveCtx.rotate(p.rotation);
+        liveCtx.beginPath();
+        liveCtx.ellipse(0, 0, p.size * 0.45, p.size, Math.PI / 4, 0, Math.PI * 2);
+        liveCtx.fillStyle = `rgba(${p.color}, ${p.opacity})`;
+        liveCtx.shadowColor = 'rgba(245, 158, 11, 0.4)';
+        liveCtx.shadowBlur = 4;
+        liveCtx.fill();
+        liveCtx.restore();
+
+      } else if (p.type === 'bubbles') {
+        p.swayPhase += p.swaySpeed;
+        p.x += p.vx + Math.sin(p.swayPhase) * 0.5;
+        p.y += p.vy;
+
+        if (p.y < -20) {
+          particles[i] = createParticle('bubbles', w, h, false);
+          continue;
+        }
+
+        liveCtx.save();
+        liveCtx.beginPath();
+        liveCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        liveCtx.fillStyle = `rgba(0, 242, 254, ${p.opacity * 0.35})`;
+        liveCtx.strokeStyle = `rgba(255, 255, 255, ${p.opacity * 0.6})`;
+        liveCtx.lineWidth = 1;
+        liveCtx.shadowColor = 'rgba(0, 242, 254, 0.5)';
+        liveCtx.shadowBlur = 5;
+        liveCtx.fill();
+        liveCtx.stroke();
+        liveCtx.restore();
+
+      } else if (p.type === 'mist') {
+        p.pulsePhase += 0.01;
+        p.x += p.vx;
+        p.y += p.vy;
+
+        if (p.x > w + p.size) p.x = -p.size;
+
+        const radGrad = liveCtx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.size);
+        radGrad.addColorStop(0, `rgba(255, 255, 255, ${p.opacity})`);
+        radGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+
+        liveCtx.save();
+        liveCtx.fillStyle = radGrad;
+        liveCtx.beginPath();
+        liveCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        liveCtx.fill();
+        liveCtx.restore();
+      }
+    }
+
+    animFrameId = requestAnimationFrame(drawParticles);
+  }
+
+  function setLiveMotion(enable) {
+    const isMotion = enable !== false;
+    if (isMotion) {
+      document.body.classList.add('live-motion-active');
+    } else {
+      document.body.classList.remove('live-motion-active');
+    }
+    localStorage.setItem('liveMotionEnabled', isMotion ? 'true' : 'false');
+  }
+
+  function setLiveParticles(mode) {
+    currentParticleType = mode || 'auto';
+    localStorage.setItem('liveParticleMode', currentParticleType);
+    spawnParticles();
+  }
+
+  document.addEventListener('visibilitychange', () => {
+    isTabVisible = !document.hidden;
+  });
+
+  // ─── 6. Nature Wallpaper Modal Switcher UI ────────────────────────────────
   function injectThemeCoreStyles() {
     if (document.getElementById('themes-dynamic-style')) return;
     const style = document.createElement('style');
@@ -410,7 +753,7 @@
     });
   }
 
-  // ─── 6. Global Window Handlers ────────────────────────────────────────────
+  // ─── 7. Global Window Handlers ────────────────────────────────────────────
   window.openNatureModal = function () {
     buildNatureModal();
     const currentTheme = localStorage.getItem('natureWallpaperTheme') || 'dynamic';
@@ -432,15 +775,39 @@
     }
   };
 
-  // ─── 7. Initialization ────────────────────────────────────────────────────
+  window.toggleLiveMotion = function (enable) {
+    setLiveMotion(enable);
+  };
+
+  window.setLiveParticleMode = function (mode) {
+    setLiveParticles(mode);
+  };
+
+  window.getLiveBackgroundSettings = function () {
+    return {
+      motionEnabled: localStorage.getItem('liveMotionEnabled') !== 'false',
+      particleMode: localStorage.getItem('liveParticleMode') || 'auto'
+    };
+  };
+
+  // ─── 8. Initialization ────────────────────────────────────────────────────
   function init() {
     injectThemeCoreStyles();
+    initLiveLayers();
 
     const savedWallpaper = localStorage.getItem('natureWallpaperTheme') || 'dynamic';
     applyNatureWallpaper(savedWallpaper);
 
     const savedColor = localStorage.getItem('selectedColorTheme') || 'ocean';
     applyColorTheme(savedColor);
+
+    const isMotion = localStorage.getItem('liveMotionEnabled') !== 'false';
+    setLiveMotion(isMotion);
+
+    const particleMode = localStorage.getItem('liveParticleMode') || 'auto';
+    setLiveParticles(particleMode);
+
+    drawParticles();
   }
 
   // Run on initial load

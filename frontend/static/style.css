@@ -24,7 +24,7 @@
     --nature-mountains: url('https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=2400&q=80');
     --nature-ocean: url('https://images.unsplash.com/photo-1518837695005-2083093ee35b?auto=format&fit=crop&w=2400&q=80');
     --nature-sunrise: url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=2400&q=80');
-    --nature-sakura: url('https://images.unsplash.com/photo-1528164344705-475426879c0d?auto=format&fit=crop&w=2400&q=80');
+    --nature-sakura: url('https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=2400&q=80');
     --nature-autumn: url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=2400&q=80');
     --nature-starry: url('https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=2400&q=80');
     --nature-valley: url('https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=2400&q=80');
@@ -3580,6 +3580,70 @@ body.light-mode .delete-modal-container .input-field {
     background: #f8fafc !important;
     border-color: #cbd5e1 !important;
     color: #0f172a !important;
+}
+
+/* ==========================================================================
+   Live Background Motion & Particle Canvas System
+   ========================================================================== */
+#liveBgMotionLayer {
+    position: fixed;
+    top: -5%;
+    left: -5%;
+    width: 110%;
+    height: 110%;
+    background-image: var(--bg-overlay-dark), var(--page-bg-image);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    pointer-events: none;
+    z-index: -999;
+    will-change: transform;
+    transition: background-image 0.45s ease-in-out, opacity 0.5s ease;
+}
+
+body.light-mode #liveBgMotionLayer {
+    background-image: var(--bg-overlay-light), var(--page-bg-image);
+}
+
+body.live-motion-active #liveBgMotionLayer {
+    animation: liveBgKenBurns 45s ease-in-out infinite alternate;
+}
+
+@keyframes liveBgKenBurns {
+    0% {
+        transform: scale(1.0) translate3d(0, 0, 0);
+    }
+    25% {
+        transform: scale(1.05) translate3d(-1.5%, -1%, 0);
+    }
+    50% {
+        transform: scale(1.08) translate3d(1.2%, -2%, 0);
+    }
+    75% {
+        transform: scale(1.04) translate3d(-1%, 1.2%, 0);
+    }
+    100% {
+        transform: scale(1.07) translate3d(1.5%, 0.8%, 0);
+    }
+}
+
+#liveParticleCanvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
+    z-index: -998;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    body.live-motion-active #liveBgMotionLayer {
+        animation: none !important;
+    }
+    #liveParticleCanvas {
+        display: none !important;
+    }
 }
 
 
