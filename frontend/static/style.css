@@ -2464,38 +2464,57 @@ body.light-mode .checkin-table td {
     */
 .danger-zone-card {
     margin-top: 3rem;
-    border: 1px solid rgba(239, 68, 68, 0.35);
+    border: 1px solid rgba(239, 68, 68, 0.28);
     border-radius: 18px;
-    padding: 2rem;
-    background: rgba(239, 68, 68, 0.04);
-    backdrop-filter: blur(10px);
-    box-shadow: 0 10px 30px rgba(239, 68, 68, 0.05);
+    padding: 2rem 2.2rem;
+    background: linear-gradient(145deg, rgba(239, 68, 68, 0.035) 0%, rgba(15, 23, 42, 0.7) 100%);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    box-shadow: 0 10px 35px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.danger-zone-card:hover {
+    border-color: rgba(239, 68, 68, 0.45);
+    box-shadow: 0 14px 40px rgba(239, 68, 68, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
 .danger-zone-title {
-    color: #ef4444;
+    color: #f87171;
     font-family: var(--font-heading);
-    font-size: 1.3rem;
+    font-size: 1.25rem;
     font-weight: 700;
     display: flex;
     align-items: center;
     gap: 8px;
-    margin-bottom: 0.6rem;
+    margin-bottom: 0.5rem;
+    letter-spacing: 0.3px;
 }
 
 .danger-action-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1.2rem 0;
-    border-top: 1px solid rgba(239, 68, 68, 0.15);
+    padding: 1.25rem 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.07);
     gap: 1.5rem;
     flex-wrap: wrap;
+    transition: transform 0.2s ease;
+}
+
+.danger-action-row:first-of-type {
+    margin-top: 0.4rem;
+}
+
+.danger-action-info {
+    flex: 1;
+    min-width: 250px;
 }
 
 .danger-action-info h4 {
-    color: #ffffff;
-    font-size: 1rem;
+    color: #f1f5f9;
+    font-size: 0.98rem;
+    font-weight: 600;
     margin-bottom: 4px;
 }
 
@@ -2503,45 +2522,67 @@ body.light-mode .checkin-table td {
     color: var(--text-muted);
     font-size: 0.85rem;
     line-height: 1.5;
+    margin: 0;
 }
 
 .btn-warning-outline {
-    background: rgba(245, 158, 11, 0.12);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(245, 158, 11, 0.1);
     color: #f59e0b;
-    border: 1px solid #f59e0b;
-    padding: 0.65rem 1.3rem;
+    border: 1px solid rgba(245, 158, 11, 0.45);
+    padding: 0.65rem 1.35rem;
     border-radius: 10px;
     font-weight: 700;
     font-size: 0.88rem;
     cursor: pointer;
-    transition: all 0.25s ease;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
     white-space: nowrap;
+    text-decoration: none;
 }
 
 .btn-warning-outline:hover {
     background: #f59e0b;
     color: #0f172a;
-    box-shadow: 0 0 15px rgba(245, 158, 11, 0.4);
+    border-color: #f59e0b;
+    box-shadow: 0 0 18px rgba(245, 158, 11, 0.45);
     transform: translateY(-2px);
 }
 
 .btn-danger-solid {
-    background: #ef4444;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
     color: #ffffff;
-    border: 1px solid #ef4444;
-    padding: 0.65rem 1.3rem;
+    border: 1px solid rgba(239, 68, 68, 0.8);
+    padding: 0.65rem 1.35rem;
     border-radius: 10px;
     font-weight: 700;
     font-size: 0.88rem;
     cursor: pointer;
-    transition: all 0.25s ease;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
     white-space: nowrap;
+    box-shadow: 0 4px 14px rgba(239, 68, 68, 0.25);
+    text-decoration: none;
 }
 
 .btn-danger-solid:hover {
-    background: #dc2626;
-    box-shadow: 0 0 18px rgba(239, 68, 68, 0.5);
+    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+    border-color: #f87171;
+    box-shadow: 0 0 20px rgba(239, 68, 68, 0.55);
     transform: translateY(-2px);
+}
+
+body.light-mode .danger-zone-card {
+    background: #ffffff !important;
+    border-color: rgba(239, 68, 68, 0.25) !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05) !important;
+}
+
+body.light-mode .danger-action-row {
+    border-top-color: rgba(0, 0, 0, 0.06) !important;
 }
 
 body.light-mode .danger-action-info h4 {

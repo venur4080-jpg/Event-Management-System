@@ -642,45 +642,33 @@
             </div>
 
             <!-- Danger Zone: Account Deactivate & Delete -->
-            <div class="danger-zone-card" style="margin-top: 2.5rem; background: rgba(239, 68, 68, 0.04); border: 1px solid rgba(239, 68, 68, 0.22); border-radius: 16px; padding: 1.8rem; backdrop-filter: blur(14px);">
-                <div class="danger-zone-title" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                        <span>⚠️</span>
-                        <span style="font-family: var(--font-heading); font-size: 1.25rem; font-weight: 700; color: #f87171;">Account Lifecycle & Danger Zone</span>
-                    </div>
-                    <span style="font-size: 0.76rem; background: rgba(244, 63, 94, 0.15); border: 1px solid rgba(244, 63, 94, 0.35); color: #fb7185; padding: 3px 10px; border-radius: 20px; font-weight: 700; letter-spacing: 0.4px;">Protected with 60-Day Recovery</span>
+            <div class="danger-zone-card">
+                <div class="danger-zone-title">
+                    <span>⚠️ Danger Zone</span>
                 </div>
-                <p style="color: var(--text-muted); font-size: 0.88rem; margin: 0.6rem 0 1.4rem 0; line-height: 1.55;">
-                    Manage your account status with complete transparency. You can temporarily pause your account or schedule a permanent deletion with a <strong>60-day (2-month) protected recovery window</strong>.
+                <p style="color: var(--text-muted); font-size: 0.88rem; margin-bottom: 1.2rem;">
+                    Take control of your account lifecycle. You can temporarily deactivate your account or permanently erase your data.
                 </p>
 
                 <!-- Deactivate Option -->
-                <div class="danger-action-row" style="display: flex; justify-content: space-between; align-items: center; padding: 1.2rem 0; border-top: 1px solid rgba(255, 255, 255, 0.08); gap: 1.5rem; flex-wrap: wrap;">
-                    <div class="danger-action-info" style="flex: 1; min-width: 260px;">
-                        <h4 style="margin: 0 0 4px 0; color: #f59e0b; font-size: 1rem; display: flex; align-items: center; gap: 6px;">
-                            <span>⏸️</span> Deactivate Account
-                        </h4>
-                        <p style="margin: 0; color: var(--text-muted); font-size: 0.85rem; line-height: 1.5;">
-                            Temporarily pause your profile and bookings. Your passes and history remain safe. Simply log in anytime to reactivate instantly.
-                        </p>
+                <div class="danger-action-row">
+                    <div class="danger-action-info">
+                        <h4>Deactivate Account</h4>
+                        <p>Temporarily disable your profile. You can reactivate anytime simply by logging back in with your credentials.</p>
                     </div>
-                    <button type="button" class="btn-warning-outline" onclick="openConfirmModal('deactivateModal')" style="display: inline-flex; align-items: center; gap: 6px; padding: 0.65rem 1.3rem;">
-                        <span>⏸️</span> Deactivate Account
+                    <button type="button" class="btn-warning-outline" onclick="openConfirmModal('deactivateModal')">
+                        Deactivate Account
                     </button>
                 </div>
 
-                <!-- Delete Option with 60-Day Recovery -->
-                <div class="danger-action-row" style="display: flex; justify-content: space-between; align-items: center; padding: 1.2rem 0 0 0; border-top: 1px solid rgba(255, 255, 255, 0.08); gap: 1.5rem; flex-wrap: wrap;">
-                    <div class="danger-action-info" style="flex: 1; min-width: 260px;">
-                        <h4 style="margin: 0 0 4px 0; color: #fb7185; font-size: 1rem; display: flex; align-items: center; gap: 6px;">
-                            <span>🛡️</span> Schedule Account Deletion
-                        </h4>
-                        <p style="margin: 0; color: var(--text-muted); font-size: 0.85rem; line-height: 1.5;">
-                            Requires 2-step verification. Includes a <strong>60-day (2-month) grace period</strong>. If you log back in before the deadline, deletion is automatically cancelled and your account is restored.
-                        </p>
+                <!-- Delete Option -->
+                <div class="danger-action-row">
+                    <div class="danger-action-info">
+                        <h4>Delete Account Permanently</h4>
+                        <p>Permanently remove your account, profile details, and preferences from our database. This action cannot be undone.</p>
                     </div>
-                    <button type="button" class="btn-danger-solid" onclick="openConfirmModal('deleteModal')" style="display: inline-flex; align-items: center; gap: 6px; padding: 0.65rem 1.3rem;">
-                        <span>🚨</span> Delete Account (2-Step)
+                    <button type="button" class="btn-danger-solid" onclick="openConfirmModal('deleteModal')">
+                        Delete Account
                     </button>
                 </div>
             </div>
