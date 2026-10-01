@@ -608,6 +608,17 @@
                                 <div class="nature-tile-desc">Lush rolling green hills & fog</div>
                             </div>
                         </div>
+
+                        <!-- Game of Thrones (Westeros) -->
+                        <div class="nature-tile" data-nature="thrones" onclick="applySettingsNature('thrones')">
+                            <img src="https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=400&q=80" alt="Game of Thrones" class="nature-tile-img">
+                            <div class="nature-tile-overlay"></div>
+                            <span class="nature-active-pill">Active</span>
+                            <div class="nature-tile-content">
+                                <div class="nature-tile-title"><span>🐉</span> Westeros (GoT)</div>
+                                <div class="nature-tile-desc">Dragonstone & Valyrian flame</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -628,6 +639,9 @@
                         </button>
                         <button type="button" class="color-theme-btn" onclick="applySettingsColor('neon')">
                             <span class="color-dot" style="background: #a78bfa; box-shadow: 0 0 8px #a78bfa;"></span> Neon Violet
+                        </button>
+                        <button type="button" class="color-theme-btn" onclick="applySettingsColor('thrones')">
+                            <span class="color-dot" style="background: #f59e0b; box-shadow: 0 0 8px #dc2626;"></span> 🐉 Valyrian Gold & Fire
                         </button>
                     </div>
                 </div>
@@ -663,6 +677,9 @@
                         <div class="particle-modes-row" id="particleModesRow" style="display: flex; gap: 8px; flex-wrap: wrap;">
                             <button type="button" class="particle-mode-chip" data-mode="auto" onclick="applySettingsParticleMode('auto')">
                                 ✨ Auto (Theme-Matched)
+                            </button>
+                            <button type="button" class="particle-mode-chip" data-mode="embers" onclick="applySettingsParticleMode('embers')">
+                                🔥 Dragon Embers
                             </button>
                             <button type="button" class="particle-mode-chip" data-mode="sakura" onclick="applySettingsParticleMode('sakura')">
                                 🌸 Sakura Petals
@@ -1160,7 +1177,8 @@
                     sakura: 'Zen Sakura',
                     autumn: 'Golden Autumn',
                     starry: 'Milky Way',
-                    valley: 'Misty Valley'
+                    valley: 'Misty Valley',
+                    thrones: 'Westeros (Game of Thrones)'
                 };
                 window.showToast(`🌿 Wallpaper updated: ${names[themeId] || themeId}`, 'success', 2000);
             }
@@ -1171,7 +1189,14 @@
                 window.applyColorTheme(themeName);
             }
             if (window.showToast) {
-                window.showToast(`🎨 Accent color updated to ${themeName.toUpperCase()}`, 'success', 2000);
+                const cNames = {
+                    ocean: 'Ocean Cyan',
+                    emerald: 'Emerald Green',
+                    sunset: 'Sunset Orange',
+                    neon: 'Neon Violet',
+                    thrones: 'Valyrian Gold & Fire (GoT)'
+                };
+                window.showToast(`🎨 Accent color updated to ${cNames[themeName] || themeName.toUpperCase()}`, 'success', 2000);
             }
         }
 
@@ -1231,12 +1256,13 @@
             if (window.showToast) {
                 const names = {
                     auto: 'Auto (Theme-Matched)',
-                    sakura: 'Sakura Petals',
-                    fireflies: 'Golden Fireflies',
-                    starlight: 'Cosmic Starlight',
-                    leaves: 'Autumn Leaves',
-                    bubbles: 'Ocean Bubbles',
-                    mist: 'Morning Mist',
+                    embers: '🔥 Dragon Embers & Ash',
+                    sakura: '🌸 Sakura Petals',
+                    fireflies: '🌲 Golden Fireflies',
+                    starlight: '🌌 Cosmic Starlight',
+                    leaves: '🍂 Autumn Leaves',
+                    bubbles: '🌊 Ocean Bubbles',
+                    mist: '💨 Morning Mist',
                     off: 'Disabled'
                 };
                 window.showToast(`✨ Particle layer updated: ${names[mode] || mode}`, 'success', 2000);

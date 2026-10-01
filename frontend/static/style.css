@@ -28,6 +28,7 @@
     --nature-autumn: url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=2400&q=80');
     --nature-starry: url('https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=2400&q=80');
     --nature-valley: url('https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=2400&q=80');
+    --nature-thrones: url('https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=2400&q=80');
 
     /* Default Page Wallpaper */
     --page-bg-image: var(--nature-aurora);
@@ -3161,6 +3162,7 @@ body.theme-nature-sakura { --page-bg-image: var(--nature-sakura) !important; }
 body.theme-nature-autumn { --page-bg-image: var(--nature-autumn) !important; }
 body.theme-nature-starry { --page-bg-image: var(--nature-starry) !important; }
 body.theme-nature-valley { --page-bg-image: var(--nature-valley) !important; }
+body.theme-nature-thrones { --page-bg-image: var(--nature-thrones) !important; }
 
 /* ==========================================================================
    Nature Wallpaper Switcher Modal & Button Styles

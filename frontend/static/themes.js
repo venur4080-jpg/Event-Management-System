@@ -87,6 +87,14 @@
       desc: 'Lush rolling green hills, morning fog & sky',
       url: 'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=2400&q=80',
       thumb: 'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=400&q=80'
+    },
+    thrones: {
+      id: 'thrones',
+      name: 'Westeros (Game of Thrones)',
+      icon: '🐉',
+      desc: 'Dragonstone fortress, Valyrian fire & stormy seas',
+      url: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=2400&q=80',
+      thumb: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=400&q=80'
     }
   };
 
@@ -184,6 +192,11 @@
       '--primary-dark': '#7c3aed',
       '--secondary': '#ec4899',
     },
+    thrones: {
+      '--primary': '#f59e0b',
+      '--primary-dark': '#d97706',
+      '--secondary': '#dc2626',
+    },
   };
 
   function applyColorTheme(themeName) {
@@ -220,6 +233,7 @@
       case 'ocean': return 'bubbles';
       case 'sunrise':
       case 'mountains': return 'mist';
+      case 'thrones': return 'embers';
       default: return 'starlight';
     }
   }
@@ -267,6 +281,7 @@
     if (type === 'leaves') count = 24;
     if (type === 'bubbles') count = 30;
     if (type === 'mist') count = 18;
+    if (type === 'embers') count = 36;
 
     for (let i = 0; i < count; i++) {
       particles.push(createParticle(type, w, h, true));
@@ -274,7 +289,7 @@
   }
 
   function createParticle(type, w, h, randomizeY = false) {
-    const startY = randomizeY ? Math.random() * h : (type === 'bubbles' ? h + 20 : -20);
+    const startY = randomizeY ? Math.random() * h : (type === 'bubbles' || type === 'embers' ? h + 20 : -20);
     const startX = Math.random() * w;
 
     if (type === 'sakura') {
@@ -342,6 +357,19 @@
         swayPhase: Math.random() * Math.PI * 2,
         swaySpeed: 0.03 + Math.random() * 0.02,
         opacity: 0.25 + Math.random() * 0.45
+      };
+    } else if (type === 'embers') {
+      return {
+        type: 'embers',
+        x: startX,
+        y: randomizeY ? Math.random() * h : h + 15,
+        size: 1.8 + Math.random() * 3.2,
+        vx: (Math.random() - 0.5) * 1.0,
+        vy: -1.2 - Math.random() * 1.8,
+        flickerPhase: Math.random() * Math.PI * 2,
+        flickerSpeed: 0.05 + Math.random() * 0.07,
+        color: Math.random() > 0.6 ? '245, 158, 11' : (Math.random() > 0.3 ? '239, 68, 68' : '251, 146, 60'),
+        opacity: 0.6 + Math.random() * 0.4
       };
     } else { // 'mist'
       return {
@@ -505,6 +533,26 @@
         liveCtx.fillStyle = radGrad;
         liveCtx.beginPath();
         liveCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        liveCtx.fill();
+        liveCtx.restore();
+
+      } else if (p.type === 'embers') {
+        p.flickerPhase += p.flickerSpeed;
+        p.x += p.vx + Math.sin(p.flickerPhase) * 0.6;
+        p.y += p.vy;
+
+        if (p.y < -15 || p.x > w + 20 || p.x < -20) {
+          particles[i] = createParticle('embers', w, h, false);
+          continue;
+        }
+
+        const alpha = Math.max(0.2, (Math.sin(p.flickerPhase) * 0.35 + 0.65) * p.opacity);
+        liveCtx.save();
+        liveCtx.beginPath();
+        liveCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        liveCtx.fillStyle = `rgba(${p.color}, ${alpha})`;
+        liveCtx.shadowColor = `rgba(${p.color}, 0.9)`;
+        liveCtx.shadowBlur = p.size * 5;
         liveCtx.fill();
         liveCtx.restore();
       }
